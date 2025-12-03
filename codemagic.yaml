@@ -8,7 +8,7 @@ workflows:
       flutter: stable
       xcode: latest
       vars:
-        BUNDLE_ID: com.mycompany.loya # TODO: set your real bundle id
+        BUNDLE_ID: com.mycompany.loya
       groups:
         - app_store_connect    # APP_STORE_CONNECT_KEY_BASE64, APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID
         - ios_signing          # APPLE_CERT_BASE64, APPLE_CERT_PASSWORD, APPLE_PROFILE_BASE64, APPLE_TEAM_ID, KEYCHAIN_PASSWORD
