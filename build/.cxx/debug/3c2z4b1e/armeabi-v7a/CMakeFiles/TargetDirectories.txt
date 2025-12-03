@@ -1,2 +1,0 @@
-C:/loya_app/build/.cxx/debug/3c2z4b1e/armeabi-v7a/CMakeFiles/edit_cache.dir
-C:/loya_app/build/.cxx/debug/3c2z4b1e/armeabi-v7a/CMakeFiles/rebuild_cache.dir
