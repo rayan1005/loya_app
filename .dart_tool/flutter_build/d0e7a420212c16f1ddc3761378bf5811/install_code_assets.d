@@ -1,0 +1,1 @@
+ C:\\loya_app\\.dart_tool\\flutter_build\\d0e7a420212c16f1ddc3761378bf5811\\native_assets.json: 

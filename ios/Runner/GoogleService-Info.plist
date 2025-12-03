@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>900836887479-8qrrvnacm4s25v01hc2qookusms0en5n.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.900836887479-8qrrvnacm4s25v01hc2qookusms0en5n</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>900836887479-mm6j6kqh4e8rbqkoshpg006cbt7h3uni.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCjCQCZhx9tiMJrRUtjY6_zj3C2Fz1Ydlk</string>
+	<key>GCM_SENDER_ID</key>
+	<string>900836887479</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.mycompany.loya</string>
+	<key>PROJECT_ID</key>
+	<string>loya-app-ziqygx</string>
+	<key>STORAGE_BUCKET</key>
+	<string>loya-app-ziqygx.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:900836887479:ios:08ccdf80abd75ce2bcf632</string>
+</dict>
+</plist>

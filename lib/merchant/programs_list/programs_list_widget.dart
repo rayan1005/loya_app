@@ -1,0 +1,221 @@
+import '/auth/firebase_auth/auth_util.dart';
+import '/backend/backend.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
+import '/index.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+class ProgramsListWidget extends StatefulWidget {
+  const ProgramsListWidget({super.key});
+
+  static String routeName = 'ProgramsList';
+  static String routePath = 'programsList';
+
+  @override
+  State<ProgramsListWidget> createState() => _ProgramsListWidgetState();
+}
+
+class _ProgramsListWidgetState extends State<ProgramsListWidget> {
+  @override
+  Widget build(BuildContext context) {
+    final merchantRef = currentUserDocument?.linkedMerchants;
+
+    return Scaffold(
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      appBar: AppBar(
+        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        elevation: 0.0,
+        title: Text(
+          'برامجي',
+          style: FlutterFlowTheme.of(context).titleLarge.override(
+                font: GoogleFonts.interTight(
+                  fontWeight: FlutterFlowTheme.of(context).titleLarge.fontWeight,
+                  fontStyle: FlutterFlowTheme.of(context).titleLarge.fontStyle,
+                ),
+                color: FlutterFlowTheme.of(context).primaryText,
+                letterSpacing: 0.0,
+              ),
+        ),
+        centerTitle: true,
+      ),
+      body: merchantRef == null
+          ? Center(
+              child: Text(
+                'الحساب غير مرتبط بتاجر.',
+                style: FlutterFlowTheme.of(context).bodyLarge,
+              ),
+            )
+          : StreamBuilder<List<ProgramsRecord>>(
+              stream: queryProgramsRecord(
+                queryBuilder: (p) =>
+                    p.where('merchant_id', isEqualTo: merchantRef),
+              ),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        FlutterFlowTheme.of(context).primary,
+                      ),
+                    ),
+                  );
+                }
+                final programs = snapshot.data!;
+                if (programs.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'لا توجد برامج بعد.',
+                      style: FlutterFlowTheme.of(context).bodyLarge,
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  padding: EdgeInsetsDirectional.fromSTEB(
+                      16.0, 16.0, 16.0, 32.0),
+                  itemCount: programs.length,
+                  itemBuilder: (context, index) {
+                    final program = programs[index];
+                    return Padding(
+                      padding: EdgeInsetsDirectional.only(bottom: 12.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color:
+                              FlutterFlowTheme.of(context).secondaryBackground,
+                          borderRadius: BorderRadius.circular(16.0),
+                          boxShadow: const [
+                            BoxShadow(
+                              blurRadius: 12.0,
+                              color: Color(0x1A000000),
+                              offset: Offset(0.0, 6.0),
+                            )
+                          ],
+                        ),
+                        padding: EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    program.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: FlutterFlowTheme.of(context)
+                                        .titleMedium
+                                        .override(
+                                          font: GoogleFonts.interTight(
+                                            fontWeight: FontWeight.w700,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleMedium
+                                                    .fontStyle,
+                                          ),
+                                          color: FlutterFlowTheme.of(context)
+                                              .primaryText,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10.0, vertical: 6.0),
+                                  decoration: BoxDecoration(
+                                    color: program.status
+                                        ? FlutterFlowTheme.of(context).primary
+                                            .withOpacity(0.1)
+                                        : FlutterFlowTheme.of(context)
+                                            .secondaryText
+                                            .withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  child: Text(
+                                    program.status ? 'مفعل' : 'معطل',
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodySmall
+                                        .override(
+                                          font: GoogleFonts.interTight(
+                                            fontWeight: FontWeight.w600,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodySmall
+                                                    .fontStyle,
+                                          ),
+                                          color: program.status
+                                              ? FlutterFlowTheme.of(context)
+                                                  .primary
+                                              : FlutterFlowTheme.of(context)
+                                                  .secondaryText,
+                                          letterSpacing: 0.0,
+                                        ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6.0),
+                            Text(
+                              program.description,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: FlutterFlowTheme.of(context).bodyMedium,
+                            ),
+                            const SizedBox(height: 8.0),
+                            Text(
+                              'عدد الطوابع المطلوب: ${program.stampsRequired}',
+                              style: FlutterFlowTheme.of(context).bodySmall,
+                            ),
+                            const SizedBox(height: 10.0),
+                            Row(
+                              children: [
+                                FFButtonWidget(
+                                  onPressed: () {
+                                    context.pushNamed(
+                                      EditProgramWidget.routeName,
+                                      queryParameters: {
+                                        'programRef': serializeParam(
+                                          program.reference,
+                                          ParamType.DocumentReference,
+                                        ),
+                                      }.withoutNulls,
+                                    );
+                                  },
+                                  text: 'تعديل',
+                                  options: FFButtonOptions(
+                                    height: 38.0,
+                                    color: FlutterFlowTheme.of(context).primary,
+                                    textStyle: FlutterFlowTheme.of(context)
+                                        .titleSmall
+                                        .override(
+                                          font: GoogleFonts.interTight(
+                                            fontWeight:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .fontWeight,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .fontStyle,
+                                          ),
+                                          color: Colors.white,
+                                          letterSpacing: 0.0,
+                                        ),
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+    );
+  }
+}
