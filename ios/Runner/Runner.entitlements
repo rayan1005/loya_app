@@ -12,7 +12,7 @@
     <!-- Wallet passes -->
 <key>com.apple.developer.pass-type-identifiers</key>
 <array>
-  <string>pass.com.loyaapp.stamp</string>
+  <string>Q4JCZ2JBFJ.pass.com.mycompany.loya</string>
 </array>
 
     <!-- Push notifications for pass updates and messaging -->
