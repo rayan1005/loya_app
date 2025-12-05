@@ -8,13 +8,13 @@
       <string>applinks:loya.live</string>
     </array>
     <!-- End of Deep Link -->
-
+    
     <!-- Wallet passes -->
-<key>com.apple.developer.pass-type-identifiers</key>
-<array>
-  <string>Q4JCZ2JBFJ.pass.com.mycompany.loya</string>
-</array>
-
+    <key>com.apple.developer.pass-type-identifiers</key>
+    <array>
+      <string>pass.com.loyaapp.stamp</string>
+    </array>
+    
     <!-- Push notifications for pass updates and messaging -->
     <key>aps-environment</key>
     <string>development</string>
