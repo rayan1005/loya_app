@@ -14,6 +14,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'md_model.dart';
 export 'md_model.dart';
+import '/sign_in/sign_in_widget.dart';
+import '/user_or_merchant/user_or_merchant_widget.dart';
+import '/creat_new_pro/creat_new_pro_widget.dart';
+import '/merchant/md_plus/md_plus_widget.dart';
 
 class MdWidget extends StatefulWidget {
   const MdWidget({
