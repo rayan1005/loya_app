@@ -2,22 +2,22 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
-    <!-- Start of Deep Link -->
+
+    <!-- Deep Link -->
     <key>com.apple.developer.associated-domains</key>
     <array>
       <string>applinks:loya.live</string>
     </array>
-    <!-- End of Deep Link -->
-    
-    <!-- Wallet passes -->
+
+    <!-- Wallet Passes -->
     <key>com.apple.developer.pass-type-identifiers</key>
-<key>com.apple.developer.pass-type-identifiers</key>
-<array>
-  <string>$(TeamIdentifierPrefix)pass.com.loyaapp.stamp</string>
-</array>
-    
-    <!-- Push notifications for pass updates and messaging -->
+    <array>
+      <string>$(TeamIdentifierPrefix)pass.com.loyaapp.stamp</string>
+    </array>
+
+    <!-- Push notifications for pass updates -->
     <key>aps-environment</key>
     <string>development</string>
+
   </dict>
 </plist>
