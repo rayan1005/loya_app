@@ -10,8 +10,8 @@ workflows:
       vars:
         BUNDLE_ID: com.mycompany.loya
       groups:
-        - app_store_connect    # APP_STORE_CONNECT_KEY_BASE64, APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID
-        - ios_signing          # APPLE_CERT_BASE64, APPLE_CERT_PASSWORD, APPLE_PROFILE_BASE64, APPLE_TEAM_ID, KEYCHAIN_PASSWORD
+        - app_store_connect
+        - ios_signing
 
     scripts:
       - name: Flutter pub get
@@ -31,7 +31,7 @@ workflows:
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
 
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo "$APPLE_PROFILE_BASE64" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision
+          echo "$IOS_PROVISIONING_PROFILE" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision
           PROFILE_NAME=$(security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision | /usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin)
 
           cat > /tmp/ExportOptions.plist <<EOF
