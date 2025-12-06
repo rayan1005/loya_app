@@ -12,7 +12,7 @@
     <!-- Wallet Passes -->
     <key>com.apple.developer.pass-type-identifiers</key>
     <array>
-      <string>$(TeamIdentifierPrefix)pass.com.mycompany.loya</string>
+      <string>$(TeamIdentifierPrefix)pass.com.loyaapp.stamp</string>
     </array>
 
     <!-- Push notifications for pass updates -->
