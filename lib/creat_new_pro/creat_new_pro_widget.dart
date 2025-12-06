@@ -132,49 +132,49 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
               children: [
                 _uploadButton(
                   label: 'Upload business icon',
-                  loading: _model.isUploadingBusinessIcon,
+                  loading: _model.isDataUploading_uploadData5kx,
                   onTap: () async {
                     await _pickAndUpload(
                       onUploading: (u) => setState(
-                          () => _model.isUploadingBusinessIcon = u),
-                      onUploaded: (url) =>
-                          setState(() => _model.businessIconUrl = url),
+                          () => _model.isDataUploading_uploadData5kx = u),
+                      onUploaded: (url) => setState(
+                          () => _model.uploadedFileUrl_uploadData5kx = url),
                     );
                   },
                 ),
                 _uploadButton(
                   label: 'Upload stamp icon',
-                  loading: _model.isUploadingStampIcon,
+                  loading: _model.isDataUploading_uploadDataXoh,
                   onTap: () async {
                     await _pickAndUpload(
                       onUploading: (u) =>
-                          setState(() => _model.isUploadingStampIcon = u),
+                          setState(() => _model.isDataUploading_uploadDataXoh = u),
                       onUploaded: (url) =>
-                          setState(() => _model.stampIconUrl = url),
+                          setState(() => _model.uploadedFileUrl_uploadDataXoh = url),
                     );
                   },
                 ),
                 _uploadButton(
                   label: 'Upload Wallet icon',
-                  loading: _model.isUploadingPassIcon,
+                  loading: _model.isDataUploading_passIcon,
                   onTap: () async {
                     await _pickAndUpload(
                       onUploading: (u) =>
-                          setState(() => _model.isUploadingPassIcon = u),
+                          setState(() => _model.isDataUploading_passIcon = u),
                       onUploaded: (url) =>
-                          setState(() => _model.passIconUrl = url),
+                          setState(() => _model.uploadedFileUrl_passIcon = url),
                     );
                   },
                 ),
                 _uploadButton(
                   label: 'Upload Wallet logo',
-                  loading: _model.isUploadingPassLogo,
+                  loading: _model.isDataUploading_passLogo,
                   onTap: () async {
                     await _pickAndUpload(
                       onUploading: (u) =>
-                          setState(() => _model.isUploadingPassLogo = u),
+                          setState(() => _model.isDataUploading_passLogo = u),
                       onUploaded: (url) =>
-                          setState(() => _model.passLogoUrl = url),
+                          setState(() => _model.uploadedFileUrl_passLogo = url),
                     );
                   },
                 ),
@@ -186,16 +186,16 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
               children: [
                 _textField(
                   label: 'Program title',
-                  controller: _model.titleController,
+                  controller: _model.textController2,
                 ),
                 _textField(
                   label: 'Description',
-                  controller: _model.descriptionController,
+                  controller: _model.textController3,
                   maxLines: 2,
                 ),
                 _textField(
                   label: 'Reward',
-                  controller: _model.rewardController,
+                  controller: _model.textController4,
                 ),
                 TextField(
                   controller: _model.textFieldNumberTextController,
@@ -205,7 +205,7 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                 ),
                 _textField(
                   label: 'Terms & conditions',
-                  controller: _model.termsController,
+                  controller: _model.textController5,
                   maxLines: 3,
                 ),
               ],
@@ -240,8 +240,8 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _model.titleController?.text.isNotEmpty == true
-                            ? _model.titleController!.text
+                        _model.textController2?.text.isNotEmpty == true
+                            ? _model.textController2!.text
                             : 'Loya Program',
                         style: TextStyle(
                           fontSize: 20,
@@ -251,8 +251,8 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        _model.descriptionController?.text.isNotEmpty == true
-                            ? _model.descriptionController!.text
+                        _model.textController3?.text.isNotEmpty == true
+                            ? _model.textController3!.text
                             : 'Preview text',
                         style: TextStyle(
                           color: previewLabel,
@@ -273,13 +273,13 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
 
                 await ProgramsRecord.collection.doc().set({
                   'merchantId': merchantRef,
-                  'title': _model.titleController?.text,
-                  'description': _model.descriptionController?.text,
-                  'rewardDetails': _model.rewardController?.text,
-                  'businessIcon': _model.businessIconUrl,
-                  'stampIcon': _model.stampIconUrl,
-                  'passIcon': _model.passIconUrl,
-                  'passLogo': _model.passLogoUrl,
+                  'title': _model.textController2?.text,
+                  'description': _model.textController3?.text,
+                  'rewardDetails': _model.textController4?.text,
+                  'businessIcon': _model.uploadedFileUrl_uploadData5kx,
+                  'stampIcon': _model.uploadedFileUrl_uploadDataXoh,
+                  'passIcon': _model.uploadedFileUrl_passIcon,
+                  'passLogo': _model.uploadedFileUrl_passLogo,
                   'passBackgroundColor':
                       _model.passBgColorController?.text.trim(),
                   'passForegroundColor':
