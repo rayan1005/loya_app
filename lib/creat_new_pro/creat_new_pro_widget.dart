@@ -91,15 +91,15 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget>
           VisibilityEffect(duration: 1.ms),
           FadeEffect(
             curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 300.0.ms,
+Duration(milliseconds: 0)
+Duration(milliseconds: 300)
             begin: 0.0,
             end: 1.0,
           ),
           MoveEffect(
             curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 300.0.ms,
+Duration(milliseconds: 0)
+Duration(milliseconds: 300)
             begin: Offset(0.0, 140.0),
             end: Offset(0.0, 0.0),
           ),
