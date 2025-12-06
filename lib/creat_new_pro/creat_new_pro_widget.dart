@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:from_css_color/from_css_color.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import 'creat_new_pro_model.dart';
 export 'creat_new_pro_model.dart';
