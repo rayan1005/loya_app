@@ -3,8 +3,10 @@ import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/index.dart';
+import '/pages/card_details/card_details_widget.dart';
 import 'my_cards_model.dart';
+export 'my_cards_model.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -21,14 +23,12 @@ class MyCardsWidget extends StatefulWidget {
 
 class _MyCardsWidgetState extends State<MyCardsWidget> {
   late MyCardsModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => MyCardsModel());
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
   @override
@@ -39,236 +39,378 @@ class _MyCardsWidgetState extends State<MyCardsWidget> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<FFAppState>();
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: const Color(0xFFF7F8FA),
         appBar: AppBar(
           backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-          elevation: 0.0,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            color: FlutterFlowTheme.of(context).primaryText,
+            onPressed: () => context.safePop(),
+          ),
           title: Text(
-            'بطاقاتي',
+            'My Cards',
             style: FlutterFlowTheme.of(context).titleLarge.override(
                   font: GoogleFonts.interTight(
                     fontWeight:
                         FlutterFlowTheme.of(context).titleLarge.fontWeight,
-                    fontStyle:
-                        FlutterFlowTheme.of(context).titleLarge.fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).primaryText,
-                  letterSpacing: 0.0,
                 ),
           ),
           centerTitle: true,
         ),
         body: SafeArea(
           top: true,
-          child: StreamBuilder<List<StampCardsRecord>>(
-            stream: queryStampCardsRecord(
-              queryBuilder: (cards) => cards
-                  .where('user_id', isEqualTo: currentUserReference)
-                  .orderBy('updated_at', descending: true),
-            ),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      FlutterFlowTheme.of(context).primary,
-                    ),
-                  ),
-                );
-              }
-              final cards = snapshot.data!;
-              if (cards.isEmpty) {
-                return Center(
-                  child: Text(
-                    'لا توجد بطاقات حتى الآن.',
-                    style: FlutterFlowTheme.of(context).bodyLarge,
-                  ),
-                );
-              }
-              return ListView.builder(
-                padding: EdgeInsetsDirectional.fromSTEB(16.0, 16.0, 16.0, 32.0),
-                itemCount: cards.length,
-                itemBuilder: (context, index) {
-                  final card = cards[index];
-                  return Padding(
-                    padding: EdgeInsetsDirectional.only(bottom: 12.0),
-                    child: InkWell(
-                      onTap: () {
-                        context.pushNamed(
-                          CardDetailsWidget.routeName,
-                          queryParameters: {
-                            'cardRef': serializeParam(
-                              card.reference,
-                              ParamType.DocumentReference,
-                            ),
-                          }.withoutNulls,
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
-                          borderRadius: BorderRadius.circular(16.0),
-                          boxShadow: const [
-                            BoxShadow(
-                              blurRadius: 16.0,
-                              color: Color(0x1F000000),
-                              offset: Offset(0.0, 8.0),
-                            )
-                          ],
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: StreamBuilder<ProgramsRecord>(
-                            stream: ProgramsRecord.getDocument(card.programId!),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            child: StreamBuilder<List<StampCardsRecord>>(
+              stream: queryStampCardsRecord(
+                queryBuilder: (q) => q.where(
+                  'user_id',
+                  isEqualTo: currentUserReference,
+                ),
+              ),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final cards = snapshot.data!;
+                if (cards.isEmpty) {
+                  return _emptyState(context);
+                }
+
+                final activeCount =
+                    cards.where((c) => c.status != 'completed').length;
+                final completedCount =
+                    cards.where((c) => c.status == 'completed').length;
+                final walletLinked =
+                    cards.where((c) => c.walletPassUrl.isNotEmpty).length;
+
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _statsRow(context,
+                          active: activeCount,
+                          completed: completedCount,
+                          wallet: walletLinked),
+                      const SizedBox(height: 16),
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: cards.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final card = cards[index];
+                          if (card.programId == null) {
+                            return _cardSkeleton(context);
+                          }
+                          return StreamBuilder<ProgramsRecord>(
+                            stream:
+                                ProgramsRecord.getDocument(card.programId!),
                             builder: (context, programSnap) {
                               if (!programSnap.hasData) {
-                                return Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '...جارٍ التحميل',
-                                      style: FlutterFlowTheme.of(context)
-                                          .titleMedium,
-                                    ),
-                                    Icon(
-                                      Icons.chevron_left,
-                                      color: FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                    ),
-                                  ],
-                                );
+                                return _cardSkeleton(context);
                               }
                               final program = programSnap.data!;
                               final totalSlots = program.stampsRequired > 0
                                   ? program.stampsRequired
                                   : 1;
-                              final filled = card.currentStamps.clamp(
-                                0,
-                                totalSlots,
-                              );
-
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          program.title,
-                                          style: FlutterFlowTheme.of(context)
-                                              .titleMedium
-                                              .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleMedium
-                                                          .fontStyle,
-                                                ),
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.chevron_left,
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 6.0),
-                                  Text(
-                                    program.description,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style:
-                                        FlutterFlowTheme.of(context).bodyMedium,
-                                  ),
-                                  SizedBox(height: 12.0),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.star,
-                                        color:
-                                            FlutterFlowTheme.of(context).primary,
-                                        size: 18.0,
-                                      ),
-                                      SizedBox(width: 6.0),
-                                      Text(
-                                        '${card.currentStamps} / $totalSlots',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium,
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 10.0),
-                                  Wrap(
-                                    spacing: 6.0,
-                                    runSpacing: 6.0,
-                                    children:
-                                        List.generate(totalSlots, (slotIndex) {
-                                      final isFilled = slotIndex < filled;
-                                      return Container(
-                                        width: 26.0,
-                                        height: 26.0,
-                                        decoration: BoxDecoration(
-                                          color: isFilled
-                                              ? FlutterFlowTheme.of(context)
-                                                  .primary
-                                              : FlutterFlowTheme.of(context)
-                                                  .alternate,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(
-                                          isFilled
-                                              ? Icons.check
-                                              : Icons.star_border,
-                                          color: isFilled
-                                              ? Colors.white
-                                              : FlutterFlowTheme.of(context)
-                                                  .secondaryText,
-                                          size: 16.0,
-                                        ),
-                                      );
-                                    }),
-                                  ),
-                                  SizedBox(height: 8.0),
-                                  Text(
-                                    'الحالة: ${card.status.isNotEmpty ? card.status : 'غير محددة'}',
-                                    style:
-                                        FlutterFlowTheme.of(context).bodySmall,
-                                  ),
-                                ],
-                              );
+                              final filled = card.currentStamps > totalSlots
+                                  ? totalSlots
+                                  : card.currentStamps;
+                              final progress =
+                                  (filled / totalSlots).clamp(0.0, 1.0);
+                              return _cardItem(context, card, program, progress,
+                                  filled, totalSlots);
                             },
-                          ),
-                        ),
+                          );
+                        },
                       ),
-                    ),
-                  );
-                },
-              );
-            },
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _emptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).accent1,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.credit_card,
+                color: FlutterFlowTheme.of(context).primary, size: 48),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No cards yet',
+            style: FlutterFlowTheme.of(context).headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Start a program to see it here.',
+            style: FlutterFlowTheme.of(context).bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statsRow(BuildContext context,
+      {required int active, required int completed, required int wallet}) {
+    return Row(
+      children: [
+        Expanded(
+          child: _statTile(context,
+              label: 'Active', value: active, color: FlutterFlowTheme.of(context).primary),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _statTile(context,
+              label: 'Completed',
+              value: completed,
+              color: FlutterFlowTheme.of(context).secondary),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _statTile(context,
+              label: 'Wallet linked',
+              value: wallet,
+              color: FlutterFlowTheme.of(context).success),
+        ),
+      ],
+    );
+  }
+
+  Widget _statTile(BuildContext context,
+      {required String label, required int value, required Color color}) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: const [
+          BoxShadow(blurRadius: 8, color: Color(0x12000000), offset: Offset(0, 3))
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: FlutterFlowTheme.of(context).bodySmall.override(
+                    font: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                  )),
+          const SizedBox(height: 6),
+          Text(
+            '$value',
+            style: FlutterFlowTheme.of(context).headlineSmall.override(
+                  font: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  color: color,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _cardSkeleton(BuildContext context) {
+    return Container(
+      height: 160,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Center(child: CircularProgressIndicator()),
+    );
+  }
+
+  Widget _cardItem(
+      BuildContext context,
+      StampCardsRecord card,
+      ProgramsRecord program,
+      double progress,
+      int filled,
+      int total) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(blurRadius: 10, color: Color(0x1A000000), offset: Offset(0, 6))
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).accent1,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: program.passIcon.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          program.passIcon,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Icon(Icons.card_giftcard,
+                        color: FlutterFlowTheme.of(context).primary),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      program.title,
+                      style: FlutterFlowTheme.of(context).titleMedium.override(
+                            font: GoogleFonts.inter(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      program.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: FlutterFlowTheme.of(context).bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: (card.status == 'completed'
+                          ? FlutterFlowTheme.of(context).success
+                          : FlutterFlowTheme.of(context).primary)
+                      .withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  card.status == 'completed' ? 'Completed' : 'Active',
+                  style: FlutterFlowTheme.of(context).bodySmall.override(
+                        font: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                        color: card.status == 'completed'
+                            ? FlutterFlowTheme.of(context).success
+                            : FlutterFlowTheme.of(context).primary,
+                      ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          LinearProgressIndicator(
+            value: progress,
+            minHeight: 8,
+            backgroundColor:
+                FlutterFlowTheme.of(context).alternate.withOpacity(0.3),
+            valueColor: AlwaysStoppedAnimation<Color>(
+                FlutterFlowTheme.of(context).primary),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '$filled / $total stamps',
+            style: FlutterFlowTheme.of(context).bodySmall.override(
+                  font: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                  color: FlutterFlowTheme.of(context).primary,
+                ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: FFButtonWidget(
+                  onPressed: () {
+                    context.pushNamed(
+                      CardDetailsWidget.routeName,
+                      queryParameters: {
+                        'cardRef': serializeParam(
+                          card.reference,
+                          ParamType.DocumentReference,
+                        ),
+                      }.withoutNulls,
+                    );
+                  },
+                  text: 'View details',
+                  options: FFButtonOptions(
+                    height: 44,
+                    color: FlutterFlowTheme.of(context).primary,
+                    textStyle: FlutterFlowTheme.of(context)
+                        .bodyMedium
+                        .override(
+                          font: GoogleFonts.interTight(
+                            fontWeight: FontWeight.bold,
+                          ),
+                          color: Colors.white,
+                        ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: FFButtonWidget(
+                  onPressed: card.walletPassUrl.isNotEmpty
+                      ? () => launchURL(card.walletPassUrl)
+                      : null,
+                  text: card.walletPassUrl.isNotEmpty
+                      ? 'Open Wallet pass'
+                      : 'No Wallet pass',
+                  options: FFButtonOptions(
+                    height: 44,
+                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                    textStyle: FlutterFlowTheme.of(context)
+                        .bodyMedium
+                        .override(
+                          font: GoogleFonts.interTight(
+                            fontWeight: FontWeight.w700,
+                          ),
+                          color: FlutterFlowTheme.of(context)
+                              .primaryText
+                              .withOpacity(0.8),
+                        ),
+                    elevation: 0,
+                    borderSide: BorderSide(
+                      color: FlutterFlowTheme.of(context)
+                          .primary
+                          .withOpacity(0.25),
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

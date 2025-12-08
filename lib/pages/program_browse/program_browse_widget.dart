@@ -36,6 +36,7 @@ class _ProgramBrowseWidgetState extends State<ProgramBrowseWidget> {
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -45,220 +46,232 @@ class _ProgramBrowseWidgetState extends State<ProgramBrowseWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: const Color(0xFFF5F6FA),
         appBar: AppBar(
           backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-          elevation: 0.0,
+          elevation: 0,
+          centerTitle: false,
           title: Text(
-            'البرامج المتاحة',
+            'Browse programs',
             style: FlutterFlowTheme.of(context).titleLarge.override(
                   font: GoogleFonts.interTight(
-                    fontWeight:
-                        FlutterFlowTheme.of(context).titleLarge.fontWeight,
-                    fontStyle:
-                        FlutterFlowTheme.of(context).titleLarge.fontStyle,
+                    fontWeight: FontWeight.bold,
                   ),
-                  color: FlutterFlowTheme.of(context).primaryText,
-                  letterSpacing: 0.0,
                 ),
           ),
-          centerTitle: true,
         ),
         body: SafeArea(
           top: true,
-          child: StreamBuilder<List<ProgramsRecord>>(
-            stream: queryProgramsRecord(
-              queryBuilder: (programsRecord) => programsRecord
-                  .where('status', isEqualTo: true)
-                  .orderBy('created_at', descending: true),
-            ),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      FlutterFlowTheme.of(context).primary,
-                    ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                );
-              }
-              final programs = snapshot.data!;
-              if (programs.isEmpty) {
-                return Center(
-                  child: Text(
-                    'لا توجد برامج متاحة حالياً.',
-                    style: FlutterFlowTheme.of(context).bodyLarge,
-                  ),
-                );
-              }
-              final filteredPrograms = programs
-                  .where((p) =>
-                      !p.hasExpiryDate() ||
-                      (p.expiryDate != null &&
-                          p.expiryDate!.isAfter(DateTime.now())))
-                  .toList();
-              if (filteredPrograms.isEmpty) {
-                return Center(
-                  child: Text(
-                    'لا توجد برامج متاحة حالياً.',
-                    style: FlutterFlowTheme.of(context).bodyLarge,
-                  ),
-                );
-              }
-              return ListView.builder(
-                padding: EdgeInsetsDirectional.fromSTEB(16.0, 16.0, 16.0, 32.0),
-                itemCount: filteredPrograms.length,
-                itemBuilder: (context, index) {
-                  final program = filteredPrograms[index];
-                  return Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 12.0),
-                    child: InkWell(
-                      splashColor: Colors.transparent,
-                      focusColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      onTap: () async {
-                        context.pushNamed(
-                          ProgramDetailsWidget.routeName,
-                          queryParameters: {
-                            'programRef': serializeParam(
-                              program.reference,
-                              ParamType.DocumentReference,
-                            ),
-                          }.withoutNulls,
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).secondaryBackground,
-                          borderRadius: BorderRadius.circular(16.0),
-                          boxShadow: const [
-                            BoxShadow(
-                              blurRadius: 16.0,
-                              color: Color(0x1F000000),
-                              offset: Offset(0.0, 8.0),
-                            )
-                          ],
-                        ),
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 16.0, 16.0, 16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (program.hasBusinessIcon())
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12.0),
-                                child: Image.network(
-                                  program.businessIcon,
-                                  width: double.infinity,
-                                  height: 140.0,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            if (program.hasBusinessIcon())
-                              const SizedBox(
-                                height: 10.0,
-                              ),
-                            Text(
-                              program.title,
-                              style: FlutterFlowTheme.of(context)
-                                  .headlineMedium
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.w700,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .headlineMedium
-                                          .fontStyle,
-                                    ),
-                                    color:
-                                        FlutterFlowTheme.of(context).primaryText,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                            SizedBox(height: 6.0),
-                            Text(
-                              program.description,
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    letterSpacing: 0.0,
-                                  ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            SizedBox(height: 10.0),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.star,
-                                  color: FlutterFlowTheme.of(context).primary,
-                                  size: 20.0,
-                                ),
-                                SizedBox(width: 6.0),
-                                Text(
-                                  '${program.stampsRequired} طابع مطلوب',
-                                  style:
-                                      FlutterFlowTheme.of(context).bodyMedium,
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 12.0),
-                            FFButtonWidget(
-                              onPressed: () async {
-                                context.pushNamed(
-                                  ProgramDetailsWidget.routeName,
-                                  queryParameters: {
-                                    'programRef': serializeParam(
-                                      program.reference,
-                                      ParamType.DocumentReference,
-                                    ),
-                                  }.withoutNulls,
-                                );
-                              },
-                              text: 'عرض التفاصيل',
-                              options: FFButtonOptions(
-                                height: 44.0,
-                                color: FlutterFlowTheme.of(context).primary,
-                                textStyle: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .override(
-                                      font: GoogleFonts.interTight(
-                                        fontWeight:
-                                            FlutterFlowTheme.of(context)
-                                                .titleSmall
-                                                .fontWeight,
-                                        fontStyle:
-                                            FlutterFlowTheme.of(context)
-                                                .titleSmall
-                                                .fontStyle,
-                                      ),
-                                      color: Colors.white,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                            ),
-                          ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Find a loyalty program',
+                        style: FlutterFlowTheme.of(context).headlineSmall
+                            .override(
+                          font: GoogleFonts.interTight(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              );
-            },
+                      const SizedBox(height: 6),
+                      Text(
+                        'Join, collect stamps, and redeem rewards.',
+                        style: FlutterFlowTheme.of(context).bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                StreamBuilder<List<ProgramsRecord>>(
+                  stream: queryProgramsRecord(
+                    queryBuilder: (programsRecord) => programsRecord
+                        .where('status', isEqualTo: true)
+                        .orderBy('created_at', descending: true),
+                  ),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    }
+                    final programs = snapshot.data!
+                        .where((p) =>
+                            !p.hasExpiryDate() ||
+                            (p.expiryDate != null &&
+                                p.expiryDate!.isAfter(DateTime.now())))
+                        .toList();
+                    if (programs.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
+                        child: Center(
+                          child: Text(
+                            'No programs available now.',
+                            style: FlutterFlowTheme.of(context).bodyLarge,
+                          ),
+                        ),
+                      );
+                    }
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: programs.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final program = programs[index];
+                        return _programCard(context, program);
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _programCard(BuildContext context, ProgramsRecord program) {
+    return InkWell(
+      splashColor: Colors.transparent,
+      onTap: () {
+        context.pushNamed(
+          ProgramDetailsWidget.routeName,
+          queryParameters: {
+            'programRef': serializeParam(
+              program.reference,
+              ParamType.DocumentReference,
+            ),
+          }.withoutNulls,
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).secondaryBackground,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              blurRadius: 12,
+              color: Color(0x14000000),
+              offset: Offset(0, 6),
+            )
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (program.hasBusinessIcon())
+              ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
+                child: Image.network(
+                  program.businessIcon,
+                  width: double.infinity,
+                  height: 150,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    program.title,
+                    style: FlutterFlowTheme.of(context).titleLarge.override(
+                          font: GoogleFonts.interTight(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    program.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: FlutterFlowTheme.of(context).bodyMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.star_rounded,
+                          color: FlutterFlowTheme.of(context).primary, size: 20),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${program.stampsRequired} stamps required',
+                        style: FlutterFlowTheme.of(context).bodyMedium,
+                      ),
+                      const Spacer(),
+                      if (program.rewardDetails.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: FlutterFlowTheme.of(context)
+                                .primary
+                                .withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            program.rewardDetails,
+                            style: FlutterFlowTheme.of(context)
+                                .bodySmall
+                                .override(
+                                  font: GoogleFonts.interTight(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  color: FlutterFlowTheme.of(context).primary,
+                                ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  FFButtonWidget(
+                    onPressed: () {
+                      context.pushNamed(
+                        ProgramDetailsWidget.routeName,
+                        queryParameters: {
+                          'programRef': serializeParam(
+                            program.reference,
+                            ParamType.DocumentReference,
+                          ),
+                        }.withoutNulls,
+                      );
+                    },
+                    text: 'View details',
+                    options: FFButtonOptions(
+                      height: 44,
+                      color: FlutterFlowTheme.of(context).primary,
+                      textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                            font: GoogleFonts.interTight(
+                              fontWeight: FontWeight.w700,
+                            ),
+                            color: Colors.white,
+                          ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
