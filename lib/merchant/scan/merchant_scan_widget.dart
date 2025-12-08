@@ -5,7 +5,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class MerchantScanWidget extends StatefulWidget {
@@ -31,8 +30,7 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
 
     try {
       final scanResult = await FlutterBarcodeScanner.scanBarcode(
-        '#FF4A90E2',
-        'إلغاء',
+        '#FF4A90E2', 'Cancel',
         true,
         ScanMode.QR,
       );
@@ -40,7 +38,7 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
       if (!mounted) return;
       if (scanResult == '-1') {
         setState(() {
-          _message = 'تم الإلغاء.';
+          _message = 'Scan cancelled.';
           _isScanning = false;
         });
         return;
@@ -61,7 +59,7 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
 
       if (programId == null || programId.isEmpty) {
         setState(() {
-          _message = 'لم يتم العثور على معرف البرنامج في QR.';
+          _message = 'Program ID not found in QR.';
           _isScanning = false;
         });
         return;
@@ -70,7 +68,7 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
       final response = await AddStampCall.call(programId: programId);
       if (!(response.succeeded)) {
         setState(() {
-          _message = 'فشل إضافة الطابع. تحقق من الاتصال أو الصلاحيات.';
+          _message = 'Failed to add stamp. Check connection or permissions.';
           _isScanning = false;
         });
         return;
@@ -80,7 +78,7 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
       final serialNumber =
           AddStampCall.serialNumber(response.jsonBody) ?? serial ?? '';
 
-      // حاول تحديث بطاقة المستخدم إن وُجدت
+      // Try updating the user card if found
       try {
         final programRef =
             FirebaseFirestore.instance.collection('programs').doc(programId);
@@ -119,12 +117,12 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
       }
 
       setState(() {
-        _message = 'تمت إضافة الطابع. الإجمالي: $total';
+        _message = 'Stamp added. Total: $total';
         _isScanning = false;
       });
     } catch (e) {
       setState(() {
-        _message = 'حدث خطأ أثناء المسح.';
+        _message = 'Something went wrong while scanning.';
         _isScanning = false;
       });
     }
@@ -138,7 +136,7 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         elevation: 0.0,
         title: Text(
-          'مسح طابع',
+          'Scan stamp',
           style: FlutterFlowTheme.of(context).titleLarge.override(
                 font: GoogleFonts.interTight(
                   fontWeight: FlutterFlowTheme.of(context).titleLarge.fontWeight,
@@ -176,14 +174,14 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'امسح QR من بطاقة العميل لإضافة طابع.',
+                      'Scan the customer QR to add a stamp.',
                       style: FlutterFlowTheme.of(context).bodyMedium,
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 20.0),
                     FFButtonWidget(
                       onPressed: _isScanning ? null : _startScan,
-                      text: _isScanning ? '...جاري المسح' : 'بدء المسح',
+                      text: _isScanning ? 'Scanning...' : 'Start scan',
                       options: FFButtonOptions(
                         height: 50.0,
                         color: FlutterFlowTheme.of(context).primary,
@@ -220,3 +218,7 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
     );
   }
 }
+
+
+
+

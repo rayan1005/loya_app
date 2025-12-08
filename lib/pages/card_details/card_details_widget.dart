@@ -104,7 +104,7 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
       if (!(response.succeeded)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('تعذر إضافة ختم. حاول مرة أخرى.'),
+            content: Text('Could not add stamp. Try again.'),
           ),
         );
         return;
@@ -164,7 +164,7 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('تم تحديث الطوابع. الإجمالي: $total')),
+        SnackBar(content: Text('Stamp added. Total: $total')),
       );
     } finally {
       if (mounted) setState(() => _model.isAddingStamp = false);
@@ -186,7 +186,7 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
           backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
           elevation: 0,
           title: Text(
-            'تفاصيل البطاقة',
+            'Card details',
             style: FlutterFlowTheme.of(context).titleLarge.override(
                   font: GoogleFonts.interTight(
                     fontWeight:
@@ -201,7 +201,7 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
           child: widget.cardRef == null
               ? Center(
                   child: Text(
-                    'لم يتم العثور على البطاقة',
+                    'No card selected.',
                     style: FlutterFlowTheme.of(context).bodyLarge,
                   ),
                 )
@@ -221,7 +221,7 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
                     if (card.programId == null) {
                       return Center(
                         child: Text(
-                          'لا يوجد برنامج مرتبط',
+                          'Program missing.',
                           style: FlutterFlowTheme.of(context).bodyLarge,
                         ),
                       );
@@ -295,7 +295,7 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
           Text(program.description,
               style: FlutterFlowTheme.of(context).bodyMedium),
           const SizedBox(height: 12),
-          Text('التقدم', style: FlutterFlowTheme.of(context).titleSmall),
+          Text('Progress', style: FlutterFlowTheme.of(context).titleSmall),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -323,7 +323,7 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
           ),
           const SizedBox(height: 12),
           Text(
-            'الحالة: ${program.status ? 'نشط' : 'متوقف'}',
+            'Status: ${program.status ? 'Active' : 'Inactive'}',
             style: FlutterFlowTheme.of(context).bodyMedium,
           ),
         ],
@@ -345,7 +345,7 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('رمز QR', style: FlutterFlowTheme.of(context).titleSmall),
+          Text('QR code', style: FlutterFlowTheme.of(context).titleSmall),
           const SizedBox(height: 8),
           if (qr.isNotEmpty)
             Center(
@@ -366,7 +366,7 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
               ),
             )
           else
-            Text('لا يوجد رمز QR', style: FlutterFlowTheme.of(context).bodyMedium),
+            Text('No QR available', style: FlutterFlowTheme.of(context).bodyMedium),
         ],
       ),
     );
@@ -381,8 +381,8 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
           onPressed:
               _model.isCreatingPass ? null : () => _createWalletPass(card, program),
           text: _model.isCreatingPass
-              ? '...جاري إنشاء الباس'
-              : 'إضافة إلى Apple Wallet',
+              ? 'Creating pass...'
+              : 'Add to Apple Wallet',
           options: FFButtonOptions(
             height: 48,
             color: FlutterFlowTheme.of(context).primary,
@@ -399,7 +399,7 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
         const SizedBox(height: 12),
         FFButtonWidget(
           onPressed: null,
-          text: 'Google Wallet (قريباً)',
+          text: 'Google Wallet (coming soon)',
           options: FFButtonOptions(
             height: 48,
             color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -422,7 +422,7 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
         FFButtonWidget(
           onPressed:
               _model.isAddingStamp ? null : () => _addStamp(card, program),
-          text: _model.isAddingStamp ? '...جاري إضافة الختم' : 'إضافة ختم',
+          text: _model.isAddingStamp ? 'Adding stamp...' : 'Add stamp',
           options: FFButtonOptions(
             height: 48,
             color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -444,3 +444,15 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
