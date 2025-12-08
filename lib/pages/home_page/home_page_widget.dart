@@ -245,7 +245,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'مقهى الأصالة',
+                                      'Authenticity Cafe',
                                       style: FlutterFlowTheme.of(context)
                                           .titleLarge
                                           .override(
@@ -265,7 +265,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                           ),
                                     ),
                                     Text(
-                                      'مرحباً بك',
+                                      'Welcome',
                                       style: FlutterFlowTheme.of(context)
                                           .bodySmall
                                           .override(
@@ -356,7 +356,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                               ),
                                         ),
                                         Text(
-                                          'البرامج',
+                                          'Programs',
                                           textAlign: TextAlign.center,
                                           style: FlutterFlowTheme.of(context)
                                               .bodySmall
@@ -434,7 +434,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                               ),
                                         ),
                                         Text(
-                                          'العملاء',
+                                          'Customers',
                                           textAlign: TextAlign.center,
                                           style: FlutterFlowTheme.of(context)
                                               .bodySmall
@@ -512,7 +512,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                               ),
                                         ),
                                         Text(
-                                          'الأختام',
+                                          'Stamps',
                                           textAlign: TextAlign.center,
                                           style: FlutterFlowTheme.of(context)
                                               .bodySmall
@@ -590,7 +590,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                               ),
                                         ),
                                         Text(
-                                          'الأختام',
+                                          'Stamps',
                                           textAlign: TextAlign.center,
                                           style: FlutterFlowTheme.of(context)
                                               .bodySmall
@@ -756,7 +756,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            'النشاط الأخير',
+                                            'Recent activity',
                                             style: FlutterFlowTheme.of(context)
                                                 .titleMedium
                                                 .override(
@@ -809,7 +809,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      'ختم جديد - أحمد محمد',
+                                                      'New stamp - Ahmed',
                                                       style: FlutterFlowTheme
                                                               .of(context)
                                                           .bodyMedium
@@ -836,7 +836,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                           ),
                                                     ),
                                                     Text(
-                                                      'منذ 5 دقائق',
+                                                      '5 minutes ago',
                                                       style:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -895,7 +895,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      'مكافأة مستردة - سارة أحمد',
+                                                      'Reward redeemed - Sara',
                                                       style: FlutterFlowTheme
                                                               .of(context)
                                                           .bodyMedium
@@ -922,7 +922,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                           ),
                                                     ),
                                                     Text(
-                                                      'منذ 15 دقيقة',
+                                                      '15 minutes ago',
                                                       style:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -981,7 +981,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      'عميل جديد - محمد علي',
+                                                      'New customer - Mohammed',
                                                       style: FlutterFlowTheme
                                                               .of(context)
                                                           .bodyMedium
@@ -1008,7 +1008,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                           ),
                                                     ),
                                                     Text(
-                                                      'منذ 30 دقيقة',
+                                                      '30 minutes ago',
                                                       style:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -1126,7 +1126,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                             ),
                                           ),
                                           Text(
-                                            'إنشاء برنامج',
+                                            'Create program',
                                             textAlign: TextAlign.center,
                                             style: FlutterFlowTheme.of(context)
                                                 .titleMedium
@@ -1152,7 +1152,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                 ),
                                           ),
                                           Text(
-                                            'بطاقة أختام جديدة',
+                                            'New stamp card',
                                             textAlign: TextAlign.center,
                                             style: FlutterFlowTheme.of(context)
                                                 .bodySmall
@@ -1235,7 +1235,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                           ),
                                         ),
                                         Text(
-                                          'العملاء',
+                                          'Customers',
                                           textAlign: TextAlign.center,
                                           style: FlutterFlowTheme.of(context)
                                               .titleMedium
@@ -1260,7 +1260,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                               ),
                                         ),
                                         Text(
-                                          'إدارة قاعدة العملاء',
+                                          'Manage customer base',
                                           textAlign: TextAlign.center,
                                           style: FlutterFlowTheme.of(context)
                                               .bodySmall
@@ -1340,7 +1340,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                           ),
                                         ),
                                         Text(
-                                          'المكافآت',
+                                          'Rewards',
                                           textAlign: TextAlign.center,
                                           style: FlutterFlowTheme.of(context)
                                               .titleMedium
@@ -1365,7 +1365,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                               ),
                                         ),
                                         Text(
-                                          'إدارة الجوائز',
+                                          'Manage rewards',
                                           textAlign: TextAlign.center,
                                           style: FlutterFlowTheme.of(context)
                                               .bodySmall
@@ -1445,7 +1445,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                           ),
                                         ),
                                         Text(
-                                          'التحليلات',
+                                          'Analytics',
                                           textAlign: TextAlign.center,
                                           style: FlutterFlowTheme.of(context)
                                               .titleMedium
@@ -1470,7 +1470,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                               ),
                                         ),
                                         Text(
-                                          'الإحصائيات العامة',
+                                          'General stats',
                                           textAlign: TextAlign.center,
                                           style: FlutterFlowTheme.of(context)
                                               .bodySmall

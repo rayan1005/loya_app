@@ -28,7 +28,7 @@ class _ProgramsListWidgetState extends State<ProgramsListWidget> {
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         elevation: 0.0,
         title: Text(
-          'برامجي',
+          'My programs',
           style: FlutterFlowTheme.of(context).titleLarge.override(
                 font: GoogleFonts.interTight(
                   fontWeight: FlutterFlowTheme.of(context).titleLarge.fontWeight,
@@ -43,7 +43,7 @@ class _ProgramsListWidgetState extends State<ProgramsListWidget> {
       body: merchantRef == null
           ? Center(
               child: Text(
-                'الحساب غير مرتبط بتاجر.',
+                'Account is not linked to a merchant.',
                 style: FlutterFlowTheme.of(context).bodyLarge,
               ),
             )
@@ -66,7 +66,7 @@ class _ProgramsListWidgetState extends State<ProgramsListWidget> {
                 if (programs.isEmpty) {
                   return Center(
                     child: Text(
-                      'لا توجد برامج بعد.',
+                      'No programs yet.',
                       style: FlutterFlowTheme.of(context).bodyLarge,
                     ),
                   );
@@ -134,7 +134,7 @@ class _ProgramsListWidgetState extends State<ProgramsListWidget> {
                                     borderRadius: BorderRadius.circular(12.0),
                                   ),
                                   child: Text(
-                                    program.status ? 'مفعل' : 'معطل',
+                                    program.status ? 'Active' : 'Inactive',
                                     style: FlutterFlowTheme.of(context)
                                         .bodySmall
                                         .override(
@@ -165,7 +165,7 @@ class _ProgramsListWidgetState extends State<ProgramsListWidget> {
                             ),
                             const SizedBox(height: 8.0),
                             Text(
-                              'عدد الطوابع المطلوب: ${program.stampsRequired}',
+                              'Stamps required: ${program.stampsRequired}',
                               style: FlutterFlowTheme.of(context).bodySmall,
                             ),
                             const SizedBox(height: 10.0),
@@ -183,7 +183,7 @@ class _ProgramsListWidgetState extends State<ProgramsListWidget> {
                                       }.withoutNulls,
                                     );
                                   },
-                                  text: 'تعديل',
+                                  text: 'Edit',
                                   options: FFButtonOptions(
                                     height: 38.0,
                                     color: FlutterFlowTheme.of(context).primary,

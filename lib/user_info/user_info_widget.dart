@@ -267,7 +267,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget>
                                           size: 20.0,
                                         ),
                                         Text(
-                                          'الاسم',
+                                          'Name',
                                           style: FlutterFlowTheme.of(context)
                                               .titleMedium
                                               .override(
@@ -300,7 +300,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget>
                                       textInputAction: TextInputAction.next,
                                       obscureText: false,
                                       decoration: InputDecoration(
-                                        hintText: 'علي خالد',
+                                        hintText: 'Ali Khaled',
                                         hintStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .override(
@@ -411,7 +411,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget>
                                           size: 20.0,
                                         ),
                                         Text(
-                                          'المدينة',
+                                          'City',
                                           style: FlutterFlowTheme.of(context)
                                               .titleMedium
                                               .override(
@@ -444,7 +444,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget>
                                       textInputAction: TextInputAction.next,
                                       obscureText: false,
                                       decoration: InputDecoration(
-                                        hintText: 'ادخل العنوان',
+                                        hintText: 'Enter address',
                                         hintStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .override(
@@ -556,7 +556,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget>
                                           size: 20.0,
                                         ),
                                         Text(
-                                          'البريد الالكتروني',
+                                          'Email',
                                           style: FlutterFlowTheme.of(context)
                                               .titleMedium
                                               .override(
@@ -728,7 +728,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget>
                               );
                               context.pushNamed(DashboardWidget.routeName);
                             },
-                            text: 'تحديث',
+                            text: 'Update',
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 56.0,

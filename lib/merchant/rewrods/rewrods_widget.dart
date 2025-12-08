@@ -213,7 +213,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      'اسم العميل',
+                                      'Customer name',
                                       style: FlutterFlowTheme.of(context)
                                           .labelMedium
                                           .override(
@@ -267,7 +267,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'الرقم التسلسلي',
+                                  'Serial number',
                                   style: FlutterFlowTheme.of(context)
                                       .labelMedium
                                       .override(
@@ -370,7 +370,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      'البرنامج',
+                                      'Program',
                                       style: FlutterFlowTheme.of(context)
                                           .labelMedium
                                           .override(
@@ -447,7 +447,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'إضافة طوابع',
+                              'Add stamps',
                               style: FlutterFlowTheme.of(context)
                                   .titleMedium
                                   .override(
@@ -474,7 +474,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
-                                  'عدد الطوابع:',
+                                  'Stamps count:',
                                   style: FlutterFlowTheme.of(context)
                                       .bodyLarge
                                       .override(
@@ -592,7 +592,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                               onPressed: () {
                                 print('Button pressed ...');
                               },
-                              text: 'تأكيد إضافة الطوابع',
+                              text: 'Confirm adding stamps',
                               options: FFButtonOptions(
                                 width: double.infinity,
                                 height: 48.0,
@@ -658,7 +658,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'الطوابع الحالية',
+                                      'Current stamps',
                                       style: FlutterFlowTheme.of(context)
                                           .labelMedium
                                           .override(
@@ -746,7 +746,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                           CrossAxisAlignment.end,
                                       children: [
                                         Text(
-                                          'الهدف',
+                                          'Target',
                                           style: FlutterFlowTheme.of(context)
                                               .labelMedium
                                               .override(
@@ -875,7 +875,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                               size: 28.0,
                             ),
                             Text(
-                              'العميل مؤهل لاستلام المكافأة!',
+                              'Customer is eligible for the reward!',
                               style: FlutterFlowTheme.of(context)
                                   .titleMedium
                                   .override(
@@ -909,7 +909,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                       onPressed: () {
                         print('Button pressed ...');
                       },
-                      text: 'استبدال المكافأة',
+                      text: 'Redeem reward',
                       options: FFButtonOptions(
                         width: double.infinity,
                         height: 56.0,

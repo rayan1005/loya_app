@@ -25,11 +25,11 @@ class _RewardsWidgetState extends State<RewardsWidget> {
   String _statusLabel(String status) {
     switch (status) {
       case 'pending':
-        return 'معلقة';
+        return 'Pending';
       case 'claimed':
-        return 'مستلمة';
+        return 'Claimed';
       case 'expired':
-        return 'منتهية';
+        return 'Expired';
       default:
         return status;
     }
@@ -62,7 +62,7 @@ class _RewardsWidgetState extends State<RewardsWidget> {
           backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
           elevation: 0.0,
           title: Text(
-            'المكافآت',
+            'Rewards',
             style: FlutterFlowTheme.of(context).titleLarge.override(
                   font: GoogleFonts.interTight(
                     fontWeight:
@@ -97,7 +97,7 @@ class _RewardsWidgetState extends State<RewardsWidget> {
               if (rewards.isEmpty) {
                 return Center(
                   child: Text(
-                    'لا توجد مكافآت حالياً.',
+                    'No rewards yet.',
                     style: FlutterFlowTheme.of(context).bodyLarge,
                   ),
                 );
@@ -132,13 +132,13 @@ class _RewardsWidgetState extends State<RewardsWidget> {
                             builder: (context, programSnap) {
                               if (!programSnap.hasData) {
                                 return Text(
-                                  'المكافأة',
+                                  'Reward',
                                   style: FlutterFlowTheme.of(context)
                                       .titleMedium,
                                 );
                               }
                               return Text(
-                                programSnap.data?.title ?? 'المكافأة',
+                                programSnap.data?.title ?? 'Reward',
                                 style:
                                     FlutterFlowTheme.of(context).titleMedium,
                               );
@@ -146,7 +146,7 @@ class _RewardsWidgetState extends State<RewardsWidget> {
                           ),
                           const SizedBox(height: 8.0),
                           Text(
-                            'الحالة: ${_statusLabel(reward.rewardStatus)}',
+                            'Status: ${_statusLabel(reward.rewardStatus)}',
                             style: FlutterFlowTheme.of(context).bodyMedium,
                           ),
                           if (reward.hasExpiryDate())
@@ -154,7 +154,7 @@ class _RewardsWidgetState extends State<RewardsWidget> {
                               padding:
                                   const EdgeInsetsDirectional.only(top: 6.0),
                               child: Text(
-                                'تنتهي في ${dateTimeFormat('yMMMd', reward.expiryDate)}',
+                                'Expires on ${dateTimeFormat('yMMMd', reward.expiryDate)}',
                                 style:
                                     FlutterFlowTheme.of(context).labelMedium,
                               ),

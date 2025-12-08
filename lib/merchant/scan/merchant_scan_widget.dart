@@ -132,10 +132,10 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+      backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-        elevation: 0.0,
+        elevation: 0,
         title: Text(
           'Scan stamp',
           style: FlutterFlowTheme.of(context).titleLarge.override(
@@ -144,7 +144,6 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
                   fontStyle: FlutterFlowTheme.of(context).titleLarge.fontStyle,
                 ),
                 color: FlutterFlowTheme.of(context).primaryText,
-                letterSpacing: 0.0,
               ),
         ),
         centerTitle: true,
@@ -152,62 +151,97 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
       body: SafeArea(
         top: true,
         child: Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(16.0, 24.0, 16.0, 24.0),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondaryBackground,
-                  borderRadius: BorderRadius.circular(16.0),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: const [
                     BoxShadow(
-                      blurRadius: 16.0,
-                      color: Color(0x1F000000),
-                      offset: Offset(0.0, 8.0),
+                      blurRadius: 14,
+                      color: Color(0x14000000),
+                      offset: Offset(0, 6),
                     )
                   ],
                 ),
-                padding: EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Scan the customer QR to add a stamp.',
-                      style: FlutterFlowTheme.of(context).bodyMedium,
-                      textAlign: TextAlign.center,
+                    Row(
+                      children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: FlutterFlowTheme.of(context).accent1,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(Icons.qr_code_scanner,
+                              color: FlutterFlowTheme.of(context).primary),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Add stamp via QR',
+                                style: FlutterFlowTheme.of(context)
+                                    .titleMedium
+                                    .override(
+                                      font: GoogleFonts.interTight(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Scan the customer QR to add a stamp.',
+                                style: FlutterFlowTheme.of(context).bodyMedium,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 16),
                     FFButtonWidget(
                       onPressed: _isScanning ? null : _startScan,
                       text: _isScanning ? 'Scanning...' : 'Start scan',
                       options: FFButtonOptions(
-                        height: 50.0,
+                        height: 50,
                         color: FlutterFlowTheme.of(context).primary,
                         textStyle: FlutterFlowTheme.of(context)
                             .titleMedium
                             .override(
                               font: GoogleFonts.interTight(
                                 fontWeight: FontWeight.w700,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .titleMedium
-                                    .fontStyle,
                               ),
                               color: Colors.white,
-                              letterSpacing: 0.0,
-                              fontWeight: FontWeight.w700,
                             ),
-                        borderRadius: BorderRadius.circular(14.0),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    SizedBox(height: 16.0),
+                    const SizedBox(height: 12),
                     if (_message.isNotEmpty)
-                      Text(
-                        _message,
-                        style: FlutterFlowTheme.of(context).bodyMedium,
-                        textAlign: TextAlign.center,
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: FlutterFlowTheme.of(context)
+                              .accent1
+                              .withOpacity(0.25),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          _message,
+                          style: FlutterFlowTheme.of(context).bodyMedium,
+                        ),
                       ),
                   ],
                 ),
@@ -218,8 +252,4 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
       ),
     );
   }
-}
-
-
-
 

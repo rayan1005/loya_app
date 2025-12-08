@@ -190,7 +190,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 24.0),
                               child: Text(
-                                'قم بإدخال رمز التحقق',
+                                'Enter the verification code',
                                 textAlign: TextAlign.center,
                                 style: FlutterFlowTheme.of(context)
                                     .labelMedium
@@ -427,7 +427,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                       UserOrMerchantWidget.routeName,
                                       context.mounted);
                                 },
-                                text: 'تأكيد',
+                                text: 'Confirm',
                                 options: FFButtonOptions(
                                   width: double.infinity,
                                   height: 50.0,
@@ -477,7 +477,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: 'إعادة ارسال الرمز',
+                                      text: 'Resend code',
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(

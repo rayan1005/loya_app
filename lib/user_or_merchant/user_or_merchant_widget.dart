@@ -259,7 +259,7 @@ class _UserOrMerchantWidgetState extends State<UserOrMerchantWidget>
                                             size: 50.0,
                                           ),
                                           Text(
-                                            'تاجر',
+                                            'Merchant',
                                             textAlign: TextAlign.center,
                                             style: FlutterFlowTheme.of(context)
                                                 .bodySmall
@@ -350,7 +350,7 @@ class _UserOrMerchantWidgetState extends State<UserOrMerchantWidget>
                                             size: 50.0,
                                           ),
                                           Text(
-                                            'مستخدم',
+                                            'Customer',
                                             textAlign: TextAlign.center,
                                             style: FlutterFlowTheme.of(context)
                                                 .bodySmall
@@ -440,7 +440,7 @@ class _UserOrMerchantWidgetState extends State<UserOrMerchantWidget>
                                     return;
                                   }
                                 },
-                                text: 'تأكيد',
+                                text: 'Confirm',
                                 options: FFButtonOptions(
                                   width: 260.0,
                                   height: 50.0,

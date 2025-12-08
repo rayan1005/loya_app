@@ -25,9 +25,9 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
   String _actionLabel(String action) {
     switch (action) {
       case 'stamp_added':
-        return 'إضافة طابع';
+        return 'Stamp added';
       case 'reward_claimed':
-        return 'استلام مكافأة';
+        return 'Reward redeemed';
       default:
         return action;
     }
@@ -42,7 +42,7 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
       builder: (context, snap) {
         if (!snap.hasData) {
           return Text(
-            '...جاري التحميل',
+            'Loading...',
             style: FlutterFlowTheme.of(context).bodySmall,
           );
         }
@@ -88,7 +88,7 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
           backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
           elevation: 0.0,
           title: Text(
-            'المعاملات',
+            'Transactions',
             style: FlutterFlowTheme.of(context).titleLarge.override(
                   font: GoogleFonts.interTight(
                     fontWeight:
@@ -124,7 +124,7 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
               if (txs.isEmpty) {
                 return Center(
                   child: Text(
-                    'لا توجد معاملات بعد.',
+                    'No transactions yet.',
                     style: FlutterFlowTheme.of(context).bodyLarge,
                   ),
                 );
@@ -182,7 +182,7 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
                               ],
                               SizedBox(height: 6.0),
                               Text(
-                                'القيمة: ${tx.value}',
+                                'Value: ${tx.value}',
                                 style: FlutterFlowTheme.of(context).bodyMedium,
                               ),
                               if (tx.hasCreatedAt())

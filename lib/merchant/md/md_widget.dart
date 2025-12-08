@@ -42,8 +42,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
 
   Future<void> _scanQr() async {
     final result = await FlutterBarcodeScanner.scanBarcode(
-      '#4A90E2',
-      'إلغاء',
+      '#4A90E2', 'Cancel',
       true,
       ScanMode.QR,
     );
@@ -51,7 +50,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
     if (!mounted || result == '-1') return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('تم مسح الكود: $result')),
+      SnackBar(content: Text('Code scanned: $result')),
     );
   }
 
@@ -259,7 +258,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                                                   ),
                                             ),
                                             Text(
-                                              'مرحباً بك',
+                                              'Welcome back',
                                               style:
                                                   FlutterFlowTheme.of(context)
                                                       .bodySmall,
@@ -303,7 +302,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                                             ),
                                             const SizedBox(width: 12),
                                             Text(
-                                              'قم بمسح الكود',
+                                              'Scan a code',
                                               style: FlutterFlowTheme.of(
                                                       context)
                                                   .titleMedium
@@ -330,7 +329,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          'البرامج',
+                                          'Programs',
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(
@@ -343,7 +342,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                                               ),
                                         ),
                                         Text(
-                                          'إدارة البرامج >',
+                                          'Manage programs >',
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(
@@ -496,7 +495,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                                               MainAxisAlignment.center,
                                           children: [
                                             Text(
-                                              'إنشاء برنامج جديد',
+                                              'Create new program',
                                               style:
                                                   FlutterFlowTheme.of(
                                                           context)
@@ -663,3 +662,6 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
     );
   }
 }
+
+
+

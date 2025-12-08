@@ -276,7 +276,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                           size: 20.0,
                                         ),
                                         Text(
-                                          'اسم المتجر',
+                                          'Store name',
                                           style: FlutterFlowTheme.of(context)
                                               .titleMedium
                                               .override(
@@ -309,7 +309,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                       textInputAction: TextInputAction.next,
                                       obscureText: false,
                                       decoration: InputDecoration(
-                                        hintText: 'ادخل الاسم التجاري',
+                                        hintText: 'Enter trade name',
                                         hintStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .override(
@@ -420,7 +420,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                           size: 20.0,
                                         ),
                                         Text(
-                                          'وصف ',
+                                          'Description',
                                           style: FlutterFlowTheme.of(context)
                                               .titleMedium
                                               .override(
@@ -453,7 +453,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                       textInputAction: TextInputAction.next,
                                       obscureText: false,
                                       decoration: InputDecoration(
-                                        hintText: 'وصف مختصر للبزنس',
+                                        hintText: 'Short business description',
                                         hintStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .override(
@@ -567,7 +567,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                           size: 20.0,
                                         ),
                                         Text(
-                                          'العنوان',
+                                          'Address',
                                           style: FlutterFlowTheme.of(context)
                                               .titleMedium
                                               .override(
@@ -600,7 +600,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                       textInputAction: TextInputAction.next,
                                       obscureText: false,
                                       decoration: InputDecoration(
-                                        hintText: 'ادخل العنوان',
+                                        hintText: 'Enter address',
                                         hintStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .override(
@@ -712,7 +712,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                           size: 20.0,
                                         ),
                                         Text(
-                                          'رقم الشخص المسؤول',
+                                          'Contact phone',
                                           style: FlutterFlowTheme.of(context)
                                               .titleMedium
                                               .override(
@@ -876,7 +876,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                           size: 20.0,
                                         ),
                                         Text(
-                                          'البريد الالكتروني',
+                                          'Email',
                                           style: FlutterFlowTheme.of(context)
                                               .titleMedium
                                               .override(
@@ -1068,7 +1068,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                         size: 20.0,
                                       ),
                                       Text(
-                                        'ارفاق شعار المتجر',
+                                        'Upload store logo',
                                         style: FlutterFlowTheme.of(context)
                                             .titleMedium
                                             .override(
@@ -1359,7 +1359,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
 
                               if (_shouldSetState) safeSetState(() {});
                             },
-                            text: 'إنشاء متجر ',
+                            text: 'Create store',
                             icon: Icon(
                               Icons.add_rounded,
                               size: 24.0,

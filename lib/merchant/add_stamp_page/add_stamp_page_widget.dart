@@ -538,7 +538,7 @@ class _AddStampPageWidgetState extends State<AddStampPageWidget>
                                   UserOrMerchantWidget.routeName,
                                   context.mounted);
                             },
-                            text: 'تأكيد',
+                            text: 'Confirm',
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 50.0,

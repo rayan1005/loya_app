@@ -192,7 +192,7 @@ class _SignInWidgetState extends State<SignInWidget>
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 24.0),
                               child: Text(
-                                'خطوه واحدة للحصول على المزيد من العملاء',
+                                'One step to get more customers',
                                 textAlign: TextAlign.center,
                                 style: FlutterFlowTheme.of(context)
                                     .labelMedium
@@ -388,7 +388,7 @@ class _SignInWidgetState extends State<SignInWidget>
                                     },
                                   );
                                 },
-                                text: 'تسجيل الدخول',
+                                text: 'Sign in',
                                 options: FFButtonOptions(
                                   width: double.infinity,
                                   height: 50.0,
@@ -438,11 +438,11 @@ class _SignInWidgetState extends State<SignInWidget>
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: 'لم تستطع تسجيل الدخول؟ ',
+                                      text: 'Can’t sign in? ',
                                       style: TextStyle(),
                                     ),
                                     TextSpan(
-                                      text: 'تواصل معنا',
+                                      text: 'Contact us',
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(

@@ -339,7 +339,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                               ),
                                         ),
                                         Text(
-                                          'مرحباً بك',
+                                              'Welcome back',
                                           style: FlutterFlowTheme.of(context)
                                               .bodySmall
                                               .override(
@@ -438,7 +438,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                   ),
                                             ),
                                             Text(
-                                              'البرامج',
+                                              'Programs',
                                               textAlign: TextAlign.center,
                                               style:
                                                   FlutterFlowTheme.of(context)
@@ -525,7 +525,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                   ),
                                             ),
                                             Text(
-                                              'العملاء',
+                                              'Customers',
                                               textAlign: TextAlign.center,
                                               style:
                                                   FlutterFlowTheme.of(context)
@@ -612,7 +612,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                   ),
                                             ),
                                             Text(
-                                              'الأختام',
+                                              'Stamps',
                                               textAlign: TextAlign.center,
                                               style:
                                                   FlutterFlowTheme.of(context)
@@ -684,7 +684,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
                                               Text(
-                                                'النشاط الأخير',
+                                                'Recent activity',
                                                 style:
                                                     FlutterFlowTheme.of(context)
                                                         .titleMedium
@@ -744,7 +744,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          'ختم جديد - أحمد محمد',
+                                                          'New stamp - Ahmed',
                                                           style: FlutterFlowTheme
                                                                   .of(context)
                                                               .bodyMedium
@@ -772,7 +772,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                               ),
                                                         ),
                                                         Text(
-                                                          'منذ 5 دقائق',
+                                                          '5 minutes ago',
                                                           style: FlutterFlowTheme
                                                                   .of(context)
                                                               .bodySmall
@@ -832,7 +832,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          'مكافأة مستردة - سارة أحمد',
+                                                          'Reward redeemed - Sara',
                                                           style: FlutterFlowTheme
                                                                   .of(context)
                                                               .bodyMedium
@@ -860,7 +860,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                               ),
                                                         ),
                                                         Text(
-                                                          'منذ 15 دقيقة',
+                                                          '15 minutes ago',
                                                           style: FlutterFlowTheme
                                                                   .of(context)
                                                               .bodySmall
@@ -920,7 +920,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          'عميل جديد - محمد علي',
+                                                          'New customer - Mohammed',
                                                           style: FlutterFlowTheme
                                                                   .of(context)
                                                               .bodyMedium
@@ -948,7 +948,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                               ),
                                                         ),
                                                         Text(
-                                                          'منذ 30 دقيقة',
+                                                          '30 minutes ago',
                                                           style: FlutterFlowTheme
                                                                   .of(context)
                                                               .bodySmall
@@ -1070,7 +1070,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                 ),
                                               ),
                                               Text(
-                                                'إنشاء برنامج',
+                                                'Create program',
                                                 textAlign: TextAlign.center,
                                                 style:
                                                     FlutterFlowTheme.of(context)
@@ -1100,7 +1100,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                         ),
                                               ),
                                               Text(
-                                                'بطاقة أختام جديدة',
+                                                'New stamp card',
                                                 textAlign: TextAlign.center,
                                                 style: FlutterFlowTheme.of(
                                                         context)
@@ -1228,7 +1228,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                 ),
                                               ),
                                               Text(
-                                                'العملاء',
+                                                'Customers',
                                                 textAlign: TextAlign.center,
                                                 style:
                                                     FlutterFlowTheme.of(context)
@@ -1258,7 +1258,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                         ),
                                               ),
                                               Text(
-                                                'إدارة قاعدة العملاء',
+                                                'Manage customer base',
                                                 textAlign: TextAlign.center,
                                                 style: FlutterFlowTheme.of(
                                                         context)
@@ -1345,7 +1345,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                               ),
                                             ),
                                             Text(
-                                              'المكافآت',
+                                              'Rewards',
                                               textAlign: TextAlign.center,
                                               style: FlutterFlowTheme.of(
                                                       context)
@@ -1374,7 +1374,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                   ),
                                             ),
                                             Text(
-                                              'إدارة الجوائز',
+                                              'Manage rewards',
                                               textAlign: TextAlign.center,
                                               style:
                                                   FlutterFlowTheme.of(context)
@@ -1527,7 +1527,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                 ),
                                               ),
                                               Text(
-                                                'التحليلات',
+                                                'Analytics',
                                                 textAlign: TextAlign.center,
                                                 style:
                                                     FlutterFlowTheme.of(context)
@@ -1557,7 +1557,7 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
                                                         ),
                                               ),
                                               Text(
-                                                'الإحصائيات العامة',
+                                                'General stats',
                                                 textAlign: TextAlign.center,
                                                 style: FlutterFlowTheme.of(
                                                         context)
