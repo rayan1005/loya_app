@@ -50,6 +50,14 @@ workflows:
           </plist>
           EOF
 
+      # -------------- NEW SECTION --------------
+      - name: Auto-increment build number
+        script: |
+          BUILD_NUMBER=$(date +%s)
+          echo "Setting build number to: $BUILD_NUMBER"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" ios/Runner/Info.plist
+      # -----------------------------------------
+
       - name: Build IPA
         script: |
           flutter build ipa --release --export-options-plist=/tmp/ExportOptions.plist
