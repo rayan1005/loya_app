@@ -50,17 +50,18 @@ workflows:
           </plist>
           EOF
 
-      # -------------- NEW SECTION --------------
+      # ------------------------ AUTO BUILD NUMBER ------------------------
       - name: Auto-increment build number
         script: |
           BUILD_NUMBER=$(date +%s)
-          echo "Setting build number to: $BUILD_NUMBER"
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" ios/Runner/Info.plist
-      # -----------------------------------------
+          echo "Using build number: $BUILD_NUMBER"
+          echo $BUILD_NUMBER > /tmp/build_number.txt
+      # --------------------------------------------------------------------
 
       - name: Build IPA
         script: |
-          flutter build ipa --release --export-options-plist=/tmp/ExportOptions.plist
+          BUILD_NUMBER=$(cat /tmp/build_number.txt)
+          flutter build ipa --release --export-options-plist=/tmp/ExportOptions.plist --build-number=$BUILD_NUMBER
 
       - name: Prepare App Store Connect API key
         script: |
