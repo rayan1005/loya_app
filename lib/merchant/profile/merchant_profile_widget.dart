@@ -110,6 +110,10 @@ class _MerchantProfileWidgetState extends State<MerchantProfileWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        bottomNavigationBar: MerchantNavBar(
+          currentTab: MerchantNavTab.settings,
+          merchantRef: merchantRef,
+        ),
         appBar: AppBar(
           backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
           elevation: 0,
@@ -322,10 +326,6 @@ class _MerchantProfileWidgetState extends State<MerchantProfileWidget> {
                               borderRadius: BorderRadius.circular(14),
                             ),
                           ),
-                        ),
-                        MerchantNavBar(
-                          currentTab: MerchantNavTab.settings,
-                          merchantRef: merchantRef,
                         ),
                       ],
                     ),

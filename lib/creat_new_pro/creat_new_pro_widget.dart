@@ -441,17 +441,20 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                 final stampsRequired =
                     int.tryParse(_model.textFieldNumberTextController?.text ?? '');
 
-                if (title.isEmpty || desc.isEmpty || reward.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content:
-                            Text('Title, description, and reward are required.')),
-                  );
-                  return;
-                }
+                final missing = <String>[];
+                if (title.isEmpty) missing.add('title');
+                if (desc.isEmpty) missing.add('description');
+                if (reward.isEmpty) missing.add('reward');
                 if (stampsRequired == null || stampsRequired <= 0) {
+                  missing.add('stamps required');
+                }
+                if (missing.isNotEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Enter stamps required (>0).')),
+                    SnackBar(
+                      content: Text(
+                        'Please fill: ${missing.join(', ')}',
+                      ),
+                    ),
                   );
                   return;
                 }

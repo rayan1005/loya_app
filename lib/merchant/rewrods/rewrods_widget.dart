@@ -3,6 +3,7 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/merchant/components/merchant_nav_bar.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -58,37 +59,25 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.transparent,
+    final merchantRef = currentUserDocument?.linkedMerchants;
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      bottomNavigationBar: MerchantNavBar(
+        currentTab: MerchantNavTab.programs,
+        merchantRef: merchantRef,
       ),
-      child: Container(
+      body: Container(
         decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 4.0,
-              color: Color(0x33000000),
-              offset: Offset(
-                0.0,
-                2.0,
-              ),
-            )
-          ],
           gradient: LinearGradient(
             colors: [Color(0xFF4A90E2), Color(0xFF4B39EF)],
             stops: [0.0, 1.0],
             begin: AlignmentDirectional(0.87, -1.0),
             end: AlignmentDirectional(-0.87, 1.0),
           ),
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(0.0),
-            bottomRight: Radius.circular(0.0),
-            topLeft: Radius.circular(20.0),
-            topRight: Radius.circular(20.0),
-          ),
         ),
         child: Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 120.0),
           child: StreamBuilder<List<StampCardsRecord>>(
             stream: queryStampCardsRecord(
               queryBuilder: (stampCardsRecord) => stampCardsRecord.where(

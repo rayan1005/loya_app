@@ -87,11 +87,16 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final merchantRef = widget.marchentsId ?? currentUserDocument?.linkedMerchants;
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        bottomNavigationBar: MerchantNavBar(
+          currentTab: MerchantNavTab.dashboard,
+          merchantRef: merchantRef,
+        ),
         body: Container(
           height: MediaQuery.sizeOf(context).height,
           decoration: const BoxDecoration(
@@ -412,15 +417,288 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                                             ),
                                             const SizedBox(height: 8),
                                             ...programs.map(
-                                              (program) => Container(
-                                                margin:
-                                                    const EdgeInsets.only(
-                                                        bottom: 10),
-                                                width: double.infinity,
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      FlutterFlowTheme.of(
-                                                              context)
+                                              (program) => InkWell(
+                                                onTap: () {
+                                                  showModalBottomSheet(
+                                                    context: context,
+                                                    isScrollControlled: true,
+                                                    backgroundColor:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .secondaryBackground,
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius
+                                                              .circular(24),
+                                                    ),
+                                                    builder: (ctx) {
+                                                      return Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                          bottom: MediaQuery
+                                                                  .of(ctx)
+                                                              .viewInsets
+                                                              .bottom,
+                                                        ),
+                                                        child: SingleChildScrollView(
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(20),
+                                                            child: Column(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .spaceBetween,
+                                                                  children: [
+                                                                    Text(
+                                                                      program
+                                                                          .title,
+                                                                      style: FlutterFlowTheme.of(
+                                                                              ctx)
+                                                                          .titleLarge
+                                                                          .override(
+                                                                            font: GoogleFonts.interTight(fontWeight: FontWeight.w700),
+                                                                          ),
+                                                                    ),
+                                                                    Container(
+                                                                      padding: const EdgeInsets
+                                                                              .symmetric(
+                                                                          horizontal:
+                                                                              10,
+                                                                          vertical:
+                                                                              6),
+                                                                      decoration:
+                                                                          BoxDecoration(
+                                                                        color: FlutterFlowTheme.of(ctx)
+                                                                            .primary
+                                                                            .withOpacity(0.1),
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(12),
+                                                                      ),
+                                                                      child:
+                                                                          const Text(
+                                                                        'Active',
+                                                                        style:
+                                                                            TextStyle(fontWeight: FontWeight.w600),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(
+                                                                    height:
+                                                                        10),
+                                                                Text(
+                                                                  program
+                                                                          .description ??
+                                                                      '',
+                                                                  style: FlutterFlowTheme.of(
+                                                                          ctx)
+                                                                      .bodyMedium,
+                                                                ),
+                                                                const SizedBox(
+                                                                    height:
+                                                                        12),
+                                                                Row(
+                                                                  children: [
+                                                                    const Icon(
+                                                                        Icons
+                                                                            .star_border),
+                                                                    const SizedBox(
+                                                                        width:
+                                                                            8),
+                                                                    Text(
+                                                                      'Stamps required: ${program.stampsRequired}',
+                                                                      style: FlutterFlowTheme.of(
+                                                                              ctx)
+                                                                          .bodyMedium,
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(
+                                                                    height:
+                                                                        8),
+                                                                Row(
+                                                                  children: [
+                                                                    const Icon(
+                                                                        Icons
+                                                                            .redeem_outlined),
+                                                                    const SizedBox(
+                                                                        width:
+                                                                            8),
+                                                                    Expanded(
+                                                                      child:
+                                                                          Text(
+                                                                        program.rewardDetails ??
+                                                                            'Reward',
+                                                                        style: FlutterFlowTheme.of(ctx)
+                                                                            .bodyMedium,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(
+                                                                    height:
+                                                                        8),
+                                                                Row(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    const Icon(
+                                                                        Icons
+                                                                            .description_outlined),
+                                                                    const SizedBox(
+                                                                        width:
+                                                                            8),
+                                                                    Expanded(
+                                                                      child:
+                                                                          Text(
+                                                                        program.termsConditions ??
+                                                                            '—',
+                                                                        style: FlutterFlowTheme.of(ctx)
+                                                                            .bodySmall,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(
+                                                                    height:
+                                                                        16),
+                                                                Container(
+                                                                  width: double
+                                                                      .infinity,
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                              .all(
+                                                                          16),
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    color: FlutterFlowTheme.of(
+                                                                            ctx)
+                                                                        .primaryBackground,
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            16),
+                                                                    border:
+                                                                        Border.all(
+                                                                      color: FlutterFlowTheme.of(
+                                                                              ctx)
+                                                                          .alternate,
+                                                                    ),
+                                                                  ),
+                                                                  child: Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      Text(
+                                                                        'Share with customers',
+                                                                        style: FlutterFlowTheme.of(ctx)
+                                                                            .titleMedium,
+                                                                      ),
+                                                                      const SizedBox(
+                                                                          height:
+                                                                              8),
+                                                                      Text(
+                                                                        'Program code: ${program.reference.id}',
+                                                                        style: FlutterFlowTheme.of(ctx)
+                                                                            .bodyMedium,
+                                                                      ),
+                                                                      const SizedBox(
+                                                                          height:
+                                                                              8),
+                                                                      Container(
+                                                                        width:
+                                                                            double.infinity,
+                                                                        height:
+                                                                            140,
+                                                                        decoration:
+                                                                            BoxDecoration(
+                                                                          color:
+                                                                              Colors.white,
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(12),
+                                                                          border:
+                                                                              Border.all(color: FlutterFlowTheme.of(ctx).alternate),
+                                                                        ),
+                                                                        alignment:
+                                                                            Alignment.center,
+                                                                        child:
+                                                                            Column(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.center,
+                                                                          children: [
+                                                                            const Icon(Icons.qr_code_2, size: 48),
+                                                                            const SizedBox(height: 6),
+                                                                            Text(
+                                                                              'Show this to customers to join',
+                                                                              style: FlutterFlowTheme.of(ctx).labelMedium,
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(
+                                                                    height:
+                                                                        12),
+                                                                FFButtonWidget(
+                                                                  onPressed:
+                                                                      () {
+                                                                    Navigator.of(
+                                                                            ctx)
+                                                                        .pop();
+                                                                  },
+                                                                  text:
+                                                                      'Close',
+                                                                  options:
+                                                                      FFButtonOptions(
+                                                                    width: double
+                                                                        .infinity,
+                                                                    height: 48,
+                                                                    color: FlutterFlowTheme.of(
+                                                                            ctx)
+                                                                        .primary,
+                                                                    textStyle: FlutterFlowTheme.of(
+                                                                            ctx)
+                                                                        .titleSmall
+                                                                        .override(
+                                                                          font: GoogleFonts.interTight(fontWeight: FontWeight.w700),
+                                                                          color:
+                                                                              Colors.white,
+                                                                        ),
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            12),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                                child: Container(
+                                                  margin:
+                                                      const EdgeInsets.only(
+                                                          bottom: 10),
+                                                  width: double.infinity,
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        FlutterFlowTheme.of(
+                                                                context)
                                                           .primaryBackground,
                                                   borderRadius:
                                                       BorderRadius.circular(
