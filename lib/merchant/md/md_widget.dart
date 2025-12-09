@@ -6,19 +6,16 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/index.dart';
 import '/merchant/components/merchant_nav_bar.dart';
+import '/creat_new_pro/creat_new_pro_widget.dart';
+import '/merchant/scan/merchant_scan_widget.dart';
+import '/merchant/programs_list/programs_list_widget.dart';
 
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'md_model.dart';
 export 'md_model.dart';
-import '/creat_new_pro/creat_new_pro_widget.dart';
-import '/merchant/md_plus/md_plus_widget.dart';
-import '/merchant/programs_list/programs_list_widget.dart';
-import '/merchant/scan/merchant_scan_widget.dart';
 
 class MdWidget extends StatefulWidget {
   const MdWidget({
@@ -141,7 +138,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                   style: FlutterFlowTheme.of(context).bodySmall,
                 ),
                 Text(
-                  '${program.stampsRequired} stamps → ${program.rewardDetails}',
+                  '${program.stampsRequired} stamps - ${program.rewardDetails ?? ''}',
                   style: FlutterFlowTheme.of(context).bodySmall,
                 ),
               ],
@@ -205,8 +202,8 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                 ),
                 const SizedBox(height: 12),
                 Text('Stamps required: ${program.stampsRequired}'),
-                Text('Reward: ${program.rewardDetails ?? '—'}'),
-                Text('Terms: ${program.termsConditions ?? '—'}'),
+                Text('Reward: ${program.rewardDetails ?? '-'}'),
+                Text('Terms: ${program.termsConditions ?? '-'}'),
                 const SizedBox(height: 16),
                 Container(
                   width: double.infinity,
@@ -279,28 +276,26 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
               children: [
                 /// ---------------------- HEADER --------------------------
                 Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                      16, 50, 16, 10),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(16, 50, 16, 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      /// logout
                       InkWell(
                         onTap: () async {
                           GoRouter.of(context).prepareAuthEvent();
                           await authManager.signOut();
                           GoRouter.of(context).clearRedirectLocation();
-
-                          context.goNamedAuth(
-                              SignInWidget.routeName, context.mounted);
+                          if (context.mounted) {
+                            context.goNamedAuth(
+                                SignInWidget.routeName, context.mounted);
+                          }
                         },
                         child: const Icon(
                           Icons.logout,
                           color: Colors.white,
                         ),
                       ),
-
-                      /// Title
                       InkWell(
                         onTap: () async {
                           context.pushNamed(UserOrMerchantWidget.routeName);
@@ -316,8 +311,6 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                               ),
                         ),
                       ),
-
-                      /// Notifications
                       const Icon(
                         Icons.notifications_sharp,
                         color: Colors.white,
@@ -355,317 +348,293 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                           )
                         ],
                       ),
-                      child: Stack(
-                        children: [
-                          /// MAIN CONTENT
-                          Align(
-                            alignment: AlignmentDirectional.topCenter,
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.center,
-                                  children: [
-                                    /// ---------------- MERCHANT INFO ----------------
-
-                                    Row(
-                                      children: [
-                                        /// Logo
-                                        if (merchant.logoUrl == null ||
-                                            merchant.logoUrl!.isEmpty)
-                                          Container(
-                                            width: 40,
-                                            height: 40,
-                                            decoration: BoxDecoration(
-                                              color: FlutterFlowTheme.of(
-                                                      context)
-                                                  .primaryBackground,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: const Icon(Icons.person),
-                                          )
-                                        else
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            child: Image.network(
-                                              merchant.logoUrl!,
-                                              width: 40,
-                                              height: 40,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-
-                                        const SizedBox(width: 8),
-
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              merchant.name,
-                                              style: FlutterFlowTheme.of(
-                                                      context)
-                                                  .titleLarge
-                                                  .override(
-                                                    font: GoogleFonts
-                                                        .interTight(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                            ),
-                                            Text(
-                                              'Welcome back',
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodySmall,
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              /// MERCHANT INFO
+                              Row(
+                                children: [
+                                  if (merchant.logoUrl == null ||
+                                      merchant.logoUrl!.isEmpty)
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryBackground,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.person),
+                                    )
+                                  else
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Image.network(
+                                        merchant.logoUrl!,
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
+                                  const SizedBox(width: 8),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        merchant.name,
+                                        style: FlutterFlowTheme.of(context)
+                                            .titleLarge
+                                            .override(
+                                              font:
+                                                  GoogleFonts.interTight(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                      ),
+                                      Text(
+                                        'Welcome back',
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
 
-                                    const SizedBox(height: 20),
+                              const SizedBox(height: 20),
 
-                                    /// ---------------- SCAN QR SECTION ----------------
-                                    InkWell(
-                                      onTap: () {
-                                        context.pushNamed(
-                                            MerchantScanWidget.routeName);
-                                      },
-                                      child: Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.all(14),
-                                        decoration: BoxDecoration(
-                                          gradient: const LinearGradient(
-                                            colors: [
-                                              Color(0x244A90E2),
-                                              Color(0x234B39EF)
-                                            ],
-                                            stops: [0.0, 1.0],
-                                            begin: AlignmentDirectional(
-                                                0.87, -1),
-                                            end: AlignmentDirectional(
-                                                -0.87, 1),
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            const Icon(
-                                              Icons.qr_code_2,
+                              /// SCAN QR SECTION
+                              InkWell(
+                                onTap: () {
+                                  context.pushNamed(
+                                      MerchantScanWidget.routeName);
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0x244A90E2),
+                                        Color(0x234B39EF)
+                                      ],
+                                      stops: [0.0, 1.0],
+                                      begin: AlignmentDirectional(0.87, -1),
+                                      end: AlignmentDirectional(-0.87, 1),
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.qr_code_2,
+                                        color: Colors.white,
+                                        size: 28,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        'Scan a code',
+                                        style: FlutterFlowTheme.of(context)
+                                            .titleMedium
+                                            .override(
+                                              font: GoogleFonts.interTight(
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                               color: Colors.white,
-                                              size: 28,
+                                              fontSize: 20,
                                             ),
-                                            const SizedBox(width: 12),
-                                            Text(
-                                              'Scan a code',
-                                              style: FlutterFlowTheme.of(
-                                                      context)
-                                                  .titleMedium
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.interTight(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                    color: Colors.white,
-                                                    fontSize: 20,
-                                                  ),
-                                            ),
-                                          ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 20),
+
+                              /// PROGRAMS TITLE
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Programs',
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          font: GoogleFonts.openSans(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          fontSize: 18,
+                                        ),
+                                  ),
+                                  InkWell(
+                                    onTap: () => context.pushNamed(
+                                        ProgramsListWidget.routeName),
+                                    child: Text(
+                                      'Manage programs >',
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            font: GoogleFonts.inter(),
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              /// PROGRAMS LIST (LIVE)
+                              StreamBuilder<List<ProgramsRecord>>(
+                                stream: queryProgramsRecord(
+                                  queryBuilder: (p) => p
+                                      .where('merchant_id',
+                                          isEqualTo: widget.marchentsId)
+                                      .orderBy('created_at', descending: true),
+                                ),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
+                                  final programs = snapshot.data!;
+                                  if (programs.isEmpty) {
+                                    return Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryBackground,
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: FlutterFlowTheme.of(context)
+                                              .alternate,
                                         ),
                                       ),
-                                    ),
-
-                                    const SizedBox(height: 20),
-
-                                    /// ---------------- PROGRAMS TITLE ----------------
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Programs',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font:
-                                                    GoogleFonts.openSans(
-                                                  fontWeight:
-                                                      FontWeight.w600,
-                                                ),
-                                                fontSize: 18,
-                                              ),
-                                        ),
-                                        InkWell(
-                                          onTap: () => context.pushNamed(
-                                              ProgramsListWidget.routeName),
-                                          child: Text(
-                                            'Manage programs >',
-                                            style:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font:
-                                                          GoogleFonts.inter(),
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
-                                                    ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'No programs yet. Create your first program to get started.',
+                                            style: FlutterFlowTheme.of(context)
+                                                .bodyMedium,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-
-                                    const SizedBox(height: 10),
-
-                                    /// ---------------- PROGRAMS LIST (LIVE) ----------------
-                                    StreamBuilder<List<ProgramsRecord>>(
-                                      stream: queryProgramsRecord(
-                                        queryBuilder: (p) => p
-                                            .where('merchant_id',
-                                                isEqualTo:
-                                                    widget.marchentsId)
-                                            .orderBy('created_at',
-                                                descending: true),
-                                      ),
-                                      builder: (context, snapshot) {
-                                        if (!snapshot.hasData) {
-                                          return const Center(
-                                            child:
-                                                CircularProgressIndicator(),
-                                          );
-                                        }
-                                        final programs = snapshot.data!;
-                                        if (programs.isEmpty) {
-                                          return Container(
-                                            width: double.infinity,
-                                            padding: const EdgeInsets.all(16),
-                                            decoration: BoxDecoration(
-                                              color:
+                                          const SizedBox(height: 12),
+                                          FFButtonWidget(
+                                            onPressed: () => context.pushNamed(
+                                                CreatNewProWidget.routeName),
+                                            text: 'Create program',
+                                            options: FFButtonOptions(
+                                              height: 44,
+                                              color: FlutterFlowTheme.of(context)
+                                                  .primary,
+                                              textStyle:
                                                   FlutterFlowTheme.of(context)
-                                                      .primaryBackground,
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              border: Border.all(
-                                                color: FlutterFlowTheme.of(
-                                                        context)
-                                                    .alternate,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              'No programs yet. Create your first program to get started.',
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium,
-                                            ),
-                                          );
-                                        }
-
-                                        return Column(
-                                          children: [
-                                            Align(
-                                              alignment:
-                                                  Alignment.centerLeft,
-                                              child: Text(
-                                                '${programs.length} active program${programs.length > 1 ? 's' : ''}',
-                                                style:
-                                                    FlutterFlowTheme.of(
-                                                            context)
-                                                        .bodySmall,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            ...programs.map<Widget>((program) {
-                                              return InkWell(
-                                                onTap: () => _showProgramSheet(
-                                                    context, program),
-                                                child:
-                                                    _programTile(context, program),
-                                              );
-                                            }).toList(),
-                                            const SizedBox(height: 10),
-
-                                    /// ---------------- CREATE NEW PROGRAM ----------------
-                                    InkWell(
-                                      onTap: () async {
-                                        context.pushNamed(
-                                          CreatNewProWidget.routeName,
-                                        );
-                                      },
-                                      child: Container(
-                                        width: double.infinity,
-                                        height: 60,
-                                        decoration: BoxDecoration(
-                                          color:
-                                              FlutterFlowTheme.of(context)
-                                                  .secondaryBackground,
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                          border: Border.all(
-                                            color: const Color(
-                                                0xFFECECEC),
-                                          ),
-                                        ),
-                                        padding:
-                                            const EdgeInsets.symmetric(
-                                                horizontal: 16),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              'Create new program',
-                                              style:
-                                                  FlutterFlowTheme.of(
-                                                          context)
-                                                      .titleMedium
+                                                      .titleSmall
                                                       .override(
                                                         font: GoogleFonts
                                                             .interTight(
                                                           fontWeight:
-                                                              FontWeight
-                                                                  .w500,
+                                                              FontWeight.w700,
                                                         ),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
+                                                        color: Colors.white,
                                                       ),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
-                                            const SizedBox(width: 10),
-                                            Icon(
-                                              Icons.add,
-                                              color:
-                                                  FlutterFlowTheme.of(
-                                                          context)
-                                                      .primary,
-                                            ),
-                                          ],
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+
+                                  return Column(
+                                    children: [
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          '${programs.length} active program${programs.length > 1 ? 's' : ''}',
+                                          style: FlutterFlowTheme.of(context)
+                                              .bodySmall,
                                         ),
                                       ),
-                                    ),
+                                      const SizedBox(height: 8),
+                                      ...programs.map<Widget>((program) {
+                                        return InkWell(
+                                          onTap: () => _showProgramSheet(
+                                              context, program),
+                                          child: _programTile(context, program),
+                                        );
+                                      }).toList(),
+                                      const SizedBox(height: 10),
+                                    ],
+                                  );
+                                },
+                              ),
 
-                                    const SizedBox(height: 30),
-                                  ],
+                              const SizedBox(height: 16),
+
+                              /// CREATE NEW PROGRAM CTA
+                              InkWell(
+                                onTap: () async {
+                                  context.pushNamed(
+                                    CreatNewProWidget.routeName,
+                                  );
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryBackground,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: const Color(0xFFECECEC),
+                                    ),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Create new program',
+                                        style: FlutterFlowTheme.of(context)
+                                            .titleMedium
+                                            .override(
+                                              font: GoogleFonts.interTight(
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primary,
+                                            ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Icon(
+                                        Icons.add,
+                                        color: FlutterFlowTheme.of(context)
+                                            .primary,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
 
-                          /// ---------------------- BOTTOM NAV ---------------------
-                          MerchantNavBar(
-                            currentTab: MerchantNavTab.dashboard,
-                            merchantRef: widget.marchentsId,
+                              const SizedBox(height: 30),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ).animateOnPageLoad(
                       animationsMap['containerOnPageLoadAnimation']!,
@@ -679,10 +648,4 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
       ),
     );
   }
-
 }
-
-
-
-
-
