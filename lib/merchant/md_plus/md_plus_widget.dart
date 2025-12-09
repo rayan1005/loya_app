@@ -105,6 +105,10 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        bottomNavigationBar: MerchantNavBar(
+          currentTab: MerchantNavTab.dashboard,
+          merchantRef: widget.marchentsId,
+        ),
         body: Container(
           height: double.infinity,
           decoration: BoxDecoration(
@@ -1610,10 +1614,6 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
             ),
           ),
         ),
-      ),
-      bottomNavigationBar: MerchantNavBar(
-        currentTab: MerchantNavTab.dashboard,
-        merchantRef: widget.marchentsId,
       ),
     );
   }
