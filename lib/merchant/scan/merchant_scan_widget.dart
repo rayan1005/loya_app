@@ -371,3 +371,5 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
     );
   }
 
+}
+
