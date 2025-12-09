@@ -381,6 +381,51 @@ class _DashboardWidgetState extends State<DashboardWidget> {
               overflow: TextOverflow.ellipsis,
               style: FlutterFlowTheme.of(context).bodySmall,
             ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context)
+                        .primary
+                        .withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    program.rewardDetails.isNotEmpty
+                        ? program.rewardDetails
+                        : 'Reward pending',
+                    style: FlutterFlowTheme.of(context).bodySmall.override(
+                          font: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                          color: FlutterFlowTheme.of(context).primary,
+                        ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: (card.status == 'completed'
+                            ? Colors.green
+                            : FlutterFlowTheme.of(context).secondaryText)
+                        .withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    card.status.isNotEmpty ? card.status : 'active',
+                    style: FlutterFlowTheme.of(context).bodySmall.override(
+                          font: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                          color: card.status == 'completed'
+                              ? Colors.green
+                              : FlutterFlowTheme.of(context).secondaryText,
+                        ),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             LinearProgressIndicator(
               value: progress.clamp(0, 1),
@@ -391,13 +436,13 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                   FlutterFlowTheme.of(context).primary),
             ),
             const SizedBox(height: 6),
-          Text(
-            '$filled / $total stamps',
-            style: FlutterFlowTheme.of(context).bodySmall.override(
-                  font: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                  color: FlutterFlowTheme.of(context).primary,
-                ),
-          ),
+            Text(
+              '$filled / $total stamps · ${total - filled} to go',
+              style: FlutterFlowTheme.of(context).bodySmall.override(
+                    font: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                    color: FlutterFlowTheme.of(context).primary,
+                  ),
+            ),
             const Spacer(),
             FFButtonWidget(
               onPressed: () {

@@ -47,12 +47,30 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
     if (_model.isCreatingPass) return;
     setState(() => _model.isCreatingPass = true);
     try {
+      if (program.reference.id.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Program is missing an ID. Please try again later.'),
+          ),
+        );
+        return;
+      }
       final response =
           await CreateWalletPassCall.call(programId: program.reference.id);
       if (!(response.succeeded)) {
+        final detail = getJsonField(
+              response.jsonBody,
+              r'$.error',
+            )?.toString() ??
+            response.bodyText ??
+            '';
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not create Wallet pass. Try again.'),
+          SnackBar(
+            content: Text(
+              detail.isNotEmpty
+                  ? 'Could not create Wallet pass: $detail'
+                  : 'Could not create Wallet pass. Try again.',
+            ),
           ),
         );
         return;
@@ -88,6 +106,10 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
       if (downloadURL.isNotEmpty) {
         await launchURL(downloadURL);
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not create Wallet pass: $e')),
+      );
     } finally {
       if (mounted) setState(() => _model.isCreatingPass = false);
     }

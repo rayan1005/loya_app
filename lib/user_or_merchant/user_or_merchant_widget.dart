@@ -27,6 +27,7 @@ class _UserOrMerchantWidgetState extends State<UserOrMerchantWidget>
   late UserOrMerchantModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isSubmitting = false;
 
   final animationsMap = <String, AnimationInfo>{};
 
@@ -396,47 +397,67 @@ class _UserOrMerchantWidgetState extends State<UserOrMerchantWidget>
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 30.0, 0.0, 0.0),
                               child: FFButtonWidget(
-                                onPressed: () async {
-                                  await currentUserReference!
-                                      .update(createUserRecordData(
-                                    userType: FFAppState().UserOrMetchent,
-                                  ));
-                                  if (FFAppState().UserOrMetchent ==
-                                      'merchant') {
-                                    if (currentUserDocument?.linkedMerchants !=
-                                        null) {
-                                      context.pushNamed(
-                                        MdWidget.routeName,
-                                        queryParameters: {
-                                          'marchentsId': serializeParam(
-                                            currentUserDocument
-                                                ?.linkedMerchants,
-                                            ParamType.DocumentReference,
-                                          ),
-                                        }.withoutNulls,
-                                      );
-                                    } else {
-                                      context
-                                          .pushNamed(MsignInWidget.routeName);
-                                    }
-
-                                    return;
-                                  } else {
-                                    if (!(currentUserDisplayName != null &&
-                                        currentUserDisplayName != '')) {
-                                      context
-                                          .pushNamed(UserInfoWidget.routeName);
-
-                                      return;
-                                    }
-
-                                    context
-                                        .pushNamed(DashboardWidget.routeName);
-
-                                    return;
-                                  }
-                                },
-                                text: 'Confirm',
+                                onPressed: _isSubmitting
+                                    ? null
+                                    : () async {
+                                        if (currentUserReference == null) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                                  content: Text(
+                                                      'You must be signed in.')));
+                                          return;
+                                        }
+                                        setState(() => _isSubmitting = true);
+                                        try {
+                                          await currentUserReference!
+                                              .update(createUserRecordData(
+                                            userType:
+                                                FFAppState().UserOrMetchent,
+                                          ));
+                                          if (FFAppState().UserOrMetchent ==
+                                              'merchant') {
+                                            if (currentUserDocument
+                                                    ?.linkedMerchants !=
+                                                null) {
+                                              context.pushNamed(
+                                                MdWidget.routeName,
+                                                queryParameters: {
+                                                  'marchentsId': serializeParam(
+                                                    currentUserDocument
+                                                        ?.linkedMerchants,
+                                                    ParamType
+                                                        .DocumentReference,
+                                                  ),
+                                                }.withoutNulls,
+                                              );
+                                            } else {
+                                              context.pushNamed(
+                                                  MsignInWidget.routeName);
+                                            }
+                                          } else {
+                                            if (!(currentUserDisplayName !=
+                                                    null &&
+                                                currentUserDisplayName != '')) {
+                                              context.pushNamed(
+                                                  UserInfoWidget.routeName);
+                                            } else {
+                                              context.pushNamed(
+                                                  DashboardWidget.routeName);
+                                            }
+                                          }
+                                        } catch (e) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                            content: Text(
+                                                'Could not update role: $e'),
+                                          ));
+                                        } finally {
+                                          if (mounted) {
+                                            setState(() => _isSubmitting = false);
+                                          }
+                                        }
+                                      },
+                                text: _isSubmitting ? 'Loading...' : 'Confirm',
                                 options: FFButtonOptions(
                                   width: 260.0,
                                   height: 50.0,

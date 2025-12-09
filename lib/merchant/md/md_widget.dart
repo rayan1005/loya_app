@@ -13,6 +13,7 @@ import '/merchant/programs_list/programs_list_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import 'md_model.dart';
 export 'md_model.dart';
@@ -172,6 +173,10 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
   }
 
   void _showProgramSheet(BuildContext context, ProgramsRecord program) {
+    final joinValue = program.programId.isNotEmpty
+        ? program.programId
+        : program.reference.id;
+    final joinLink = 'https://loya.live/join?program=$joinValue';
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -207,20 +212,37 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                 const SizedBox(height: 16),
                 Container(
                   width: double.infinity,
-                  height: 140,
+                  height: 220,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border:
                         Border.all(color: FlutterFlowTheme.of(ctx).alternate),
                   ),
-                  alignment: Alignment.center,
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.qr_code_2, size: 48),
-                      SizedBox(height: 6),
-                      Text('Show this to customers to join'),
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: const [
+                            BoxShadow(
+                                blurRadius: 10,
+                                color: Color(0x14000000),
+                                offset: Offset(0, 6))
+                          ],
+                        ),
+                        child: QrImageView(
+                          data: joinLink,
+                          size: 150,
+                          backgroundColor: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text('Show this to customers to join'),
                     ],
                   ),
                 ),

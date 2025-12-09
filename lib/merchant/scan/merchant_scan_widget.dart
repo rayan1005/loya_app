@@ -101,7 +101,7 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
     try {
       final scanResult = await FlutterBarcodeScanner.scanBarcode(
         '#FF4A90E2', 'Cancel',
-        true,
+        false,
         ScanMode.QR,
       );
 

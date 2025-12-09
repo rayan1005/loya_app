@@ -69,6 +69,10 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
     super.initState();
     _model = createModel(context, () => CreatNewProModel());
 
+    _model.textController2 ??= TextEditingController();
+    _model.textController3 ??= TextEditingController();
+    _model.textController4 ??= TextEditingController();
+    _model.textController5 ??= TextEditingController();
     _model.textFieldNumberTextController ??= TextEditingController(text: '6');
     _model.passBgColorController ??=
         TextEditingController(text: '#007AFF');
