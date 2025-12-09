@@ -120,17 +120,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               builder: (context, params) => UserOrMerchantWidget(),
             ),
             FFRoute(
-              name: MsignInWidget.routeName,
-              path: MsignInWidget.routePath,
-              requireAuth: true,
-              builder: (context, params) => MsignInWidget(),
-            ),
-            FFRoute(
-              name: UserInfoWidget.routeName,
-              path: UserInfoWidget.routePath,
-              builder: (context, params) => UserInfoWidget(),
-            ),
-            FFRoute(
               name: CreatNewProWidget.routeName,
               path: CreatNewProWidget.routePath,
               requireAuth: true,
@@ -191,6 +180,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               path: ProgramsListWidget.routePath,
               requireAuth: true,
               builder: (context, params) => ProgramsListWidget(),
+            ),
+            FFRoute(
+              name: MerchantProfileWidget.routeName,
+              path: MerchantProfileWidget.routePath,
+              requireAuth: true,
+              builder: (context, params) => MerchantProfileWidget(),
             ),
             FFRoute(
               name: ProgramBrowseWidget.routeName,

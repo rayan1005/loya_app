@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 
 class CardDetailsModel extends FlutterFlowModel<CardDetailsWidget> {
   bool isCreatingPass = false;
-  bool isAddingStamp = false;
 
   @override
   void initState(BuildContext context) {}

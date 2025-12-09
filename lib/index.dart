@@ -16,6 +16,8 @@ export '/merchant/edit_program/edit_program_widget.dart'
     show EditProgramWidget;
 export '/merchant/programs_list/programs_list_widget.dart'
     show ProgramsListWidget;
+export '/merchant/profile/merchant_profile_widget.dart'
+    show MerchantProfileWidget;
 export '/pages/program_browse/program_browse_widget.dart'
     show ProgramBrowseWidget;
 export '/pages/program_details/program_details_widget.dart'

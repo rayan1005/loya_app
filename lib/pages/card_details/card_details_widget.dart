@@ -93,84 +93,6 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
     }
   }
 
-  Future<void> _addStamp(
-    StampCardsRecord card,
-    ProgramsRecord program,
-  ) async {
-    if (_model.isAddingStamp) return;
-    setState(() => _model.isAddingStamp = true);
-    try {
-      final response = await AddStampCall.call(programId: program.reference.id);
-      if (!(response.succeeded)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not add stamp. Try again.'),
-          ),
-        );
-        return;
-      }
-      final total = AddStampCall.totalStamps(response.jsonBody) ??
-          card.currentStamps;
-      final newStatus =
-          total >= program.stampsRequired ? 'completed' : card.status;
-
-      await card.reference.update({
-        ...createStampCardsRecordData(
-          currentStamps: total,
-          status: newStatus,
-        ),
-        ...mapToFirestore({
-          'updated_at': FieldValue.serverTimestamp(),
-        }),
-      });
-
-      // Transaction log
-      final txnRef = TransactionsRecord.collection.doc();
-      await txnRef.set({
-        ...createTransactionsRecordData(
-          transactionId: txnRef.id,
-          userId: currentUserReference,
-          cardId: card.reference,
-          merchantId: program.merchantId,
-          action: 'stamp_added',
-          value: 1,
-          scannedBy: 'merchant_approved',
-        ),
-        ...mapToFirestore({
-          'created_at': FieldValue.serverTimestamp(),
-        }),
-      });
-
-      // Reward creation
-      if (total >= program.stampsRequired) {
-        final rewards = await queryRewardsRecordOnce(
-          queryBuilder: (r) => r.where('card_id', isEqualTo: card.reference),
-          singleRecord: true,
-        );
-        if (rewards.isEmpty) {
-          final rewardRef = RewardsRecord.collection.doc();
-          await rewardRef.set({
-            ...createRewardsRecordData(
-              rewardId: rewardRef.id,
-              cardId: card.reference,
-              userId: currentUserReference,
-              programId: program.reference,
-              rewardStatus: 'pending',
-              expiryDate: program.expiryDate,
-            ),
-            ...mapToFirestore({'claimed_at': null}),
-          });
-        }
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Stamp added. Total: $total')),
-      );
-    } finally {
-      if (mounted) setState(() => _model.isAddingStamp = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
@@ -326,6 +248,17 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
             'Status: ${program.status ? 'Active' : 'Inactive'}',
             style: FlutterFlowTheme.of(context).bodyMedium,
           ),
+          const SizedBox(height: 6),
+          if (program.rewardDetails.isNotEmpty)
+            Text(
+              'Reward: ${program.rewardDetails}',
+              style: FlutterFlowTheme.of(context).bodyMedium,
+            ),
+          const SizedBox(height: 4),
+          Text(
+            'Stamps required: ${program.stampsRequired}',
+            style: FlutterFlowTheme.of(context).labelMedium,
+          ),
         ],
       ),
     );
@@ -374,9 +307,22 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
 
   Widget _actions(
       BuildContext context, StampCardsRecord card, ProgramsRecord program) {
+    final remaining =
+        (program.stampsRequired - card.currentStamps).clamp(0, 999);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          remaining == 0
+              ? 'Reward ready to redeem'
+              : '$remaining stamp(s) remaining for reward',
+          style: FlutterFlowTheme.of(context).bodyMedium.override(
+                font: GoogleFonts.interTight(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+        ),
+        const SizedBox(height: 8),
         FFButtonWidget(
           onPressed:
               _model.isCreatingPass ? null : () => _createWalletPass(card, program),
@@ -414,28 +360,6 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
             borderSide: BorderSide(
               color:
                   FlutterFlowTheme.of(context).secondaryText.withOpacity(0.3),
-            ),
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-        const SizedBox(height: 12),
-        FFButtonWidget(
-          onPressed:
-              _model.isAddingStamp ? null : () => _addStamp(card, program),
-          text: _model.isAddingStamp ? 'Adding stamp...' : 'Add stamp',
-          options: FFButtonOptions(
-            height: 48,
-            color: FlutterFlowTheme.of(context).secondaryBackground,
-            textStyle: FlutterFlowTheme.of(context).titleMedium.override(
-                  font: GoogleFonts.interTight(
-                    fontWeight:
-                        FlutterFlowTheme.of(context).titleMedium.fontWeight,
-                  ),
-                  color: FlutterFlowTheme.of(context).primary,
-                ),
-            elevation: 0,
-            borderSide: BorderSide(
-              color: FlutterFlowTheme.of(context).primary.withOpacity(0.3),
             ),
             borderRadius: BorderRadius.circular(14),
           ),

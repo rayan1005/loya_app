@@ -293,6 +293,15 @@ class _AddStampPageWidgetState extends State<AddStampPageWidget>
                         Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
                               0.0, 50.0, 0.0, 10.0),
+                          child: Text(
+                            'Select how many stamps to add to this card',
+                            textAlign: TextAlign.center,
+                            style: FlutterFlowTheme.of(context).bodyMedium,
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(
+                              0.0, 10.0, 0.0, 10.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -308,8 +317,10 @@ class _AddStampPageWidgetState extends State<AddStampPageWidget>
                                   size: 24.0,
                                 ),
                                 onPressed: () async {
-                                  FFAppState().addNewStamp =
-                                      FFAppState().addNewStamp + -1;
+                                  FFAppState().addNewStamp = math.max(
+                                    0,
+                                    FFAppState().addNewStamp - 1,
+                                  );
                                   safeSetState(() {});
                                 },
                               ),
@@ -465,8 +476,10 @@ class _AddStampPageWidgetState extends State<AddStampPageWidget>
                                   size: 24.0,
                                 ),
                                 onPressed: () async {
-                                  FFAppState().addNewStamp =
-                                      FFAppState().addNewStamp + 1;
+                                  FFAppState().addNewStamp = math.min(
+                                    20,
+                                    FFAppState().addNewStamp + 1,
+                                  );
                                   safeSetState(() {});
                                 },
                               ),

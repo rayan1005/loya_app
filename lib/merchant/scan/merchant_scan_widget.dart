@@ -1,3 +1,4 @@
+import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -21,8 +22,75 @@ class MerchantScanWidget extends StatefulWidget {
 class _MerchantScanWidgetState extends State<MerchantScanWidget> {
   bool _isScanning = false;
   String _message = '';
+  DocumentReference? _selectedProgram;
+  String _selectedProgramTitle = 'No program selected';
+
+  Future<void> _pickProgram() async {
+    final merchantRef = currentUserDocument?.linkedMerchants;
+    if (merchantRef == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No merchant linked.')),
+      );
+      return;
+    }
+
+    await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          child: StreamBuilder<List<ProgramsRecord>>(
+            stream: queryProgramsRecord(
+              queryBuilder: (q) => q
+                  .where('merchant_id', isEqualTo: merchantRef)
+                  .where('status', isEqualTo: true),
+            ),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final programs = snapshot.data!;
+              if (programs.isEmpty) {
+                return const Center(child: Text('No active programs.'));
+              }
+              return ListView.separated(
+                shrinkWrap: true,
+                itemCount: programs.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final p = programs[index];
+                  return ListTile(
+                    leading: p.stampIcon.isNotEmpty
+                        ? CircleAvatar(backgroundImage: NetworkImage(p.stampIcon))
+                        : const CircleAvatar(child: Icon(Icons.star)),
+                    title: Text(p.title),
+                    subtitle: Text('${p.stampsRequired} stamps required'),
+                    onTap: () {
+                      setState(() {
+                        _selectedProgram = p.reference;
+                        _selectedProgramTitle = p.title;
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
 
   Future<void> _startScan() async {
+    if (_selectedProgram == null) {
+      await _pickProgram();
+      if (_selectedProgram == null) {
+        return;
+      }
+    }
     if (_isScanning) return;
     setState(() {
       _isScanning = true;
@@ -46,8 +114,9 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
       }
 
       final parsed = Uri.tryParse(scanResult.trim());
-      String? programId =
-          parsed?.queryParameters['program'] ?? parsed?.queryParameters['program_id'];
+      String? programId = _selectedProgram?.id ??
+          parsed?.queryParameters['program'] ??
+          parsed?.queryParameters['program_id'];
       String? uid = parsed?.queryParameters['uid'];
       String? serial = parsed?.queryParameters['serial'];
 
@@ -154,6 +223,55 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
           child: Column(
             children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Program',
+                              style: FlutterFlowTheme.of(context)
+                                  .bodySmall
+                                  .override(
+                                    font: GoogleFonts.interTight(
+                                        fontWeight: FontWeight.w700),
+                                  )),
+                          const SizedBox(height: 4),
+                          Text(
+                            _selectedProgramTitle,
+                            style: FlutterFlowTheme.of(context).bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                    FFButtonWidget(
+                      onPressed: _pickProgram,
+                      text: 'Change',
+                      options: FFButtonOptions(
+                        height: 40,
+                        color: FlutterFlowTheme.of(context).primary,
+                        textStyle: FlutterFlowTheme.of(context)
+                            .bodyMedium
+                            .override(
+                              font: GoogleFonts.interTight(
+                                fontWeight: FontWeight.w700,
+                              ),
+                              color: Colors.white,
+                            ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(

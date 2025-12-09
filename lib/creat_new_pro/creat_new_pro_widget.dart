@@ -5,6 +5,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/upload_data.dart';
+import '/merchant/programs_list/programs_list_widget.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +36,17 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
     if (value == null || value.trim().isEmpty) return true;
     return RegExp(r'^#?[0-9a-fA-F]{6}$').hasMatch(value.trim());
   }
+
+  final List<String> _colorSwatches = const [
+    '#4A90E2',
+    '#1ABC9C',
+    '#F5A623',
+    '#E74C3C',
+    '#8E44AD',
+    '#2C3E50',
+    '#16A085',
+    '#F39C12',
+  ];
 
   Color _safeColor(String? input, Color fallback) {
     try {
@@ -155,26 +167,14 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                   },
                 ),
                 _uploadButton(
-                  label: 'Upload Wallet icon',
-                  loading: _model.isDataUploading_passIcon,
+                  label: 'Upload background (optional)',
+                  loading: _model.isDataUploading_background,
                   onTap: () async {
                     await _pickAndUpload(
-                      onUploading: (u) =>
-                          setState(() => _model.isDataUploading_passIcon = u),
-                      onUploaded: (url) =>
-                          setState(() => _model.uploadedFileUrl_passIcon = url),
-                    );
-                  },
-                ),
-                _uploadButton(
-                  label: 'Upload Wallet logo',
-                  loading: _model.isDataUploading_passLogo,
-                  onTap: () async {
-                    await _pickAndUpload(
-                      onUploading: (u) =>
-                          setState(() => _model.isDataUploading_passLogo = u),
-                      onUploaded: (url) =>
-                          setState(() => _model.uploadedFileUrl_passLogo = url),
+                      onUploading: (u) => setState(
+                          () => _model.isDataUploading_background = u),
+                      onUploaded: (url) => setState(
+                          () => _model.uploadedFileUrl_background = url),
                     );
                   },
                 ),
@@ -212,10 +212,43 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
             ),
 
             _sectionCard(
-              title: 'Apple Wallet colors',
+              title: 'Colors',
               children: [
+                Text(
+                  'Pick a palette for the pass',
+                  style: FlutterFlowTheme.of(context).bodyMedium,
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: _colorSwatches.map((hex) {
+                    final color = _safeColor(hex, Colors.blue);
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _model.passBgColorController?.text = hex;
+                          _model.passFgColorController?.text = '#FFFFFF';
+                          _model.passLabelColorController?.text = hex;
+                        });
+                      },
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.black12),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 12),
+                Text('Advanced (optional): enter hex manually',
+                    style: FlutterFlowTheme.of(context).bodySmall),
                 _textField(
-                  label: 'Background color',
+                  label: 'Background color (e.g. #007AFF)',
                   controller: _model.passBgColorController,
                 ),
                 _textField(
@@ -235,6 +268,15 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                   decoration: BoxDecoration(
                     color: previewBg,
                     borderRadius: BorderRadius.circular(12),
+                    image: _model.uploadedFileUrl_background.isNotEmpty
+                        ? DecorationImage(
+                            image:
+                                NetworkImage(_model.uploadedFileUrl_background),
+                            fit: BoxFit.cover,
+                            colorFilter: ColorFilter.mode(
+                                previewBg.withOpacity(0.35), BlendMode.srcOver),
+                          )
+                        : null,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,27 +311,81 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
             FFButtonWidget(
               onPressed: () async {
                 final merchantRef = currentUserDocument?.linkedMerchants;
-                if (merchantRef == null) return;
+                if (merchantRef == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('No merchant linked.')),
+                  );
+                  return;
+                }
+                final title = _model.textController2?.text.trim() ?? '';
+                final desc = _model.textController3?.text.trim() ?? '';
+                final reward = _model.textController4?.text.trim() ?? '';
+                final terms = _model.textController5?.text.trim() ?? '';
+                final stampsRequired =
+                    int.tryParse(_model.textFieldNumberTextController?.text ?? '');
 
-                await ProgramsRecord.collection.doc().set({
-                  'merchantId': merchantRef,
-                  'title': _model.textController2?.text,
-                  'description': _model.textController3?.text,
-                  'rewardDetails': _model.textController4?.text,
-                  'businessIcon': _model.uploadedFileUrl_uploadData5kx,
-                  'stampIcon': _model.uploadedFileUrl_uploadDataXoh,
-                  'passIcon': _model.uploadedFileUrl_passIcon,
-                  'passLogo': _model.uploadedFileUrl_passLogo,
-                  'passBackgroundColor':
-                      _model.passBgColorController?.text.trim(),
-                  'passForegroundColor':
-                      _model.passFgColorController?.text.trim(),
-                  'passLabelColor':
-                      _model.passLabelColorController?.text.trim(),
-                  'created_at': FieldValue.serverTimestamp(),
+                if (title.isEmpty || desc.isEmpty || reward.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content:
+                            Text('Title, description, and reward are required.')),
+                  );
+                  return;
+                }
+                if (stampsRequired == null || stampsRequired <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Enter stamps required (>0).')),
+                  );
+                  return;
+                }
+                if (_model.uploadedFileUrl_uploadData5kx.isEmpty ||
+                    _model.uploadedFileUrl_uploadDataXoh.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Please upload business and stamp icons.')),
+                  );
+                  return;
+                }
+                if (!_colorsValid(_model.passBgColorController?.text) ||
+                    !_colorsValid(_model.passFgColorController?.text) ||
+                    !_colorsValid(_model.passLabelColorController?.text)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Enter valid hex colors.')),
+                  );
+                  return;
+                }
+
+                final docRef = ProgramsRecord.collection.doc();
+                await docRef.set({
+                  ...createProgramsRecordData(
+                    programId: docRef.id,
+                    merchantId: merchantRef,
+                    title: title,
+                    description: desc,
+                    rewardDetails: reward,
+                    stampsRequired: stampsRequired,
+                    termsConditions: terms,
+                    businessIcon: _model.uploadedFileUrl_uploadData5kx,
+                    stampIcon: _model.uploadedFileUrl_uploadDataXoh,
+                    passBackgroundColor:
+                        _model.passBgColorController?.text.trim(),
+                    passForegroundColor:
+                        _model.passFgColorController?.text.trim(),
+                    passLabelColor:
+                        _model.passLabelColorController?.text.trim(),
+                    status: true,
+                    createdAt: getCurrentTimestamp,
+                  ),
+                  ...mapToFirestore({
+                    'program_background': _model.uploadedFileUrl_background,
+                  }),
                 });
 
-                context.pushNamed('MD');
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Program created.')),
+                );
+                context.goNamed(ProgramsListWidget.routeName);
               },
               text: 'Create program',
               options: FFButtonOptions(

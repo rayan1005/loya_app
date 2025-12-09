@@ -58,15 +58,15 @@ class CreatNewProModel extends FlutterFlowModel<CreatNewProWidget> {
       FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
   String uploadedFileUrl_uploadDataXoh = '';
 
-  bool isDataUploading_passIcon = false;
-  FFUploadedFile uploadedLocalFile_passIcon =
-      FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
-  String uploadedFileUrl_passIcon = '';
-
   bool isDataUploading_passLogo = false;
   FFUploadedFile uploadedLocalFile_passLogo =
       FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
   String uploadedFileUrl_passLogo = '';
+
+  bool isDataUploading_background = false;
+  FFUploadedFile uploadedLocalFile_background =
+      FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
+  String uploadedFileUrl_background = '';
 
   // State field(s) for pass background color.
   FocusNode? passBgColorFocusNode;
