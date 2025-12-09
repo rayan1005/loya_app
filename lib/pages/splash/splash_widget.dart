@@ -46,33 +46,46 @@ class _SplashWidgetState extends State<SplashWidget>
       );
       if (!loggedIn) {
         context.pushNamed(DashboardWidget.routeName);
-
         return;
       }
-      if (currentUserDocument?.linkedMerchants != null) {
+
+      final role = FFAppState().UserOrMetchent;
+      final merchantRef = currentUserDocument?.linkedMerchants;
+
+      if (role == 'merchant' && merchantRef != null) {
         context.pushNamed(
           MdWidget.routeName,
           queryParameters: {
             'marchentsId': serializeParam(
-              currentUserDocument?.linkedMerchants,
+              merchantRef,
               ParamType.DocumentReference,
             ),
           }.withoutNulls,
         );
-
-        return;
-      } else {
-        if (!(valueOrDefault(currentUserDocument?.userType, '') != null &&
-            valueOrDefault(currentUserDocument?.userType, '') != '')) {
-          context.pushNamed(UserOrMerchantWidget.routeName);
-
-          return;
-        }
-
-        context.pushNamed(DashboardWidget.routeName);
-
         return;
       }
+
+      if (role == 'user') {
+        context.pushNamed(DashboardWidget.routeName);
+        return;
+      }
+
+      if (merchantRef != null) {
+        context.pushNamed(
+          MdWidget.routeName,
+          queryParameters: {
+            'marchentsId': serializeParam(
+              merchantRef,
+              ParamType.DocumentReference,
+            ),
+          }.withoutNulls,
+        );
+        return;
+      }
+
+      // Fallback: ask user to choose if no role stored
+      context.pushNamed(UserOrMerchantWidget.routeName);
+      return;
     });
 
     animationsMap.addAll({
