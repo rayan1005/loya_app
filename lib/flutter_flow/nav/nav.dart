@@ -188,6 +188,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               builder: (context, params) => MerchantProfileWidget(),
             ),
             FFRoute(
+              name: MerchantQrWidget.routeName,
+              path: MerchantQrWidget.routePath,
+              requireAuth: true,
+              builder: (context, params) => MerchantQrWidget(),
+            ),
+            FFRoute(
               name: ProgramBrowseWidget.routeName,
               path: ProgramBrowseWidget.routePath,
               requireAuth: true,

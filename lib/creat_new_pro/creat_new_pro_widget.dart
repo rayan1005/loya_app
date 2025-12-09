@@ -267,37 +267,154 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: previewBg,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     image: _model.uploadedFileUrl_background.isNotEmpty
                         ? DecorationImage(
                             image:
                                 NetworkImage(_model.uploadedFileUrl_background),
                             fit: BoxFit.cover,
                             colorFilter: ColorFilter.mode(
-                                previewBg.withOpacity(0.35), BlendMode.srcOver),
+                                previewBg.withOpacity(0.45), BlendMode.srcATop),
                           )
                         : null,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        _model.textController2?.text.isNotEmpty == true
-                            ? _model.textController2!.text
-                            : 'Loya Program',
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: previewFg,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          if (_model.uploadedFileUrl_uploadData5kx.isNotEmpty)
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundImage: NetworkImage(
+                                  _model.uploadedFileUrl_uploadData5kx),
+                            )
+                          else
+                            const CircleAvatar(
+                                radius: 24, child: Icon(Icons.store)),
+                          const SizedBox(width: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _model.textController2?.text.isNotEmpty == true
+                                    ? _model.textController2!.text
+                                    : 'Loya Program',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: previewFg,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                'Status: Active',
+                                style: TextStyle(
+                                  color: previewLabel,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 12),
                       Text(
                         _model.textController3?.text.isNotEmpty == true
                             ? _model.textController3!.text
-                            : 'Preview text',
+                            : 'Program description preview',
                         style: TextStyle(
                           color: previewLabel,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _model.textController4?.text.isNotEmpty == true
+                            ? _model.textController4!.text
+                            : 'Reward preview',
+                        style: TextStyle(
+                          color: previewFg,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: List.generate(
+                          (int.tryParse(
+                                      _model.textFieldNumberTextController
+                                              ?.text ??
+                                          '6') ??
+                                  6)
+                              .clamp(1, 15),
+                          (index) => Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: CircleAvatar(
+                              radius: 16,
+                              backgroundColor: index == 0
+                                  ? previewFg
+                                  : previewFg.withOpacity(0.25),
+                              child: _model.uploadedFileUrl_uploadDataXoh
+                                      .isNotEmpty
+                                  ? Image.network(
+                                      _model.uploadedFileUrl_uploadDataXoh,
+                                      width: 18,
+                                      height: 18,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Icon(
+                                      index == 0 ? Icons.check : Icons.star,
+                                      size: 16,
+                                      color:
+                                          index == 0 ? previewBg : previewFg,
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(Icons.qr_code, size: 38),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Wallet pass preview',
+                                    style: TextStyle(
+                                      color: previewFg,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _model.textController5?.text.isNotEmpty ==
+                                            true
+                                        ? _model.textController5!.text
+                                        : 'Terms & conditions preview',
+                                    style: TextStyle(
+                                      color: previewLabel,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -355,37 +472,44 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                   return;
                 }
 
-                final docRef = ProgramsRecord.collection.doc();
-                await docRef.set({
-                  ...createProgramsRecordData(
-                    programId: docRef.id,
-                    merchantId: merchantRef,
-                    title: title,
-                    description: desc,
-                    rewardDetails: reward,
-                    stampsRequired: stampsRequired,
-                    termsConditions: terms,
-                    businessIcon: _model.uploadedFileUrl_uploadData5kx,
-                    stampIcon: _model.uploadedFileUrl_uploadDataXoh,
-                    passBackgroundColor:
-                        _model.passBgColorController?.text.trim(),
-                    passForegroundColor:
-                        _model.passFgColorController?.text.trim(),
-                    passLabelColor:
-                        _model.passLabelColorController?.text.trim(),
-                    status: true,
-                    createdAt: getCurrentTimestamp,
-                  ),
-                  ...mapToFirestore({
-                    'program_background': _model.uploadedFileUrl_background,
-                  }),
-                });
+                try {
+                  final docRef = ProgramsRecord.collection.doc();
+                  await docRef.set({
+                    ...createProgramsRecordData(
+                      programId: docRef.id,
+                      merchantId: merchantRef,
+                      title: title,
+                      description: desc,
+                      rewardDetails: reward,
+                      stampsRequired: stampsRequired,
+                      termsConditions: terms,
+                      businessIcon: _model.uploadedFileUrl_uploadData5kx,
+                      stampIcon: _model.uploadedFileUrl_uploadDataXoh,
+                      passBackgroundColor:
+                          _model.passBgColorController?.text.trim(),
+                      passForegroundColor:
+                          _model.passFgColorController?.text.trim(),
+                      passLabelColor:
+                          _model.passLabelColorController?.text.trim(),
+                      status: true,
+                      createdAt: getCurrentTimestamp,
+                    ),
+                    ...mapToFirestore({
+                      'program_background': _model.uploadedFileUrl_background,
+                    }),
+                  });
 
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Program created.')),
-                );
-                context.goNamed(ProgramsListWidget.routeName);
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Program created.')),
+                  );
+                  context.goNamed(ProgramsListWidget.routeName);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text('Failed to create program: $e')),
+                  );
+                }
               },
               text: 'Create program',
               options: FFButtonOptions(

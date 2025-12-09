@@ -5,7 +5,11 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/flutter_flow/upload_data.dart';
+import '/dashboard/dashboard_widget.dart';
+import '/merchant/md/md_widget.dart';
+import '/pages/home_page/home_page_widget.dart';
 import '/merchant/components/merchant_nav_bar.dart';
+import '/merchant/qr/merchant_qr_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -30,6 +34,7 @@ class _MerchantProfileWidgetState extends State<MerchantProfileWidget> {
   bool _initialized = false;
   bool _saving = false;
   String? _logoUrl;
+  String _selectedRole = 'merchant';
 
   @override
   void dispose() {
@@ -150,8 +155,10 @@ class _MerchantProfileWidgetState extends State<MerchantProfileWidget> {
                     _phoneController.text = merchant.phoneNumber;
                     _addressController.text = merchant.address;
                     _descController.text = merchant.dec;
-                    _logoUrl = merchant.logoUrl;
-                  }
+    _logoUrl = merchant.logoUrl;
+    _selectedRole =
+        FFAppState().UserOrMetchent.isNotEmpty ? FFAppState().UserOrMetchent : 'merchant';
+  }
 
                   return SafeArea(
                     top: true,
@@ -247,6 +254,24 @@ class _MerchantProfileWidgetState extends State<MerchantProfileWidget> {
                                   label: 'About / description',
                                   maxLines: 3,
                                 ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Role',
+                                  style: FlutterFlowTheme.of(context).titleMedium,
+                                ),
+                                const SizedBox(height: 8),
+                                _roleTile(context,
+                                    label: 'Business owner',
+                                    value: 'merchant',
+                                    subtitle:
+                                        'Access dashboard, programs, scanner.',
+                                    merchantRef: merchantRef),
+                                _roleTile(context,
+                                    label: 'User',
+                                    value: 'user',
+                                    subtitle:
+                                        'Browse programs, manage my cards.',
+                                    merchantRef: merchantRef),
                               ],
                             ),
                           ),
@@ -267,6 +292,33 @@ class _MerchantProfileWidgetState extends State<MerchantProfileWidget> {
                                     ),
                                     color: Colors.white,
                                   ),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          child: FFButtonWidget(
+                            onPressed: () {
+                              context.pushNamed(MerchantQrWidget.routeName);
+                            },
+                            text: 'Business QR',
+                            options: FFButtonOptions(
+                              height: 48,
+                              color:
+                                  FlutterFlowTheme.of(context).secondaryBackground,
+                              textStyle: FlutterFlowTheme.of(context)
+                                  .titleMedium
+                                  .override(
+                                    font: GoogleFonts.interTight(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    color:
+                                        FlutterFlowTheme.of(context).primaryText,
+                                  ),
+                              borderSide: BorderSide(
+                                color: FlutterFlowTheme.of(context).alternate,
+                              ),
                               borderRadius: BorderRadius.circular(14),
                             ),
                           ),
@@ -327,5 +379,59 @@ class _MerchantProfileWidgetState extends State<MerchantProfileWidget> {
         ],
       ),
     );
+  }
+
+  Widget _roleTile(BuildContext context,
+      {required String label,
+      required String value,
+      required String subtitle,
+      required DocumentReference? merchantRef}) {
+    final selected = _selectedRole == value;
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: selected
+              ? FlutterFlowTheme.of(context).primary
+              : FlutterFlowTheme.of(context).alternate,
+        ),
+      ),
+      child: ListTile(
+        leading: Radio<String>(
+          value: value,
+          groupValue: _selectedRole,
+          onChanged: (val) => _onRoleSelected(val, merchantRef),
+        ),
+        title: Text(label),
+        subtitle: Text(subtitle),
+        onTap: () => _onRoleSelected(value, merchantRef),
+      ),
+    );
+  }
+
+  Future<void> _onRoleSelected(
+      String? val, DocumentReference? merchantRef) async {
+    if (val == null) return;
+    setState(() => _selectedRole = val);
+    FFAppState().update(() {
+      FFAppState().UserOrMetchent = val;
+    });
+    // Navigate immediately to the appropriate dashboard
+    if (!mounted) return;
+    if (val == 'merchant' && merchantRef != null) {
+      context.goNamed(
+        MdWidget.routeName,
+        queryParameters: {
+          'marchentsId': serializeParam(
+            merchantRef,
+            ParamType.DocumentReference,
+          ),
+        }.withoutNulls,
+      );
+    } else {
+      // user mode
+      context.goNamed(DashboardWidget.routeName);
+    }
   }
 }

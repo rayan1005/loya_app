@@ -18,7 +18,20 @@ class FFAppState extends ChangeNotifier {
     _instance = FFAppState._internal();
   }
 
-  Future initializePersistedState() async {}
+  late SharedPreferences prefs;
+
+  Future initializePersistedState() async {
+    prefs = await SharedPreferences.getInstance();
+    _safeInit(() {
+      _UserOrMetchent = prefs.getString('_user_role') ?? '';
+    });
+  }
+
+  void _safeInit(Function() initFn) {
+    try {
+      initFn();
+    } catch (_) {}
+  }
 
   void update(VoidCallback callback) {
     callback();
@@ -29,6 +42,7 @@ class FFAppState extends ChangeNotifier {
   String get UserOrMetchent => _UserOrMetchent;
   set UserOrMetchent(String value) {
     _UserOrMetchent = value;
+    prefs.setString('_user_role', value);
   }
 
   int _NumberOfStamp = 6;

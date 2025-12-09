@@ -9,6 +9,7 @@ import '/merchant/rewrods/rewrods_widget.dart';
 import 'dart:math';
 import 'dart:ui';
 import '/index.dart';
+import '/merchant/components/merchant_nav_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -1609,6 +1610,10 @@ class _MdPlusWidgetState extends State<MdPlusWidget>
             ),
           ),
         ),
+      ),
+      bottomNavigationBar: MerchantNavBar(
+        currentTab: MerchantNavTab.dashboard,
+        merchantRef: widget.marchentsId,
       ),
     );
   }
