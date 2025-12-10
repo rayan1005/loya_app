@@ -150,9 +150,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
             decoration: BoxDecoration(
               color: program.status
                   ? FlutterFlowTheme.of(context).primary.withOpacity(0.1)
-                  : FlutterFlowTheme.of(context)
-                      .secondaryText
-                      .withOpacity(0.1),
+                  : FlutterFlowTheme.of(context).secondaryText.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -173,9 +171,8 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
   }
 
   void _showProgramSheet(BuildContext context, ProgramsRecord program) {
-    final joinValue = program.programId.isNotEmpty
-        ? program.programId
-        : program.reference.id;
+    final joinValue =
+        program.programId.isNotEmpty ? program.programId : program.reference.id;
     final joinLink = 'https://loya.live/join?program=$joinValue';
     showModalBottomSheet(
       context: context,
@@ -183,8 +180,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
       backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       builder: (ctx) => Padding(
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -273,12 +269,218 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final merchantRef = widget.marchentsId ?? currentUserDocument?.linkedMerchants;
+    final merchantRef =
+        widget.marchentsId ?? currentUserDocument?.linkedMerchants;
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        body: merchantRef == null
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    'No merchant selected. Please log in with a merchant account.',
+                    style: FlutterFlowTheme.of(context).bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              )
+            : StreamBuilder<MerchantsRecord>(
+                stream: MerchantsRecord.getDocument(merchantRef),
+                builder: (context, merchantSnap) {
+                  if (!merchantSnap.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final merchant = merchantSnap.data!;
+                  return SafeArea(
+                    top: true,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 52,
+                                height: 52,
+                                decoration: BoxDecoration(
+                                  color: FlutterFlowTheme.of(context).accent1,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: merchant.logoUrl.isNotEmpty
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.network(
+                                          merchant.logoUrl,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : Icon(Icons.storefront,
+                                        color: FlutterFlowTheme.of(context)
+                                            .primary),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      merchant.name.isNotEmpty
+                                          ? merchant.name
+                                          : 'Merchant dashboard',
+                                      style: FlutterFlowTheme.of(context)
+                                          .headlineSmall
+                                          .override(
+                                            font: GoogleFonts.interTight(
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                    ),
+                                    if (merchant.email.isNotEmpty)
+                                      Text(
+                                        merchant.email,
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodySmall,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 18),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: FFButtonWidget(
+                                  onPressed: () => context.pushNamed(
+                                    MerchantScanWidget.routeName,
+                                    queryParameters: {
+                                      'merchantRef': serializeParam(
+                                        merchantRef,
+                                        ParamType.DocumentReference,
+                                      ),
+                                    }.withoutNulls,
+                                  ),
+                                  text: 'Scan & stamp',
+                                  options: FFButtonOptions(
+                                    height: 48,
+                                    color: FlutterFlowTheme.of(context).primary,
+                                    textStyle: FlutterFlowTheme.of(context)
+                                        .titleSmall
+                                        .override(
+                                          font: GoogleFonts.interTight(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                          color: Colors.white,
+                                        ),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: FFButtonWidget(
+                                  onPressed: () => context.pushNamed(
+                                    CreatNewProWidget.routeName,
+                                  ),
+                                  text: 'Create program',
+                                  options: FFButtonOptions(
+                                    height: 48,
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryBackground,
+                                    textStyle: FlutterFlowTheme.of(context)
+                                        .titleSmall
+                                        .override(
+                                          font: GoogleFonts.interTight(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                          color: FlutterFlowTheme.of(context)
+                                              .primaryText,
+                                        ),
+                                    borderSide: BorderSide(
+                                      color: FlutterFlowTheme.of(context)
+                                          .primary
+                                          .withOpacity(0.2),
+                                    ),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Your programs',
+                                style: FlutterFlowTheme.of(context)
+                                    .titleMedium
+                                    .override(
+                                      font: GoogleFonts.interTight(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                              ),
+                              TextButton(
+                                onPressed: () => context
+                                    .pushNamed(ProgramsListWidget.routeName),
+                                child: const Text('See all'),
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          StreamBuilder<List<ProgramsRecord>>(
+                            stream: queryProgramsRecord(
+                              queryBuilder: (q) => q.where('merchant_id',
+                                  isEqualTo: merchantRef),
+                              limit: 10,
+                            ),
+                            builder: (context, programSnap) {
+                              if (!programSnap.hasData) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
+                              final programs = programSnap.data!;
+                              if (programs.isEmpty) {
+                                return Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryBackground,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                        color: FlutterFlowTheme.of(context)
+                                            .alternate),
+                                  ),
+                                  child: Text(
+                                    'No programs yet. Tap "Create program" to get started.',
+                                    style:
+                                        FlutterFlowTheme.of(context).bodyMedium,
+                                  ),
+                                );
+                              }
+                              return Column(
+                                children: programs
+                                    .map((p) => InkWell(
+                                          onTap: () =>
+                                              _showProgramSheet(context, p),
+                                          child: _programTile(context, p),
+                                        ))
+                                    .toList(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
         bottomNavigationBar: MerchantNavBar(
           currentTab: MerchantNavTab.dashboard,
           merchantRef: merchantRef,

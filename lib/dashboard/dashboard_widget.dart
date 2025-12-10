@@ -6,12 +6,12 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/pages/card_details/card_details_widget.dart';
 import '/components/user_nav_bar.dart';
+import '/components/stamp_card_widget.dart';
 import '/user_or_merchant/user_or_merchant_widget.dart';
 import '/sign_in/sign_in_widget.dart';
 import 'dashboard_model.dart';
 export 'dashboard_model.dart';
 
-import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -289,7 +289,12 @@ class _DashboardWidgetState extends State<DashboardWidget> {
         ),
         const SizedBox(height: 12),
         StreamBuilder<List<StampCardsRecord>>(
-          stream: queryStampCardsRecord(),
+          stream: queryStampCardsRecord(
+            queryBuilder: (q) => q.where(
+              'user_id',
+              isEqualTo: currentUserReference,
+            ),
+          ),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
@@ -356,13 +361,13 @@ class _DashboardWidgetState extends State<DashboardWidget> {
     }
 
     final bg = _bgColor();
-    final fg = Colors.white;
-    final muted = Colors.white.withOpacity(0.25);
-    final cardWidth = math.min(MediaQuery.sizeOf(context).width * 0.9, 420.0);
-    const stampsPerRow = 6;
-    final rows = (total + stampsPerRow - 1) ~/ stampsPerRow;
-
-    return InkWell(
+    return StampCardWidget(
+      title: program.title,
+      stampCount: total,
+      filledStamps: filled,
+      statusPrimary: card.status == 'completed' ? 'Completed' : 'Active',
+      statusSecondary: 'Reward pending',
+      backgroundColor: bg,
       onTap: () {
         context.pushNamed(
           CardDetailsWidget.routeName,
@@ -374,123 +379,17 @@ class _DashboardWidgetState extends State<DashboardWidget> {
           }.withoutNulls,
         );
       },
-      child: Container(
-        width: cardWidth,
-        padding: const EdgeInsets.all(16),
-        constraints: const BoxConstraints(minHeight: 220),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: const [
-            BoxShadow(
-                blurRadius: 12, color: Color(0x1A000000), offset: Offset(0, 6))
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              program.title,
-              style: FlutterFlowTheme.of(context).titleMedium.override(
-                    font: GoogleFonts.inter(fontWeight: FontWeight.w800),
-                    color: fg,
-                  ),
+      onDetails: () {
+        context.pushNamed(
+          CardDetailsWidget.routeName,
+          queryParameters: {
+            'cardRef': serializeParam(
+              card.reference,
+              ParamType.DocumentReference,
             ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    card.status == 'completed' ? 'Completed' : 'Active',
-                    style: FlutterFlowTheme.of(context).bodySmall.override(
-                          font: GoogleFonts.inter(fontWeight: FontWeight.w700),
-                          color: fg,
-                        ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Reward pending',
-                    style: FlutterFlowTheme.of(context).bodySmall.override(
-                          font: GoogleFonts.inter(fontWeight: FontWeight.w700),
-                          color: fg,
-                        ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: List.generate(rows, (rowIndex) {
-                final start = rowIndex * stampsPerRow;
-                final end = math.min(start + stampsPerRow, total);
-                return Padding(
-                  padding:
-                      EdgeInsets.only(bottom: rowIndex == rows - 1 ? 0 : 8),
-                  child: Row(
-                    children: List.generate(end - start, (index) {
-                      final stampIndex = start + index;
-                      final filledIdx = stampIndex < filled;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: CircleAvatar(
-                          radius: 14,
-                          backgroundColor: filledIdx ? fg : muted,
-                          child: Icon(
-                            filledIdx ? Icons.check : Icons.star,
-                            size: 14,
-                            color: filledIdx ? bg : fg,
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                );
-              }),
-            ),
-            const SizedBox(height: 16),
-            FFButtonWidget(
-              onPressed: () {
-                context.pushNamed(
-                  CardDetailsWidget.routeName,
-                  queryParameters: {
-                    'cardRef': serializeParam(
-                      card.reference,
-                      ParamType.DocumentReference,
-                    ),
-                  }.withoutNulls,
-                );
-              },
-              text: 'View details',
-              options: FFButtonOptions(
-                height: 44,
-                color: Colors.white,
-                textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-                      font: GoogleFonts.interTight(
-                        fontWeight: FontWeight.w700,
-                      ),
-                      color: bg,
-                    ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ],
-        ),
-      ),
+          }.withoutNulls,
+        );
+      },
     );
   }
 }
