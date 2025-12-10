@@ -19,22 +19,12 @@ class MerchantNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 80,
-      decoration: BoxDecoration(
+    return SafeArea(
+      top: false,
+      bottom: true,
+      child: Container(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 12,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: SafeArea(
-        top: false,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

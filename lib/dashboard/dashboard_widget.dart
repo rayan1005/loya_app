@@ -79,6 +79,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: const Color(0xFFF7F8FA),
+        bottomNavigationBar: const UserNavBar(currentTab: UserNavTab.home),
         body: SafeArea(
           top: true,
           child: SingleChildScrollView(
@@ -341,6 +342,21 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       double progress,
       int filled,
       int total) {
+    Color _bgColor() {
+      final raw = program.passBackgroundColor;
+      if (raw.isEmpty) return const Color(0xFF4A90E2);
+      try {
+        final cleaned = raw.replaceAll('#', '');
+        return Color(int.parse('0xFF$cleaned'));
+      } catch (_) {
+        return const Color(0xFF4A90E2);
+      }
+    }
+
+    final bg = _bgColor();
+    final fg = Colors.white;
+    final muted = Colors.white.withOpacity(0.25);
+
     return InkWell(
       onTap: () {
         context.pushNamed(
@@ -355,12 +371,13 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       },
       child: Container(
         width: 260,
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: bg,
+          borderRadius: BorderRadius.circular(18),
           boxShadow: const [
-            BoxShadow(blurRadius: 10, color: Color(0x1A000000), offset: Offset(0, 6))
+            BoxShadow(
+                blurRadius: 12, color: Color(0x1A000000), offset: Offset(0, 6))
           ],
         ),
         child: Column(
@@ -369,81 +386,65 @@ class _DashboardWidgetState extends State<DashboardWidget> {
             Text(
               program.title,
               style: FlutterFlowTheme.of(context).titleMedium.override(
-                    font: GoogleFonts.inter(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    font: GoogleFonts.inter(fontWeight: FontWeight.w800),
+                    color: fg,
                   ),
             ),
-            const SizedBox(height: 6),
-            Text(
-              program.description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: FlutterFlowTheme.of(context).bodySmall,
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Row(
               children: [
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context)
-                        .primary
-                        .withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white.withOpacity(0.16),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    program.rewardDetails.isNotEmpty
-                        ? program.rewardDetails
-                        : 'Reward pending',
+                    card.status == 'completed' ? 'Completed' : 'Active',
                     style: FlutterFlowTheme.of(context).bodySmall.override(
                           font: GoogleFonts.inter(fontWeight: FontWeight.w700),
-                          color: FlutterFlowTheme.of(context).primary,
+                          color: fg,
                         ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: (card.status == 'completed'
-                            ? Colors.green
-                            : FlutterFlowTheme.of(context).secondaryText)
-                        .withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white.withOpacity(0.16),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    card.status.isNotEmpty ? card.status : 'active',
+                    'Reward pending',
                     style: FlutterFlowTheme.of(context).bodySmall.override(
                           font: GoogleFonts.inter(fontWeight: FontWeight.w700),
-                          color: card.status == 'completed'
-                              ? Colors.green
-                              : FlutterFlowTheme.of(context).secondaryText,
+                          color: fg,
                         ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            LinearProgressIndicator(
-              value: progress.clamp(0, 1),
-              minHeight: 8,
-              backgroundColor:
-                  FlutterFlowTheme.of(context).alternate.withOpacity(0.4),
-              valueColor: AlwaysStoppedAnimation<Color>(
-                  FlutterFlowTheme.of(context).primary),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '$filled / $total stamps · ${total - filled} to go',
-              style: FlutterFlowTheme.of(context).bodySmall.override(
-                    font: GoogleFonts.inter(fontWeight: FontWeight.w700),
-                    color: FlutterFlowTheme.of(context).primary,
+            const SizedBox(height: 14),
+            Row(
+              children: List.generate(total.clamp(1, 15), (index) {
+                final filledIdx = index < filled;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: CircleAvatar(
+                    radius: 14,
+                    backgroundColor: filledIdx ? fg : muted,
+                    child: Icon(
+                      filledIdx ? Icons.check : Icons.star,
+                      size: 14,
+                      color: filledIdx ? bg : fg,
+                    ),
                   ),
+                );
+              }),
             ),
-            const Spacer(),
+            const SizedBox(height: 16),
             FFButtonWidget(
               onPressed: () {
                 context.pushNamed(
@@ -458,13 +459,13 @@ class _DashboardWidgetState extends State<DashboardWidget> {
               },
               text: 'View details',
               options: FFButtonOptions(
-                height: 40,
-                color: FlutterFlowTheme.of(context).primary,
+                height: 44,
+                color: Colors.white,
                 textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
                       font: GoogleFonts.interTight(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
                       ),
-                      color: Colors.white,
+                      color: bg,
                     ),
                 borderRadius: BorderRadius.circular(12),
               ),

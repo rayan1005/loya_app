@@ -143,6 +143,11 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              'Create Program',
+              style: FlutterFlowTheme.of(context).titleLarge,
+            ),
+            const SizedBox(height: 12),
             _sectionCard(
               title: 'Images & Icons',
               children: [
@@ -201,11 +206,12 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                   label: 'Reward',
                   controller: _model.textController4,
                 ),
-                TextField(
+                _textField(
+                  label: 'Stamps required',
                   controller: _model.textFieldNumberTextController,
                   keyboardType: TextInputType.number,
-                  decoration:
-                      const InputDecoration(labelText: 'Stamps required'),
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  onChanged: (_) => setState(() {}),
                 ),
                 _textField(
                   label: 'Terms & conditions',
@@ -521,6 +527,7 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
               text: 'Create program',
               options: FFButtonOptions(
                 height: 52,
+                width: double.infinity,
                 color: FlutterFlowTheme.of(context).primary,
                 textStyle: const TextStyle(color: Colors.white),
                 borderRadius: BorderRadius.circular(14),
@@ -574,6 +581,7 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
         text: loading ? '$label...' : label,
         options: FFButtonOptions(
           height: 44,
+          width: double.infinity,
           color: FlutterFlowTheme.of(context).secondaryBackground,
           textStyle:
               TextStyle(color: FlutterFlowTheme.of(context).primary),
@@ -589,12 +597,18 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
     required String label,
     required TextEditingController? controller,
     int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
+    ValueChanged<String>? onChanged,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
+        onChanged: onChanged,
         decoration: InputDecoration(
           labelText: label,
           filled: true,
