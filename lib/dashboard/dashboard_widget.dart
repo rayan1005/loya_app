@@ -5,6 +5,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/pages/card_details/card_details_widget.dart';
+import '/components/user_nav_bar.dart';
 import '/user_or_merchant/user_or_merchant_widget.dart';
 import '/sign_in/sign_in_widget.dart';
 import 'dashboard_model.dart';
@@ -79,7 +80,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: const Color(0xFFF7F8FA),
-        bottomNavigationBar: const UserNavBar(currentTab: UserNavTab.home),
+        bottomNavigationBar: UserNavBar(currentTab: UserNavTab.home),
         body: SafeArea(
           top: true,
           child: SingleChildScrollView(
