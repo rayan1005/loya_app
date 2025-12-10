@@ -1,5 +1,4 @@
 import '/auth/firebase_auth/auth_util.dart';
-import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -9,6 +8,7 @@ import '/components/user_nav_bar.dart';
 import '/components/stamp_card_widget.dart';
 import '/user_or_merchant/user_or_merchant_widget.dart';
 import '/sign_in/sign_in_widget.dart';
+import '/pages/program_browse/program_browse_widget.dart';
 import 'dashboard_model.dart';
 export 'dashboard_model.dart';
 
@@ -31,18 +31,15 @@ class DashboardWidget extends StatefulWidget {
 class _DashboardWidgetState extends State<DashboardWidget> {
   late DashboardModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  late TextEditingController _dummy;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => DashboardModel());
-    _dummy = TextEditingController();
   }
 
   @override
   void dispose() {
-    _dummy.dispose();
     _model.dispose();
     super.dispose();
   }
@@ -128,117 +125,6 @@ class _DashboardWidgetState extends State<DashboardWidget> {
           },
         ),
       ],
-    );
-  }
-
-  Widget _walletStatusCard(BuildContext context) {
-    return FutureBuilder<ApiCallResponse>(
-      future: WalletHealthCall.call(),
-      builder: (context, snapshot) {
-        final ok = snapshot.hasData && (snapshot.data?.succeeded ?? false);
-        final statusText =
-            ok ? 'Wallet API connected' : 'Wallet API not reachable';
-        final statusColor = ok
-            ? FlutterFlowTheme.of(context).success
-            : FlutterFlowTheme.of(context).error;
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondaryBackground,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: statusColor.withOpacity(0.4)),
-          ),
-          child: Row(
-            children: [
-              Icon(ok ? Icons.check_circle : Icons.error_outline,
-                  color: statusColor),
-              const SizedBox(width: 10),
-              Text(
-                statusText,
-                style: FlutterFlowTheme.of(context).bodyMedium.override(
-                      font: GoogleFonts.interTight(),
-                      color: statusColor,
-                    ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _metricsSection(BuildContext context) {
-    return FutureBuilder<Map<String, int>>(
-      future: _metricsFuture,
-      builder: (context, snapshot) {
-        final metrics = snapshot.data;
-        return Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            _metricCard(
-              context,
-              label: 'Active cards',
-              value: metrics?['cards'] ?? 0,
-              color: FlutterFlowTheme.of(context).primary,
-            ),
-            _metricCard(
-              context,
-              label: 'Wallet passes',
-              value: metrics?['passes'] ?? 0,
-              color: FlutterFlowTheme.of(context).secondary,
-            ),
-            _metricCard(
-              context,
-              label: 'Stamps this week',
-              value: metrics?['stampsWeek'] ?? 0,
-              color: FlutterFlowTheme.of(context).accent1,
-            ),
-            _metricCard(
-              context,
-              label: 'Rewards redeemed',
-              value: metrics?['rewards'] ?? 0,
-              color: FlutterFlowTheme.of(context).success,
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _metricCard(BuildContext context,
-      {required String label, required int value, required Color color}) {
-    return Container(
-      width: (MediaQuery.sizeOf(context).width - 48) / 2,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(
-              blurRadius: 8, color: Color(0x12000000), offset: Offset(0, 3))
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                    font: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                  )),
-          const SizedBox(height: 8),
-          Text(
-            '$value',
-            style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.inter(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  color: color,
-                ),
-          ),
-        ],
-      ),
     );
   }
 

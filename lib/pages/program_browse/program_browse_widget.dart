@@ -33,7 +33,6 @@ class _ProgramBrowseWidgetState extends State<ProgramBrowseWidget> {
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
-  late final TextEditingController _searchController;
   final List<String> _filters = const [
     'Trending',
     'Near you',
