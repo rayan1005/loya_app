@@ -3,6 +3,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/index.dart';
+import '/components/user_nav_bar.dart';
 import 'program_browse_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,6 +21,7 @@ class ProgramBrowseWidget extends StatefulWidget {
 
 class _ProgramBrowseWidgetState extends State<ProgramBrowseWidget> {
   late ProgramBrowseModel _model;
+  late final TextEditingController _searchController;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -27,15 +29,27 @@ class _ProgramBrowseWidgetState extends State<ProgramBrowseWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => ProgramBrowseModel());
+    _searchController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
+  late final TextEditingController _searchController;
+  final List<String> _filters = const [
+    'Trending',
+    'Near you',
+    'New',
+    'Cafés',
+    'Restaurants',
+    'Services'
+  ];
+  String _activeFilter = '';
+
   @override
   void dispose() {
+    _searchController.dispose();
     _model.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -47,54 +61,29 @@ class _ProgramBrowseWidgetState extends State<ProgramBrowseWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: const Color(0xFFF5F6FA),
-        appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-          elevation: 0,
-          centerTitle: false,
-          title: Text(
-            'Browse programs',
-            style: FlutterFlowTheme.of(context).titleLarge.override(
-                  font: GoogleFonts.interTight(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-          ),
-        ),
+        bottomNavigationBar: const UserNavBar(currentTab: UserNavTab.discover),
         body: SafeArea(
           top: true,
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).secondaryBackground,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Find a loyalty program',
-                        style: FlutterFlowTheme.of(context).headlineSmall
-                            .override(
+                Center(
+                  child: Text(
+                    'Discover programs',
+                    style: FlutterFlowTheme.of(context).titleLarge.override(
                           font: GoogleFonts.interTight(
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Join, collect stamps, and redeem rewards.',
-                        style: FlutterFlowTheme.of(context).bodyMedium,
-                      ),
-                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+                _searchBar(context),
+                const SizedBox(height: 10),
+                _filterChips(context),
+                const SizedBox(height: 14),
                 StreamBuilder<List<ProgramsRecord>>(
                   stream: queryProgramsRecord(
                     queryBuilder: (programsRecord) => programsRecord
@@ -116,7 +105,21 @@ class _ProgramBrowseWidgetState extends State<ProgramBrowseWidget> {
                             (p.expiryDate != null &&
                                 p.expiryDate!.isAfter(DateTime.now())))
                         .toList();
-                    if (programs.isEmpty) {
+                    final term = _searchController.text.trim().toLowerCase();
+                    final filtered = programs.where((p) {
+                      final inTerm = term.isEmpty ||
+                          p.title.toLowerCase().contains(term) ||
+                          (p.description).toLowerCase().contains(term);
+                      final inFilter = _activeFilter.isEmpty ||
+                          p.title
+                              .toLowerCase()
+                              .contains(_activeFilter.toLowerCase()) ||
+                          (p.description)
+                              .toLowerCase()
+                              .contains(_activeFilter.toLowerCase());
+                      return inTerm && inFilter;
+                    }).toList();
+                    if (filtered.isEmpty) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Center(
@@ -130,10 +133,10 @@ class _ProgramBrowseWidgetState extends State<ProgramBrowseWidget> {
                     return ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: programs.length,
+                      itemCount: filtered.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
-                        final program = programs[index];
+                        final program = filtered[index];
                         return _programCard(context, program);
                       },
                     );
@@ -147,7 +150,88 @@ class _ProgramBrowseWidgetState extends State<ProgramBrowseWidget> {
     );
   }
 
+  Widget _searchBar(BuildContext context) {
+    return TextField(
+      controller: _searchController,
+      onChanged: (_) => setState(() {}),
+      decoration: InputDecoration(
+        hintText: 'Search for loyalty programs…',
+        prefixIcon: const Icon(Icons.search, size: 22),
+        filled: true,
+        fillColor: const Color(0xFFF4F4F6),
+        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _filterChips(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: _filters
+          .map(
+            (f) => ChoiceChip(
+              label: Text(
+                f,
+                style: FlutterFlowTheme.of(context).bodySmall.override(
+                      font: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                      color: _activeFilter == f
+                          ? FlutterFlowTheme.of(context).primary
+                          : FlutterFlowTheme.of(context).secondaryText,
+                    ),
+              ),
+              selected: _activeFilter == f,
+              onSelected: (v) {
+                setState(() {
+                  _activeFilter = v ? f : '';
+                });
+              },
+              backgroundColor: const Color(0xFFF4F4F6),
+              selectedColor:
+                  FlutterFlowTheme.of(context).primary.withOpacity(0.12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(
+                  color: _activeFilter == f
+                      ? FlutterFlowTheme.of(context).primary
+                      : const Color(0xFFE3E5EB),
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+
   Widget _programCard(BuildContext context, ProgramsRecord program) {
+    Color _bg() {
+      final raw = program.passBackgroundColor;
+      if (raw.isEmpty) return const Color(0xFF4A90E2);
+      try {
+        final cleaned = raw.replaceAll('#', '');
+        return Color(int.parse('0xFF$cleaned'));
+      } catch (_) {
+        return const Color(0xFF4A90E2);
+      }
+    }
+
+    Color _fg() {
+      final raw = program.passForegroundColor;
+      if (raw.isEmpty) return Colors.white;
+      try {
+        final cleaned = raw.replaceAll('#', '');
+        return Color(int.parse('0xFF$cleaned'));
+      } catch (_) {
+        return Colors.white;
+      }
+    }
+
+    final bg = _bg();
+    final fg = _fg();
     return InkWell(
       splashColor: Colors.transparent,
       onTap: () {
@@ -162,9 +246,10 @@ class _ProgramBrowseWidgetState extends State<ProgramBrowseWidget> {
         );
       },
       child: Container(
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).secondaryBackground,
-          borderRadius: BorderRadius.circular(16),
+          color: bg,
+          borderRadius: BorderRadius.circular(20),
           boxShadow: const [
             BoxShadow(
               blurRadius: 12,
@@ -174,101 +259,128 @@ class _ProgramBrowseWidgetState extends State<ProgramBrowseWidget> {
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (program.hasBusinessIcon())
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Image.network(
-                  program.businessIcon,
-                  width: double.infinity,
-                  height: 150,
-                  fit: BoxFit.cover,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: program.businessIcon.isNotEmpty
+                      ? ClipOval(
+                          child: Image.network(
+                            program.businessIcon,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Icon(Icons.storefront, color: fg),
                 ),
-              ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    program.title,
-                    style: FlutterFlowTheme.of(context).titleLarge.override(
-                          font: GoogleFonts.interTight(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    program.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: FlutterFlowTheme.of(context).bodyMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.star_rounded,
-                          color: FlutterFlowTheme.of(context).primary, size: 20),
-                      const SizedBox(width: 6),
                       Text(
-                        '${program.stampsRequired} stamps required',
-                        style: FlutterFlowTheme.of(context).bodyMedium,
-                      ),
-                      const Spacer(),
-                      if (program.rewardDetails.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context)
-                                .primary
-                                .withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            program.rewardDetails,
-                            style: FlutterFlowTheme.of(context)
-                                .bodySmall
-                                .override(
+                        program.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            FlutterFlowTheme.of(context).titleMedium.override(
                                   font: GoogleFonts.interTight(
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w800,
                                   ),
-                                  color: FlutterFlowTheme.of(context).primary,
+                                  color: fg,
                                 ),
-                          ),
-                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        program.description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: FlutterFlowTheme.of(context).bodySmall.override(
+                              font: GoogleFonts.inter(),
+                              color: fg.withOpacity(0.85),
+                            ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  FFButtonWidget(
-                    onPressed: () {
-                      context.pushNamed(
-                        ProgramDetailsWidget.routeName,
-                        queryParameters: {
-                          'programRef': serializeParam(
-                            program.reference,
-                            ParamType.DocumentReference,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Stamps required',
+                      style: FlutterFlowTheme.of(context).bodySmall.override(
+                            font: GoogleFonts.inter(),
+                            color: fg.withOpacity(0.75),
                           ),
-                        }.withoutNulls,
-                      );
-                    },
-                    text: 'View details',
-                    options: FFButtonOptions(
-                      height: 44,
-                      color: FlutterFlowTheme.of(context).primary,
-                      textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                            font: GoogleFonts.interTight(
-                              fontWeight: FontWeight.w700,
-                            ),
-                            color: Colors.white,
-                          ),
+                    ),
+                    Text(
+                      '${program.stampsRequired}',
+                      style:
+                          FlutterFlowTheme.of(context).headlineSmall.override(
+                                font: GoogleFonts.interTight(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                                color: fg,
+                              ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (program.rewardDetails.isNotEmpty)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.16),
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    child: Text(
+                      program.rewardDetails,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w700,
+                        color: fg,
+                      ),
+                    ),
                   ),
-                ],
+              ],
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FFButtonWidget(
+                onPressed: () {
+                  context.pushNamed(
+                    ProgramDetailsWidget.routeName,
+                    queryParameters: {
+                      'programRef': serializeParam(
+                        program.reference,
+                        ParamType.DocumentReference,
+                      ),
+                    }.withoutNulls,
+                  );
+                },
+                text: 'View details',
+                options: FFButtonOptions(
+                  height: 40,
+                  color: Colors.white,
+                  textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                        font: GoogleFonts.interTight(
+                          fontWeight: FontWeight.w700,
+                        ),
+                        color: bg,
+                      ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],

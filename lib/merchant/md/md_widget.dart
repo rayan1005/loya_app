@@ -5,6 +5,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/index.dart';
+import '/components/stamp_card_widget.dart';
 import '/merchant/components/merchant_nav_bar.dart';
 import '/creat_new_pro/creat_new_pro_widget.dart';
 import '/merchant/scan/merchant_scan_widget.dart';
@@ -84,89 +85,52 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
   }
 
   Widget _programTile(BuildContext context, ProgramsRecord program) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: FlutterFlowTheme.of(context).alternate),
-      ),
-      padding: const EdgeInsets.all(14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: Color(
-                int.tryParse(
-                        program.passBackgroundColor.replaceAll('#', '0xff')) ??
-                    0xFFEEF2F7,
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: program.businessIcon.isNotEmpty
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      program.businessIcon,
-                      fit: BoxFit.cover,
-                    ),
-                  )
-                : Icon(
-                    Icons.star,
-                    color: FlutterFlowTheme.of(context).primary,
-                  ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  program.title,
-                  style: FlutterFlowTheme.of(context).titleMedium.override(
-                        font: GoogleFonts.interTight(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  program.description ?? '',
-                  style: FlutterFlowTheme.of(context).bodySmall,
-                ),
-                Text(
-                  '${program.stampsRequired} stamps - ${program.rewardDetails ?? ''}',
-                  style: FlutterFlowTheme.of(context).bodySmall,
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: program.status
-                  ? FlutterFlowTheme.of(context).primary.withOpacity(0.1)
-                  : FlutterFlowTheme.of(context).secondaryText.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              program.status ? 'Active' : 'Inactive',
-              style: FlutterFlowTheme.of(context).bodySmall.override(
-                    font: GoogleFonts.interTight(
-                      fontWeight: FontWeight.w600,
-                    ),
-                    color: program.status
-                        ? FlutterFlowTheme.of(context).primary
-                        : FlutterFlowTheme.of(context).secondaryText,
-                  ),
-            ),
-          ),
-        ],
-      ),
+    Color _bg() {
+      final raw = program.passBackgroundColor;
+      if (raw.isEmpty) return const Color(0xFF4A90E2);
+      try {
+        return Color(int.parse('0xFF${raw.replaceAll('#', '')}'));
+      } catch (_) {
+        return const Color(0xFF4A90E2);
+      }
+    }
+
+    Color _fg() {
+      final raw = program.passForegroundColor;
+      if (raw.isEmpty) return Colors.white;
+      try {
+        return Color(int.parse('0xFF${raw.replaceAll('#', '')}'));
+      } catch (_) {
+        return Colors.white;
+      }
+    }
+
+    Color _label() {
+      final raw = program.passLabelColor;
+      if (raw.isEmpty) return Colors.white.withOpacity(0.8);
+      try {
+        return Color(int.parse('0xFF${raw.replaceAll('#', '')}'));
+      } catch (_) {
+        return Colors.white.withOpacity(0.8);
+      }
+    }
+
+    final bg = _bg();
+    final fg = _fg();
+    final label = _label();
+    final stampCount = program.stampsRequired > 0 ? program.stampsRequired : 1;
+
+    return StampCardWidget(
+      title: program.title,
+      stampCount: stampCount,
+      filledStamps: 0,
+      statusPrimary: program.status ? 'Active' : 'Hidden',
+      statusSecondary: program.termsConditions.isNotEmpty ? 'Draft' : 'Ready',
+      backgroundColor: bg,
+      foregroundColor: fg,
+      labelColor: label,
+      onDetails: () => _showProgramSheet(context, program),
+      onTap: () => _showProgramSheet(context, program),
     );
   }
 
@@ -350,7 +314,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: 12),
                           Row(
                             children: [
                               Expanded(
@@ -411,7 +375,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 18),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -446,21 +410,40 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                               }
                               final programs = programSnap.data!;
                               if (programs.isEmpty) {
-                                return Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(14),
-                                  decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryBackground,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                        color: FlutterFlowTheme.of(context)
-                                            .alternate),
-                                  ),
-                                  child: Text(
-                                    'No programs yet. Tap "Create program" to get started.',
-                                    style:
-                                        FlutterFlowTheme.of(context).bodyMedium,
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 20),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        'You have no loyalty programs yet.',
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyLarge,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      FFButtonWidget(
+                                        onPressed: () => context.pushNamed(
+                                            CreatNewProWidget.routeName),
+                                        text: 'Create your first program',
+                                        options: FFButtonOptions(
+                                          height: 48,
+                                          color: FlutterFlowTheme.of(context)
+                                              .primary,
+                                          textStyle: FlutterFlowTheme.of(
+                                                  context)
+                                              .titleSmall
+                                              .override(
+                                                font: GoogleFonts.interTight(
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                                color: Colors.white,
+                                              ),
+                                          borderRadius:
+                                              BorderRadius.circular(14),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 );
                               }
@@ -469,7 +452,11 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                                     .map((p) => InkWell(
                                           onTap: () =>
                                               _showProgramSheet(context, p),
-                                          child: _programTile(context, p),
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 12),
+                                            child: _programTile(context, p),
+                                          ),
                                         ))
                                     .toList(),
                               );

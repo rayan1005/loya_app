@@ -31,47 +31,20 @@ class DashboardWidget extends StatefulWidget {
 class _DashboardWidgetState extends State<DashboardWidget> {
   late DashboardModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  Future<Map<String, int>>? _metricsFuture;
+  late TextEditingController _dummy;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => DashboardModel());
-    _metricsFuture = _loadMetrics();
+    _dummy = TextEditingController();
   }
 
   @override
   void dispose() {
+    _dummy.dispose();
     _model.dispose();
     super.dispose();
-  }
-
-  Future<Map<String, int>> _loadMetrics() async {
-    final now = DateTime.now();
-    final weekAgo = now.subtract(const Duration(days: 7));
-    final firestore = FirebaseFirestore.instance;
-
-    final stampCardsCount = await queryStampCardsRecordCount();
-    final walletPassesCount =
-        (await firestore.collection('wallet_passes').count().get()).count ?? 0;
-    final stampsThisWeek = await queryStampCardsRecordCount(
-      queryBuilder: (q) => q.where('created_at',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(weekAgo)),
-    );
-    final rewardsRedeemed = (await firestore
-                .collection('rewards')
-                .where('reward_status', isEqualTo: 'completed')
-                .count()
-                .get())
-            .count ??
-        0;
-
-    return {
-      'cards': stampCardsCount,
-      'passes': walletPassesCount,
-      'stampsWeek': stampsThisWeek,
-      'rewards': rewardsRedeemed,
-    };
   }
 
   @override
@@ -92,11 +65,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
               children: [
                 _header(context),
                 const SizedBox(height: 16),
-                _walletStatusCard(context),
-                const SizedBox(height: 16),
-                _metricsSection(context),
-                const SizedBox(height: 16),
                 _myCardsSection(context),
+                const SizedBox(height: 14),
+                _discoverCta(context),
               ],
             ),
           ),
@@ -106,52 +77,55 @@ class _DashboardWidgetState extends State<DashboardWidget> {
   }
 
   Widget _header(BuildContext context) {
+    final avatar =
+        currentUserPhoto.isNotEmpty ? NetworkImage(currentUserPhoto) : null;
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            InkWell(
-              onTap: () => context.pushNamed(UserOrMerchantWidget.routeName),
-              child: Text(
-                'LOYA.SA',
-                style: FlutterFlowTheme.of(context).headlineMedium.override(
-                      font: GoogleFonts.interTight(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      color: FlutterFlowTheme.of(context).primaryText,
+        CircleAvatar(
+          radius: 20,
+          backgroundColor: FlutterFlowTheme.of(context).accent1,
+          backgroundImage: avatar,
+          child: avatar == null
+              ? Icon(Icons.person,
+                  color: FlutterFlowTheme.of(context).primary, size: 22)
+              : null,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Welcome back',
+                style: FlutterFlowTheme.of(context).bodySmall.override(
+                      font: GoogleFonts.inter(),
+                      color: FlutterFlowTheme.of(context).secondaryText,
                     ),
               ),
-            ),
-            Text(
-              'Discover loyalty programs',
-              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                    font: GoogleFonts.inter(),
-                    color: FlutterFlowTheme.of(context).secondaryText,
-                  ),
-            ),
-          ],
+              Text(
+                currentUserDisplayName.isNotEmpty
+                    ? currentUserDisplayName
+                    : currentUserEmail,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: FlutterFlowTheme.of(context).titleMedium.override(
+                      font: GoogleFonts.interTight(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+              ),
+            ],
+          ),
         ),
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).accent1,
-            shape: BoxShape.circle,
-          ),
-          child: InkWell(
-            onTap: () async {
-              GoRouter.of(context).prepareAuthEvent();
-              await authManager.signOut();
-              GoRouter.of(context).clearRedirectLocation();
-              context.goNamedAuth(SignInWidget.routeName, context.mounted);
-            },
-            child: Icon(
-              Icons.logout,
-              color: FlutterFlowTheme.of(context).primary,
-            ),
-          ),
+        IconButton(
+          icon: const Icon(Icons.logout, size: 22),
+          color: FlutterFlowTheme.of(context).primary,
+          onPressed: () async {
+            GoRouter.of(context).prepareAuthEvent();
+            await authManager.signOut();
+            GoRouter.of(context).clearRedirectLocation();
+            context.goNamedAuth(SignInWidget.routeName, context.mounted);
+          },
         ),
       ],
     );
@@ -303,9 +277,46 @@ class _DashboardWidgetState extends State<DashboardWidget> {
             final cards = snapshot.data!;
             if (cards.isEmpty) {
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Text('No cards yet.',
-                    style: FlutterFlowTheme.of(context).bodyMedium),
+                padding: const EdgeInsets.symmetric(vertical: 28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Center(
+                      child: Column(
+                        children: [
+                          Icon(Icons.credit_card,
+                              size: 48,
+                              color:
+                                  FlutterFlowTheme.of(context).secondaryText),
+                          const SizedBox(height: 10),
+                          Text(
+                            'You don’t have any loyalty cards yet.',
+                            style: FlutterFlowTheme.of(context).bodyLarge,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    FFButtonWidget(
+                      onPressed: () =>
+                          context.pushNamed(ProgramBrowseWidget.routeName),
+                      text: 'Discover programs',
+                      options: FFButtonOptions(
+                        height: 48,
+                        color: FlutterFlowTheme.of(context).primary,
+                        textStyle:
+                            FlutterFlowTheme.of(context).titleSmall.override(
+                                  font: GoogleFonts.interTight(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  color: Colors.white,
+                                ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ],
+                ),
               );
             }
             return SingleChildScrollView(
@@ -348,6 +359,28 @@ class _DashboardWidgetState extends State<DashboardWidget> {
     );
   }
 
+  Widget _discoverCta(BuildContext context) {
+    return FFButtonWidget(
+      onPressed: () => context.pushNamed(ProgramBrowseWidget.routeName),
+      text: 'Discover new programs',
+      options: FFButtonOptions(
+        height: 48,
+        color: FlutterFlowTheme.of(context).secondaryBackground,
+        textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+              font: GoogleFonts.interTight(
+                fontWeight: FontWeight.w700,
+              ),
+              color: FlutterFlowTheme.of(context).primaryText,
+            ),
+        borderSide: BorderSide(
+          color: FlutterFlowTheme.of(context).primary.withOpacity(0.2),
+        ),
+        borderRadius: BorderRadius.circular(14),
+        elevation: 0,
+      ),
+    );
+  }
+
   Widget _cardItem(BuildContext context, StampCardsRecord card,
       ProgramsRecord program, double progress, int filled, int total) {
     Color _bgColor() {
@@ -362,6 +395,29 @@ class _DashboardWidgetState extends State<DashboardWidget> {
     }
 
     final bg = _bgColor();
+    Color _fgColor() {
+      final raw = program.passForegroundColor;
+      if (raw.isEmpty) return Colors.white;
+      try {
+        return Color(int.parse('0xFF${raw.replaceAll('#', '')}'));
+      } catch (_) {
+        return Colors.white;
+      }
+    }
+
+    Color _labelColor() {
+      final raw = program.passLabelColor;
+      if (raw.isEmpty) return Colors.white.withOpacity(0.8);
+      try {
+        return Color(int.parse('0xFF${raw.replaceAll('#', '')}'));
+      } catch (_) {
+        return Colors.white.withOpacity(0.8);
+      }
+    }
+
+    final fg = _fgColor();
+    final labelColor = _labelColor();
+
     return StampCardWidget(
       title: program.title,
       stampCount: total,
@@ -369,6 +425,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       statusPrimary: card.status == 'completed' ? 'Completed' : 'Active',
       statusSecondary: 'Reward pending',
       backgroundColor: bg,
+      foregroundColor: fg,
+      labelColor: labelColor,
       onTap: () {
         context.pushNamed(
           CardDetailsWidget.routeName,

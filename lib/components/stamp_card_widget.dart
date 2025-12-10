@@ -15,6 +15,8 @@ class StampCardWidget extends StatelessWidget {
     required this.statusPrimary,
     required this.statusSecondary,
     required this.backgroundColor,
+    this.foregroundColor,
+    this.labelColor,
     this.onTap,
     this.onDetails,
     this.width,
@@ -27,6 +29,8 @@ class StampCardWidget extends StatelessWidget {
   final String statusPrimary;
   final String statusSecondary;
   final Color backgroundColor;
+  final Color? foregroundColor;
+  final Color? labelColor;
   final VoidCallback? onTap;
   final VoidCallback? onDetails;
   final double? width;
@@ -39,8 +43,9 @@ class StampCardWidget extends StatelessWidget {
     final cardWidth =
         width ?? math.min(MediaQuery.sizeOf(context).width * 0.9, 420.0);
     final cardHeight = height ?? 220.0;
-    final fg = Colors.white;
-    final muted = Colors.white.withOpacity(0.25);
+    final fg = foregroundColor ?? Colors.white;
+    final muted = (foregroundColor ?? Colors.white).withOpacity(0.25);
+    final tagColor = labelColor ?? fg;
 
     return InkWell(
       onTap: onTap ?? onDetails,
@@ -76,7 +81,7 @@ class StampCardWidget extends StatelessWidget {
               runSpacing: 8,
               children: [
                 _pill(statusPrimary, fg),
-                _pill(statusSecondary, fg),
+                _pill(statusSecondary, tagColor),
               ],
             ),
             const SizedBox(height: 14),
