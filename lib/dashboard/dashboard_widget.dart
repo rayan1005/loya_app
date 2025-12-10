@@ -12,6 +12,7 @@ import '/sign_in/sign_in_widget.dart';
 import 'dashboard_model.dart';
 export 'dashboard_model.dart';
 
+import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
