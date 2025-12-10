@@ -22,56 +22,60 @@ class MerchantNavBar extends StatelessWidget {
     return SafeArea(
       top: false,
       bottom: true,
-      child: Container(
-        decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).primaryBackground,
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x14000000),
-              blurRadius: 10,
-              offset: Offset(0, -2),
-            )
-          ],
-        ),
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 16),
-        child: Row(
-          children: [
-            Expanded(
-              child: _navItem(
-                context,
-                icon: Icons.home_filled,
-                label: 'Dashboard',
-                selected: currentTab == MerchantNavTab.dashboard,
-                onTap: () => context.goNamed(
-                  MdWidget.routeName,
-                  queryParameters: {
-                    'marchentsId': serializeParam(
-                      merchantRef ?? currentUserDocument?.linkedMerchants,
-                      ParamType.DocumentReference,
-                    ),
-                  }.withoutNulls,
+      child: SizedBox(
+        height: 86,
+        child: Container(
+          decoration: BoxDecoration(
+            color: FlutterFlowTheme.of(context).primaryBackground,
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x14000000),
+                blurRadius: 10,
+                offset: Offset(0, -2),
+              )
+            ],
+          ),
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 18),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: _navItem(
+                  context,
+                  icon: Icons.home_filled,
+                  label: 'Dashboard',
+                  selected: currentTab == MerchantNavTab.dashboard,
+                  onTap: () => context.goNamed(
+                    MdWidget.routeName,
+                    queryParameters: {
+                      'marchentsId': serializeParam(
+                        merchantRef ?? currentUserDocument?.linkedMerchants,
+                        ParamType.DocumentReference,
+                      ),
+                    }.withoutNulls,
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-              child: _navItem(
-                context,
-                icon: Icons.star_rounded,
-                label: 'Programs',
-                selected: currentTab == MerchantNavTab.programs,
-                onTap: () => context.goNamed(ProgramsListWidget.routeName),
+              Expanded(
+                child: _navItem(
+                  context,
+                  icon: Icons.star_rounded,
+                  label: 'Programs',
+                  selected: currentTab == MerchantNavTab.programs,
+                  onTap: () => context.goNamed(ProgramsListWidget.routeName),
+                ),
               ),
-            ),
-            Expanded(
-              child: _navItem(
-                context,
-                icon: Icons.settings_rounded,
-                label: 'Settings',
-                selected: currentTab == MerchantNavTab.settings,
-                onTap: () => context.goNamed(MerchantProfileWidget.routeName),
+              Expanded(
+                child: _navItem(
+                  context,
+                  icon: Icons.settings_rounded,
+                  label: 'Settings',
+                  selected: currentTab == MerchantNavTab.settings,
+                  onTap: () => context.goNamed(MerchantProfileWidget.routeName),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -93,7 +97,7 @@ class MerchantNavBar extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        constraints: const BoxConstraints(minHeight: 56),
+        constraints: const BoxConstraints(minHeight: 48, maxHeight: 60),
         decoration: selected
             ? BoxDecoration(
                 gradient: const LinearGradient(
