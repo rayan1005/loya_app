@@ -23,39 +23,53 @@ class MerchantNavBar extends StatelessWidget {
       top: false,
       bottom: true,
       child: Container(
-        color: FlutterFlowTheme.of(context).primaryBackground,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).primaryBackground,
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 10,
+              offset: Offset(0, -2),
+            )
+          ],
+        ),
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 16),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _navItem(
-              context,
-              icon: Icons.home_filled,
-              label: 'Dashboard',
-              selected: currentTab == MerchantNavTab.dashboard,
-              onTap: () => context.goNamed(
-                MdWidget.routeName,
-                queryParameters: {
-                  'marchentsId': serializeParam(
-                    merchantRef ?? currentUserDocument?.linkedMerchants,
-                    ParamType.DocumentReference,
-                  ),
-                }.withoutNulls,
+            Expanded(
+              child: _navItem(
+                context,
+                icon: Icons.home_filled,
+                label: 'Dashboard',
+                selected: currentTab == MerchantNavTab.dashboard,
+                onTap: () => context.goNamed(
+                  MdWidget.routeName,
+                  queryParameters: {
+                    'marchentsId': serializeParam(
+                      merchantRef ?? currentUserDocument?.linkedMerchants,
+                      ParamType.DocumentReference,
+                    ),
+                  }.withoutNulls,
+                ),
               ),
             ),
-            _navItem(
-              context,
-              icon: Icons.star_rounded,
-              label: 'Programs',
-              selected: currentTab == MerchantNavTab.programs,
-              onTap: () => context.goNamed(ProgramsListWidget.routeName),
+            Expanded(
+              child: _navItem(
+                context,
+                icon: Icons.star_rounded,
+                label: 'Programs',
+                selected: currentTab == MerchantNavTab.programs,
+                onTap: () => context.goNamed(ProgramsListWidget.routeName),
+              ),
             ),
-            _navItem(
-              context,
-              icon: Icons.settings_rounded,
-              label: 'Settings',
-              selected: currentTab == MerchantNavTab.settings,
-              onTap: () => context.goNamed(MerchantProfileWidget.routeName),
+            Expanded(
+              child: _navItem(
+                context,
+                icon: Icons.settings_rounded,
+                label: 'Settings',
+                selected: currentTab == MerchantNavTab.settings,
+                onTap: () => context.goNamed(MerchantProfileWidget.routeName),
+              ),
             ),
           ],
         ),
@@ -75,7 +89,11 @@ class MerchantNavBar extends StatelessWidget {
         : const Color(0xFFAEAEAE);
     return InkWell(
       onTap: onTap,
-      child: Container(
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        constraints: const BoxConstraints(minHeight: 56),
         decoration: selected
             ? BoxDecoration(
                 gradient: const LinearGradient(
@@ -83,12 +101,13 @@ class MerchantNavBar extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(14),
               )
-            : null,
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+            : BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+              ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color),
+            Icon(icon, color: color, size: 24),
             const SizedBox(height: 4),
             Text(
               label,

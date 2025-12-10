@@ -11,6 +11,7 @@ import '/sign_in/sign_in_widget.dart';
 import 'dashboard_model.dart';
 export 'dashboard_model.dart';
 
+import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -162,8 +163,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
         final ok = snapshot.hasData && (snapshot.data?.succeeded ?? false);
         final statusText =
             ok ? 'Wallet API connected' : 'Wallet API not reachable';
-        final statusColor =
-            ok ? FlutterFlowTheme.of(context).success : FlutterFlowTheme.of(context).error;
+        final statusColor = ok
+            ? FlutterFlowTheme.of(context).success
+            : FlutterFlowTheme.of(context).error;
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -239,7 +241,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: const [
-          BoxShadow(blurRadius: 8, color: Color(0x12000000), offset: Offset(0, 3))
+          BoxShadow(
+              blurRadius: 8, color: Color(0x12000000), offset: Offset(0, 3))
         ],
       ),
       child: Column(
@@ -309,10 +312,13 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                       stream: ProgramsRecord.getDocument(card.programId!),
                       builder: (context, programSnap) {
                         if (!programSnap.hasData) {
-                          return const SizedBox(
-                              width: 260,
-                              height: 160,
-                              child: Center(child: CircularProgressIndicator()));
+                          return SizedBox(
+                              width: math.min(
+                                  MediaQuery.sizeOf(context).width * 0.9,
+                                  420.0),
+                              height: 220,
+                              child: const Center(
+                                  child: CircularProgressIndicator()));
                         }
                         final program = programSnap.data!;
                         final totalSlots = program.stampsRequired > 0
@@ -336,13 +342,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
     );
   }
 
-  Widget _cardItem(
-      BuildContext context,
-      StampCardsRecord card,
-      ProgramsRecord program,
-      double progress,
-      int filled,
-      int total) {
+  Widget _cardItem(BuildContext context, StampCardsRecord card,
+      ProgramsRecord program, double progress, int filled, int total) {
     Color _bgColor() {
       final raw = program.passBackgroundColor;
       if (raw.isEmpty) return const Color(0xFF4A90E2);
@@ -357,6 +358,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
     final bg = _bgColor();
     final fg = Colors.white;
     final muted = Colors.white.withOpacity(0.25);
+    final cardWidth = math.min(MediaQuery.sizeOf(context).width * 0.9, 420.0);
+    const stampsPerRow = 6;
+    final rows = (total + stampsPerRow - 1) ~/ stampsPerRow;
 
     return InkWell(
       onTap: () {
@@ -371,8 +375,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
         );
       },
       child: Container(
-        width: 260,
+        width: cardWidth,
         padding: const EdgeInsets.all(16),
+        constraints: const BoxConstraints(minHeight: 220),
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(18),
@@ -428,19 +433,31 @@ class _DashboardWidgetState extends State<DashboardWidget> {
               ],
             ),
             const SizedBox(height: 14),
-            Row(
-              children: List.generate(total.clamp(1, 15), (index) {
-                final filledIdx = index < filled;
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: List.generate(rows, (rowIndex) {
+                final start = rowIndex * stampsPerRow;
+                final end = math.min(start + stampsPerRow, total);
                 return Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: CircleAvatar(
-                    radius: 14,
-                    backgroundColor: filledIdx ? fg : muted,
-                    child: Icon(
-                      filledIdx ? Icons.check : Icons.star,
-                      size: 14,
-                      color: filledIdx ? bg : fg,
-                    ),
+                  padding:
+                      EdgeInsets.only(bottom: rowIndex == rows - 1 ? 0 : 8),
+                  child: Row(
+                    children: List.generate(end - start, (index) {
+                      final stampIndex = start + index;
+                      final filledIdx = stampIndex < filled;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: CircleAvatar(
+                          radius: 14,
+                          backgroundColor: filledIdx ? fg : muted,
+                          child: Icon(
+                            filledIdx ? Icons.check : Icons.star,
+                            size: 14,
+                            color: filledIdx ? bg : fg,
+                          ),
+                        ),
+                      );
+                    }),
                   ),
                 );
               }),
