@@ -37,7 +37,7 @@ class _ProgramBrowseWidgetState extends State<ProgramBrowseWidget> {
     'Trending',
     'Near you',
     'New',
-    'Cafés',
+    'Cafes',
     'Restaurants',
     'Services'
   ];
@@ -154,7 +154,7 @@ class _ProgramBrowseWidgetState extends State<ProgramBrowseWidget> {
       controller: _searchController,
       onChanged: (_) => setState(() {}),
       decoration: InputDecoration(
-        hintText: 'Search for loyalty programs…',
+        hintText: 'Search for loyalty programs...',
         prefixIcon: const Icon(Icons.search, size: 22),
         filled: true,
         fillColor: const Color(0xFFF4F4F6),

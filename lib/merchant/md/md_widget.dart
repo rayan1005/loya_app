@@ -129,6 +129,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
       backgroundColor: bg,
       foregroundColor: fg,
       labelColor: label,
+      height: 200,
       onDetails: () => _showProgramSheet(context, program),
       onTap: () => _showProgramSheet(context, program),
     );
@@ -314,7 +315,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 18),
                           Row(
                             children: [
                               Expanded(
@@ -375,7 +376,7 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
