@@ -1,16 +1,11 @@
-import '/auth/base_auth_user_provider.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:math';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'splash_model.dart';
 export 'splash_model.dart';
 
@@ -40,7 +35,7 @@ class _SplashWidgetState extends State<SplashWidget>
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       await Future.delayed(
-        Duration(
+        const Duration(
           milliseconds: 1500,
         ),
       );
@@ -126,7 +121,7 @@ class _SplashWidgetState extends State<SplashWidget>
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: Container(
           height: double.infinity,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFF4A90E2), Color(0xFF4B39EF)],
               stops: [0.0, 1.0],
@@ -134,9 +129,9 @@ class _SplashWidgetState extends State<SplashWidget>
               end: AlignmentDirectional(-0.87, 1.0),
             ),
           ),
-          alignment: AlignmentDirectional(0.0, -1.0),
+          alignment: const AlignmentDirectional(0.0, -1.0),
           child: Align(
-            alignment: AlignmentDirectional(0.0, 0.0),
+            alignment: const AlignmentDirectional(0.0, 0.0),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
               child: Image.asset(

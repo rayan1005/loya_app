@@ -1,13 +1,10 @@
-import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:from_css_color/from_css_color.dart';
 
 class EditProgramWidget extends StatefulWidget {
   const EditProgramWidget({super.key, this.programRef});
@@ -95,7 +92,7 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
     if (_saving) return;
     if (!_colorsValid()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter valid HEX colors (e.g. #007AFF).')),
+        const SnackBar(content: Text('Please enter valid HEX colors (e.g. #007AFF).')),
       );
       return;
     }
@@ -127,7 +124,7 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Program updated.')),
+      const SnackBar(content: Text('Program updated.')),
     );
     Navigator.of(context).pop();
   }
@@ -161,7 +158,7 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not refresh passes')),
+          const SnackBar(content: Text('Could not refresh passes')),
         );
       }
     } finally {
@@ -174,7 +171,7 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
     final msg = _broadcastController.text.trim();
     if (msg.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Enter a broadcast message first')),
+        const SnackBar(content: Text('Enter a broadcast message first')),
       );
       return;
     }
@@ -191,7 +188,7 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Broadcast failed')),
+          const SnackBar(content: Text('Broadcast failed')),
         );
       }
     } finally {
@@ -342,7 +339,7 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
                       SwitchListTile.adaptive(
                         value: _status,
                         onChanged: (v) => setState(() => _status = v),
-                        title: Text('Program active (on/off)'),
+                        title: const Text('Program active (on/off)'),
                         activeColor: FlutterFlowTheme.of(context).primary,
                       ),
                       const SizedBox(height: 20.0),

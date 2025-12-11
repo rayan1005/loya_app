@@ -5,7 +5,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import 'transactions_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class TransactionsWidget extends StatefulWidget {
   const TransactionsWidget({super.key});
@@ -88,7 +87,7 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
           backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
           elevation: 0.0,
           title: Text(
-            'Transactions',
+            'Activity',
             style: FlutterFlowTheme.of(context).titleLarge.override(
                   font: GoogleFonts.interTight(
                     fontWeight:
@@ -106,9 +105,17 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
           top: true,
           child: StreamBuilder<List<TransactionsRecord>>(
             stream: queryTransactionsRecord(
-              queryBuilder: (tx) => tx
-                  .where('user_id', isEqualTo: currentUserReference)
-                  .orderBy('created_at', descending: true),
+              queryBuilder: (tx) {
+                final merchantRef = currentUserDocument?.linkedMerchants;
+                if (merchantRef != null) {
+                  return tx
+                      .where('merchant_id', isEqualTo: merchantRef)
+                      .orderBy('created_at', descending: true);
+                }
+                return tx
+                    .where('user_id', isEqualTo: currentUserReference)
+                    .orderBy('created_at', descending: true);
+              },
             ),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
@@ -129,13 +136,15 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
                   ),
                 );
               }
-              return ListView.builder(
-                padding: EdgeInsetsDirectional.fromSTEB(16.0, 16.0, 16.0, 32.0),
+              return ListView.separated(
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                    16.0, 16.0, 16.0, 32.0),
                 itemCount: txs.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final tx = txs[index];
                   return Padding(
-                    padding: EdgeInsetsDirectional.only(bottom: 10.0),
+                    padding: const EdgeInsetsDirectional.only(bottom: 0.0),
                     child: FutureBuilder<StampCardsRecord?>(
                       future: tx.cardId != null
                           ? StampCardsRecord.getDocumentOnce(tx.cardId!)
@@ -155,44 +164,75 @@ class _TransactionsWidgetState extends State<TransactionsWidget> {
                               )
                             ],
                           ),
-                          padding: EdgeInsets.all(14.0),
-                          child: Column(
+                          padding: const EdgeInsets.all(14.0),
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                _actionLabel(tx.action),
-                                style: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .override(
-                                      font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.w700,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .titleSmall
-                                            .fontStyle,
-                                      ),
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w700,
+                              Container(
+                                width: 40.0,
+                                height: 40.0,
+                                decoration: BoxDecoration(
+                                  color: FlutterFlowTheme.of(context)
+                                      .primary
+                                      .withOpacity(0.12),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  tx.action == 'reward_claimed'
+                                      ? Icons.card_giftcard
+                                      : Icons.check_circle,
+                                  color: FlutterFlowTheme.of(context).primary,
+                                  size: 22.0,
+                                ),
+                              ),
+                              const SizedBox(width: 12.0),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _actionLabel(tx.action),
+                                      style: FlutterFlowTheme.of(context)
+                                          .titleSmall
+                                          .override(
+                                            font: GoogleFonts.interTight(
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
                                     ),
+                                    const SizedBox(height: 2.0),
+                                    _programName(card),
+                                    if (tx.createdAt != null)
+                                      Text(
+                                        dateTimeFormat(
+                                            'relative', tx.createdAt),
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodySmall,
+                                      ),
+                                  ],
+                                ),
                               ),
-                              if (card != null) ...[
-                                SizedBox(height: 4.0),
-                                _programName(card),
-                              ],
-                              SizedBox(height: 6.0),
-                              Text(
-                                'Value: ${tx.value}',
-                                style: FlutterFlowTheme.of(context).bodyMedium,
-                              ),
-                              if (tx.hasCreatedAt())
-                                Padding(
-                                  padding:
-                                      const EdgeInsetsDirectional.only(top: 4.0),
+                              if (tx.value != 0)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10.0, vertical: 6.0),
+                                  decoration: BoxDecoration(
+                                    color: FlutterFlowTheme.of(context)
+                                        .primary
+                                        .withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
                                   child: Text(
-                                    dateTimeFormat('yMMMd', tx.createdAt!),
+                                    '${tx.value > 0 ? '+' : ''}${tx.value} stamps',
                                     style: FlutterFlowTheme.of(context)
-                                        .labelMedium,
+                                        .bodyMedium
+                                        .override(
+                                          font: GoogleFonts.interTight(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                          color: FlutterFlowTheme.of(context)
+                                              .primary,
+                                        ),
                                   ),
                                 ),
                             ],

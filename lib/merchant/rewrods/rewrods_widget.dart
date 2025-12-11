@@ -5,7 +5,6 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/merchant/components/merchant_nav_bar.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -69,7 +68,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
         merchantRef: merchantRef,
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF4A90E2), Color(0xFF4B39EF)],
             stops: [0.0, 1.0],
@@ -78,7 +77,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 120.0),
+          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 120.0),
           child: StreamBuilder<List<StampCardsRecord>>(
             stream: queryStampCardsRecord(
               queryBuilder: (stampCardsRecord) => stampCardsRecord.where(
@@ -118,7 +117,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                 children: [
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                        const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -158,12 +157,12 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                     .fontStyle,
                               ),
                         ),
-                      ].divide(SizedBox(height: 8.0)),
+                      ].divide(const SizedBox(height: 8.0)),
                     ),
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                        const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -171,7 +170,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -281,12 +280,12 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                       ),
                                 ),
                                 Container(
-                                  decoration: BoxDecoration(),
+                                  decoration: const BoxDecoration(),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.max,
                                     children: [
                                       Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             5.0, 0.0, 5.0, 0.0),
                                         child: Icon(
                                           Icons.content_copy,
@@ -297,7 +296,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                       ),
                                       Text(
                                         valueOrDefault<String>(
-                                          columnStampCardsRecord?.walletPassId,
+                                          columnStampCardsRecord.walletPassId,
                                           '000000',
                                         ),
                                         style: FlutterFlowTheme.of(context)
@@ -334,7 +333,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                             ),
                             StreamBuilder<ProgramsRecord>(
                               stream: ProgramsRecord.getDocument(
-                                  columnStampCardsRecord!.programId!),
+                                  columnStampCardsRecord.programId!),
                               builder: (context, snapshot) {
                                 // Customize what your widget looks like when it's loading.
                                 if (!snapshot.hasData) {
@@ -417,14 +416,14 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                 );
                               },
                             ),
-                          ].divide(SizedBox(height: 12.0)),
+                          ].divide(const SizedBox(height: 12.0)),
                         ),
                       ),
                     ),
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                        const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -432,7 +431,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -524,7 +523,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                         ),
                                       ),
                                       child: Padding(
-                                        padding: EdgeInsets.all(8.0),
+                                        padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           '1',
                                           textAlign: TextAlign.center,
@@ -574,7 +573,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                         print('IconButton pressed ...');
                                       },
                                     ),
-                                  ].divide(SizedBox(width: 16.0)),
+                                  ].divide(const SizedBox(width: 16.0)),
                                 ),
                               ],
                             ),
@@ -586,8 +585,8 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                               options: FFButtonOptions(
                                 width: double.infinity,
                                 height: 48.0,
-                                padding: EdgeInsets.all(8.0),
-                                iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsets.all(8.0),
+                                iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, 0.0),
                                 color: FlutterFlowTheme.of(context).secondary,
                                 textStyle: FlutterFlowTheme.of(context)
@@ -608,21 +607,21 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                           .fontStyle,
                                     ),
                                 elevation: 0.0,
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Colors.transparent,
                                   width: 1.0,
                                 ),
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
-                          ].divide(SizedBox(height: 16.0)),
+                          ].divide(const SizedBox(height: 16.0)),
                         ),
                       ),
                     ),
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                        const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -634,7 +633,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                         ),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -675,8 +674,8 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                     ),
                                     Text(
                                       valueOrDefault<String>(
-                                        columnStampCardsRecord?.currentStamps
-                                            ?.toString(),
+                                        columnStampCardsRecord.currentStamps
+                                            .toString(),
                                         '0',
                                       ),
                                       style: FlutterFlowTheme.of(context)
@@ -709,7 +708,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                 ),
                                 StreamBuilder<ProgramsRecord>(
                                   stream: ProgramsRecord.getDocument(
-                                      columnStampCardsRecord!.programId!),
+                                      columnStampCardsRecord.programId!),
                                   builder: (context, snapshot) {
                                     // Customize what your widget looks like when it's loading.
                                     if (!snapshot.hasData) {
@@ -820,18 +819,18 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                 ),
                               ),
                             ),
-                          ].divide(SizedBox(height: 16.0)),
+                          ].divide(const SizedBox(height: 16.0)),
                         ),
                       ),
                     ),
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                        const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(
                             blurRadius: 6.0,
                             color: Color(0x33249689),
@@ -845,16 +844,16 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                         gradient: LinearGradient(
                           colors: [
                             FlutterFlowTheme.of(context).success,
-                            Color(0xFF27AE60)
+                            const Color(0xFF27AE60)
                           ],
-                          stops: [1.0, 1.0],
-                          begin: AlignmentDirectional(1.0, 1.0),
-                          end: AlignmentDirectional(-1.0, -1.0),
+                          stops: const [1.0, 1.0],
+                          begin: const AlignmentDirectional(1.0, 1.0),
+                          end: const AlignmentDirectional(-1.0, -1.0),
                         ),
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(12.0),
+                        padding: const EdgeInsets.all(12.0),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -887,14 +886,14 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                         .fontStyle,
                                   ),
                             ),
-                          ].divide(SizedBox(width: 12.0)),
+                          ].divide(const SizedBox(width: 12.0)),
                         ),
                       ),
                     ),
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                        const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
                     child: FFButtonWidget(
                       onPressed: () {
                         print('Button pressed ...');
@@ -903,9 +902,9 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                       options: FFButtonOptions(
                         width: double.infinity,
                         height: 56.0,
-                        padding: EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(8.0),
                         iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                            const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                         color: FlutterFlowTheme.of(context).primary,
                         textStyle:
                             FlutterFlowTheme.of(context).titleMedium.override(
@@ -927,7 +926,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                                       .fontStyle,
                                 ),
                         elevation: 2.0,
-                        borderSide: BorderSide(
+                        borderSide: const BorderSide(
                           color: Colors.transparent,
                           width: 1.0,
                         ),
@@ -935,7 +934,7 @@ class _RewrodsWidgetState extends State<RewrodsWidget> {
                       ),
                     ),
                   ),
-                ].divide(SizedBox(height: 20.0)),
+                ].divide(const SizedBox(height: 20.0)),
               );
             },
           ),

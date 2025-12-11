@@ -111,6 +111,65 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     );
   }
 
+  Widget _statsRow(BuildContext context) {
+    return StreamBuilder<List<StampCardsRecord>>(
+      stream: queryStampCardsRecord(
+        queryBuilder: (q) =>
+            q.where('user_id', isEqualTo: currentUserReference),
+      ),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
+        final cards = snapshot.data!;
+        final joined = cards.length;
+        final completed =
+            cards.where((c) => c.status.toLowerCase() == 'completed').length;
+
+        Widget statTile(String title, String value) {
+          return Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).secondaryBackground,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: FlutterFlowTheme.of(context).alternate,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: FlutterFlowTheme.of(context).bodySmall,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    value,
+                    style: FlutterFlowTheme.of(context).headlineSmall.override(
+                          font: GoogleFonts.interTight(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Row(
+          children: [
+            statTile('Programs joined', '$joined'),
+            const SizedBox(width: 12),
+            statTile('Rewards ready', '$completed'),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
@@ -145,6 +204,8 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _profileHeader(context),
+                const SizedBox(height: 16),
+                _statsRow(context),
                 const SizedBox(height: 20),
                 if (hasMerchant && !isMerchant)
                   FFButtonWidget(

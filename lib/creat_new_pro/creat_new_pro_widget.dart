@@ -7,12 +7,9 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/upload_data.dart';
 import '/merchant/programs_list/programs_list_widget.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:from_css_color/from_css_color.dart';
 
 import 'creat_new_pro_model.dart';
 export 'creat_new_pro_model.dart';
@@ -59,11 +56,6 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
     }
   }
 
-  double? _parseDouble(String? text) {
-    if (text == null || text.trim().isEmpty) return null;
-    return double.tryParse(text.trim());
-  }
-
   @override
   void initState() {
     super.initState();
@@ -99,7 +91,9 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
 
     if (selectedMedia == null ||
         !selectedMedia.every(
-            (m) => validateFileFormat(m.storagePath, context))) return;
+            (m) => validateFileFormat(m.storagePath, context))) {
+      return;
+    }
 
     onUploading(true);
 
@@ -123,6 +117,30 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
 
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        appBar: AppBar(
+          title: const Text('Create New Program'),
+          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.safePop(),
+          ),
+        ),
+        body: SafeArea(
+          top: true,
+          bottom: true,
+          child: _buildBody(context),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
     final previewBg = _safeColor(_model.passBgColorController?.text,
         const Color(0xFF007AFF));
     final previewFg =
@@ -130,19 +148,11 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
     final previewLabel =
         _safeColor(_model.passLabelColorController?.text, previewFg);
 
-    return Scaffold(
-      key: scaffoldKey,
-      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-      appBar: AppBar(
-        title: const Text('Create New Program'),
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             Text(
               'Create Program',
               style: FlutterFlowTheme.of(context).titleLarge,
@@ -284,7 +294,8 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                                 NetworkImage(_model.uploadedFileUrl_background),
                             fit: BoxFit.cover,
                             colorFilter: ColorFilter.mode(
-                                previewBg.withOpacity(0.45), BlendMode.srcATop),
+                                previewBg.withValues(alpha: 0.45),
+                                BlendMode.srcATop),
                           )
                         : null,
                   ),
@@ -360,7 +371,7 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                               radius: 16,
                               backgroundColor: index == 0
                                   ? previewFg
-                                  : previewFg.withOpacity(0.25),
+                                  : previewFg.withValues(alpha: 0.25),
                               child: _model.uploadedFileUrl_uploadDataXoh
                                       .isNotEmpty
                                   ? Image.network(
@@ -532,11 +543,10 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                 textStyle: const TextStyle(color: Colors.white),
                 borderRadius: BorderRadius.circular(14),
               ),
-            )
+            ),
           ],
         ),
-      ),
-    );
+      );
   }
 
   Widget _sectionCard({

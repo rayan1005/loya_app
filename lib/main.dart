@@ -1,10 +1,11 @@
+import 'dart:async';
+
 import 'package:provider/provider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'auth/firebase_auth/firebase_user_provider.dart';
 import 'auth/firebase_auth/auth_util.dart';
 
@@ -12,8 +13,8 @@ import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/internationalization.dart';
-import 'flutter_flow/nav/nav.dart';
-import 'index.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,11 +30,13 @@ void main() async {
 
   runApp(ChangeNotifierProvider(
     create: (context) => appState,
-    child: MyApp(),
+    child: const MyApp(),
   ));
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   // This widget is the root of your application.
   @override
   State<MyApp> createState() => _MyAppState();
@@ -73,6 +76,8 @@ class _MyAppState extends State<MyApp> {
   late Stream<BaseAuthUser> userStream;
 
   final authUserSub = authenticatedUserStream.listen((_) {});
+  StreamSubscription<String>? _tokenSub;
+  bool _fcmInit = false;
 
   @override
   void initState() {
@@ -83,10 +88,13 @@ class _MyAppState extends State<MyApp> {
     userStream = loyaAppFirebaseUserStream()
       ..listen((user) {
         _appStateNotifier.update(user);
+        if (user.loggedIn && !_fcmInit) {
+          _initFcm();
+        }
       });
     jwtTokenStream.listen((_) {});
     Future.delayed(
-      Duration(milliseconds: 1000),
+      const Duration(milliseconds: 1000),
       () => _appStateNotifier.stopShowingSplashImage(),
     );
   }
@@ -94,12 +102,46 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     authUserSub.cancel();
+    _tokenSub?.cancel();
 
     super.dispose();
   }
 
   void setLocale(String language) {
     safeSetState(() => _locale = createLocale(language));
+  }
+
+  Future<void> _initFcm() async {
+    if (_fcmInit) return;
+    _fcmInit = true;
+    final messaging = FirebaseMessaging.instance;
+    await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    await messaging.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    _tokenSub = messaging.onTokenRefresh.listen(_saveToken);
+    final token = await messaging.getToken();
+    if (token != null) {
+      await _saveToken(token);
+    }
+  }
+
+  Future<void> _saveToken(String token) async {
+    if (currentUserReference == null) return;
+    try {
+      await currentUserReference!.update({
+        'fcm_token': token,
+        'fcm_updated_at': FieldValue.serverTimestamp(),
+      });
+    } catch (_) {
+      // ignore failures silently
+    }
   }
 
   void setThemeMode(ThemeMode mode) => safeSetState(() {
@@ -113,7 +155,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'loya',
       scrollBehavior: MyAppScrollBehavior(),
-      localizationsDelegates: [
+      localizationsDelegates: const [
         FFLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

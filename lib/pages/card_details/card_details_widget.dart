@@ -6,8 +6,8 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'card_details_model.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -45,6 +45,11 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
     ProgramsRecord program,
   ) async {
     if (_model.isCreatingPass) return;
+    // If already has a wallet URL, just open it.
+    if (card.walletPassUrl.isNotEmpty) {
+      await launchURL(card.walletPassUrl);
+      return;
+    }
     setState(() => _model.isCreatingPass = true);
     try {
       if (program.reference.id.isEmpty) {
@@ -216,6 +221,8 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
 
   Widget _programCard(BuildContext context, ProgramsRecord program,
       int filled, int totalSlots) {
+    final remaining = (totalSlots - filled).clamp(0, totalSlots);
+    final progress = totalSlots == 0 ? 0.0 : filled / totalSlots;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -239,31 +246,93 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
           Text(program.description,
               style: FlutterFlowTheme.of(context).bodyMedium),
           const SizedBox(height: 12),
-          Text('Progress', style: FlutterFlowTheme.of(context).titleSmall),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Progress', style: FlutterFlowTheme.of(context).titleSmall),
+              Text('$filled / $totalSlots',
+                  style: FlutterFlowTheme.of(context).bodyMedium),
+            ],
+          ),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: List.generate(totalSlots, (index) {
-              final filledSlot = index < filled;
-              return Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: filledSlot
-                      ? FlutterFlowTheme.of(context).primary
-                      : FlutterFlowTheme.of(context).alternate,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  filledSlot ? Icons.check : Icons.star_border,
-                  color: filledSlot
-                      ? Colors.white
-                      : FlutterFlowTheme.of(context).secondaryText,
-                  size: 16,
-                ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              minHeight: 8,
+              backgroundColor: FlutterFlowTheme.of(context).alternate,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                  FlutterFlowTheme.of(context).primary),
+            ),
+          ),
+          const SizedBox(height: 12),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final firstRow = totalSlots > 6 ? 6 : totalSlots;
+              final secondRow = totalSlots - firstRow;
+              double calcSize(int count) {
+                const spacing = 8.0;
+                return ((constraints.maxWidth - spacing * (count - 1)) / count)
+                    .clamp(20.0, 38.0);
+              }
+
+              final size1 = calcSize(firstRow);
+              final size2 = secondRow > 0 ? calcSize(secondRow) : size1;
+
+              Widget buildRow(int count, double size, int offset) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(count, (i) {
+                    final idx = offset + i;
+                    final filledSlot = idx < filled;
+                    return Padding(
+                      padding:
+                          EdgeInsets.only(right: i == count - 1 ? 0 : 8.0),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOut,
+                        width: size,
+                        height: size,
+                        decoration: BoxDecoration(
+                          color: filledSlot
+                              ? FlutterFlowTheme.of(context).primary
+                              : FlutterFlowTheme.of(context).alternate,
+                          shape: BoxShape.circle,
+                          boxShadow: filledSlot
+                              ? [
+                                  BoxShadow(
+                                    color: FlutterFlowTheme.of(context)
+                                        .primary
+                                        .withOpacity(0.35),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  )
+                                ]
+                              : [],
+                        ),
+                        child: Icon(
+                          filledSlot ? Icons.check : Icons.star_border,
+                          color: filledSlot
+                              ? Colors.white
+                              : FlutterFlowTheme.of(context).secondaryText,
+                          size: size * 0.55,
+                        ),
+                      ),
+                    );
+                  }),
+                );
+              }
+
+              return Column(
+                children: [
+                  buildRow(firstRow, size1, 0),
+                  if (secondRow > 0) ...[
+                    const SizedBox(height: 8),
+                    buildRow(secondRow, size2, firstRow),
+                  ],
+                ],
               );
-            }),
+            },
           ),
           const SizedBox(height: 12),
           Text(
@@ -280,6 +349,18 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
           Text(
             'Stamps required: ${program.stampsRequired}',
             style: FlutterFlowTheme.of(context).labelMedium,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            remaining == 0
+                ? 'Reward ready to redeem'
+                : '$remaining stamp(s) remaining',
+            style: FlutterFlowTheme.of(context).bodySmall.override(
+                  font: GoogleFonts.interTight(fontWeight: FontWeight.w700),
+                  color: remaining == 0
+                      ? FlutterFlowTheme.of(context).primary
+                      : FlutterFlowTheme.of(context).secondaryText,
+                ),
           ),
         ],
       ),
@@ -301,6 +382,11 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('QR code', style: FlutterFlowTheme.of(context).titleSmall),
+          const SizedBox(height: 4),
+          Text(
+            'Show this QR to the merchant to scan and add a stamp.',
+            style: FlutterFlowTheme.of(context).bodySmall,
+          ),
           const SizedBox(height: 8),
           if (qr.isNotEmpty)
             Center(
@@ -322,6 +408,28 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
             )
           else
             Text('No QR available', style: FlutterFlowTheme.of(context).bodyMedium),
+          const SizedBox(height: 10),
+          if (qr.isNotEmpty)
+            Align(
+              alignment: Alignment.centerRight,
+              child: FFButtonWidget(
+                onPressed: () => Clipboard.setData(ClipboardData(text: qr)),
+                text: 'Copy QR link',
+                options: FFButtonOptions(
+                  height: 38,
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                        font: GoogleFonts.interTight(
+                          fontWeight: FontWeight.w700,
+                        ),
+                        color: FlutterFlowTheme.of(context).primaryText,
+                      ),
+                  borderSide:
+                      BorderSide(color: FlutterFlowTheme.of(context).alternate),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -345,6 +453,18 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
               ),
         ),
         const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(Icons.flash_on,
+                size: 18, color: FlutterFlowTheme.of(context).primary),
+            const SizedBox(width: 6),
+            Text(
+              'Ask merchant to scan your QR to add a stamp.',
+              style: FlutterFlowTheme.of(context).bodySmall,
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
         FFButtonWidget(
           onPressed:
               _model.isCreatingPass ? null : () => _createWalletPass(card, program),
@@ -390,13 +510,6 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
     );
   }
 }
-
-
-
-
-
-
-
 
 
 

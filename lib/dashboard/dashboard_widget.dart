@@ -6,16 +6,12 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import '/pages/card_details/card_details_widget.dart';
 import '/components/user_nav_bar.dart';
 import '/components/stamp_card_widget.dart';
-import '/user_or_merchant/user_or_merchant_widget.dart';
-import '/user_info/user_info_widget.dart';
-import '/sign_in/sign_in_widget.dart';
 import '/pages/program_browse/program_browse_widget.dart';
 import '/pages/program_details/program_details_widget.dart';
 import 'dashboard_model.dart';
 export 'dashboard_model.dart';
 
 import 'dart:math' as math;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -54,7 +50,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: const Color(0xFFF7F8FA),
-        bottomNavigationBar: UserNavBar(currentTab: UserNavTab.home),
+        bottomNavigationBar: const UserNavBar(currentTab: UserNavTab.home),
         body: SafeArea(
           top: true,
           child: SingleChildScrollView(
@@ -303,7 +299,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
   }
 
   Widget _miniProgramCard(BuildContext context, ProgramsRecord program) {
-    Color _bg() {
+    Color bg0() {
       final raw = program.passBackgroundColor;
       if (raw.isEmpty) return const Color(0xFF4A90E2);
       try {
@@ -313,7 +309,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       }
     }
 
-    Color _fg() {
+    Color fg0() {
       final raw = program.passForegroundColor;
       if (raw.isEmpty) return Colors.white;
       try {
@@ -323,8 +319,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       }
     }
 
-    final bg = _bg();
-    final fg = _fg();
+    final bg = bg0();
+    final fg = fg0();
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -437,7 +433,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
 
   Widget _cardItem(BuildContext context, StampCardsRecord card,
       ProgramsRecord program, double progress, int filled, int total) {
-    Color _bgColor() {
+    Color bgColor() {
       final raw = program.passBackgroundColor;
       if (raw.isEmpty) return const Color(0xFF4A90E2);
       try {
@@ -448,8 +444,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       }
     }
 
-    final bg = _bgColor();
-    Color _fgColor() {
+    final bg = bgColor();
+    Color fgColor() {
       final raw = program.passForegroundColor;
       if (raw.isEmpty) return Colors.white;
       try {
@@ -459,7 +455,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       }
     }
 
-    Color _labelColor() {
+    Color labelColor0() {
       final raw = program.passLabelColor;
       if (raw.isEmpty) return Colors.white.withOpacity(0.8);
       try {
@@ -469,8 +465,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       }
     }
 
-    final fg = _fgColor();
-    final labelColor = _labelColor();
+    final fg = fgColor();
+    final labelColor = labelColor0();
 
     return StampCardWidget(
       title: program.title,

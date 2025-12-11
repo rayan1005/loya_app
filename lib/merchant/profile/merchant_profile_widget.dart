@@ -7,7 +7,6 @@ import '/backend/firebase_storage/storage.dart';
 import '/flutter_flow/upload_data.dart';
 import '/dashboard/dashboard_widget.dart';
 import '/merchant/md/md_widget.dart';
-import '/pages/home_page/home_page_widget.dart';
 import '/merchant/components/merchant_nav_bar.dart';
 import '/merchant/qr/merchant_qr_widget.dart';
 import 'package:flutter/material.dart';
@@ -55,7 +54,9 @@ class _MerchantProfileWidgetState extends State<MerchantProfileWidget> {
     );
     if (selectedMedia == null ||
         !selectedMedia.every(
-            (m) => validateFileFormat(m.storagePath, context))) return;
+            (m) => validateFileFormat(m.storagePath, context))) {
+      return;
+    }
 
     setState(() => _saving = true);
     try {

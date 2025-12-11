@@ -5,7 +5,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import 'rewards_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class RewardsWidget extends StatefulWidget {
   const RewardsWidget({super.key});
@@ -103,12 +102,12 @@ class _RewardsWidgetState extends State<RewardsWidget> {
                 );
               }
               return ListView.builder(
-                padding: EdgeInsetsDirectional.fromSTEB(16.0, 16.0, 16.0, 32.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(16.0, 16.0, 16.0, 32.0),
                 itemCount: rewards.length,
                 itemBuilder: (context, index) {
                   final reward = rewards[index];
                   return Padding(
-                    padding: EdgeInsetsDirectional.only(bottom: 12.0),
+                    padding: const EdgeInsetsDirectional.only(bottom: 12.0),
                     child: Container(
                       decoration: BoxDecoration(
                         color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -121,7 +120,7 @@ class _RewardsWidgetState extends State<RewardsWidget> {
                           )
                         ],
                       ),
-                      padding: EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

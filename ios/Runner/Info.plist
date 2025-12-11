@@ -60,7 +60,7 @@
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Local network is not used for tracking; only for device discovery when adding passes.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We use your location to show nearby offers and trigger store proximity alerts on your pass.</string>
+	<string>We use your location to show nearby offers and programs around you.</string>
 
 
 

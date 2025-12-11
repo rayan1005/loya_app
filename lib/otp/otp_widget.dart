@@ -3,15 +3,10 @@ import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:math';
-import 'dart:ui';
 import '/index.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'otp_model.dart';
 export 'otp_model.dart';
 
@@ -56,22 +51,22 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
             curve: Curves.easeInOut,
             delay: 0.0.ms,
             duration: 300.0.ms,
-            begin: Offset(0.0, 140.0),
-            end: Offset(0.0, 0.0),
+            begin: const Offset(0.0, 140.0),
+            end: const Offset(0.0, 0.0),
           ),
           ScaleEffect(
             curve: Curves.easeInOut,
             delay: 0.0.ms,
             duration: 300.0.ms,
-            begin: Offset(0.9, 1.0),
-            end: Offset(1.0, 1.0),
+            begin: const Offset(0.9, 1.0),
+            end: const Offset(1.0, 1.0),
           ),
           TiltEffect(
             curve: Curves.easeInOut,
             delay: 0.0.ms,
             duration: 300.0.ms,
-            begin: Offset(-0.349, 0),
-            end: Offset(0, 0),
+            begin: const Offset(-0.349, 0),
+            end: const Offset(0, 0),
           ),
         ],
       ),
@@ -99,7 +94,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         body: Container(
           height: double.infinity,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFF4A90E2), Color(0xFF4B39EF)],
               stops: [0.0, 1.0],
@@ -107,21 +102,21 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
               end: AlignmentDirectional(-0.87, 1.0),
             ),
           ),
-          alignment: AlignmentDirectional(0.0, -1.0),
+          alignment: const AlignmentDirectional(0.0, -1.0),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 70.0, 0.0, 32.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 70.0, 0.0, 32.0),
                   child: Container(
                     width: 200.0,
                     height: 70.0,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16.0),
                     ),
-                    alignment: AlignmentDirectional(0.0, 0.0),
+                    alignment: const AlignmentDirectional(0.0, 0.0),
                     child: Text(
                       'LOYA.SA',
                       style: FlutterFlowTheme.of(context).displaySmall.override(
@@ -146,15 +141,15 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Container(
                     width: double.infinity,
-                    constraints: BoxConstraints(
+                    constraints: const BoxConstraints(
                       maxWidth: 570.0,
                     ),
                     decoration: BoxDecoration(
                       color: FlutterFlowTheme.of(context).secondaryBackground,
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           blurRadius: 4.0,
                           color: Color(0x33000000),
@@ -167,15 +162,15 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(12.0),
                     ),
                     child: Align(
-                      alignment: AlignmentDirectional(0.0, 0.0),
+                      alignment: const AlignmentDirectional(0.0, 0.0),
                       child: Padding(
-                        padding: EdgeInsets.all(32.0),
+                        padding: const EdgeInsets.all(32.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Container(
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8.0),
                                 child: Image.asset(
@@ -187,7 +182,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 24.0),
                               child: Text(
                                 'Enter the verification code',
@@ -214,18 +209,18 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                               ),
                             ),
                             Align(
-                              alignment: AlignmentDirectional(0.0, 0.0),
+                              alignment: const AlignmentDirectional(0.0, 0.0),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, 16.0),
-                                child: Container(
+                                child: SizedBox(
                                   width: double.infinity,
                                   child: TextFormField(
                                     controller:
                                         _model.emailAddressTextController,
                                     focusNode: _model.emailAddressFocusNode,
                                     autofocus: true,
-                                    autofillHints: [AutofillHints.email],
+                                    autofillHints: const [AutofillHints.email],
                                     obscureText: false,
                                     decoration: InputDecoration(
                                       labelStyle: FlutterFlowTheme.of(context)
@@ -266,7 +261,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                                       .bodyLarge
                                                       .fontStyle,
                                             ),
-                                            color: Color(0xFFA39F9F),
+                                            color: const Color(0xFFA39F9F),
                                             fontSize: 18.0,
                                             letterSpacing: 5.0,
                                             fontWeight:
@@ -288,7 +283,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                             BorderRadius.circular(12.0),
                                       ),
                                       focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
+                                        borderSide: const BorderSide(
                                           color: Color(0xFF4A90E2),
                                           width: 2.0,
                                         ),
@@ -357,17 +352,16 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 16.0),
                               child: FFButtonWidget(
                                 onPressed: () async {
                                   GoRouter.of(context).prepareAuthEvent();
                                   final smsCodeVal =
                                       _model.emailAddressTextController.text;
-                                  if (smsCodeVal == null ||
-                                      smsCodeVal.isEmpty) {
+                                  if (smsCodeVal.isEmpty) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
+                                      const SnackBar(
                                         content: Text(
                                             'Enter SMS verification code.'),
                                       ),
@@ -384,10 +378,6 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                   }
 
                                   if (!(valueOrDefault(
-                                              currentUserDocument?.userType,
-                                              '') ==
-                                          null ||
-                                      valueOrDefault(
                                               currentUserDocument?.userType,
                                               '') ==
                                           '')) {
@@ -431,11 +421,11 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                 options: FFButtonOptions(
                                   width: double.infinity,
                                   height: 50.0,
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, 0.0),
-                                  iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                  iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, 0.0),
-                                  color: Color(0xFF4A90E2),
+                                  color: const Color(0xFF4A90E2),
                                   textStyle: FlutterFlowTheme.of(context)
                                       .titleSmall
                                       .override(
@@ -459,7 +449,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                             .fontStyle,
                                       ),
                                   elevation: 3.0,
-                                  borderSide: BorderSide(
+                                  borderSide: const BorderSide(
                                     color: Colors.transparent,
                                     width: 1.0,
                                   ),
@@ -470,7 +460,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
 
                             // You will have to add an action on this rich text to go to your login page.
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 12.0, 0.0, 12.0),
                               child: RichText(
                                 textScaler: MediaQuery.of(context).textScaler,

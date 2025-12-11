@@ -1,20 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
 
 import '/auth/base_auth_user_provider.dart';
 
-import '/main.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/lat_lng.dart';
-import '/flutter_flow/place.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'serialization_util.dart';
 
 import '/index.dart';
 
@@ -84,46 +78,46 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
       errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? SplashWidget() : SignInWidget(),
+          appStateNotifier.loggedIn ? const SplashWidget() : const SignInWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
           builder: (context, _) =>
-              appStateNotifier.loggedIn ? SplashWidget() : SignInWidget(),
+              appStateNotifier.loggedIn ? const SplashWidget() : const SignInWidget(),
           routes: [
             FFRoute(
               name: HomePageWidget.routeName,
               path: HomePageWidget.routePath,
               requireAuth: true,
-              builder: (context, params) => HomePageWidget(),
+              builder: (context, params) => const HomePageWidget(),
             ),
             FFRoute(
               name: DashboardWidget.routeName,
               path: DashboardWidget.routePath,
-              builder: (context, params) => DashboardWidget(),
+              builder: (context, params) => const DashboardWidget(),
             ),
             FFRoute(
               name: SignInWidget.routeName,
               path: SignInWidget.routePath,
-              builder: (context, params) => SignInWidget(),
+              builder: (context, params) => const SignInWidget(),
             ),
             FFRoute(
               name: OtpWidget.routeName,
               path: OtpWidget.routePath,
-              builder: (context, params) => OtpWidget(),
+              builder: (context, params) => const OtpWidget(),
             ),
             FFRoute(
               name: UserOrMerchantWidget.routeName,
               path: UserOrMerchantWidget.routePath,
               requireAuth: true,
-              builder: (context, params) => UserOrMerchantWidget(),
+              builder: (context, params) => const UserOrMerchantWidget(),
             ),
             FFRoute(
               name: CreatNewProWidget.routeName,
               path: CreatNewProWidget.routePath,
               requireAuth: true,
-              builder: (context, params) => CreatNewProWidget(),
+              builder: (context, params) => const CreatNewProWidget(),
             ),
             FFRoute(
               name: MdWidget.routeName,
@@ -141,7 +135,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             FFRoute(
               name: SplashWidget.routeName,
               path: SplashWidget.routePath,
-              builder: (context, params) => SplashWidget(),
+              builder: (context, params) => const SplashWidget(),
             ),
             FFRoute(
               name: MdPlusWidget.routeName,
@@ -173,31 +167,31 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               name: MerchantScanWidget.routeName,
               path: MerchantScanWidget.routePath,
               requireAuth: true,
-              builder: (context, params) => MerchantScanWidget(),
+              builder: (context, params) => const MerchantScanWidget(),
             ),
             FFRoute(
               name: ProgramsListWidget.routeName,
               path: ProgramsListWidget.routePath,
               requireAuth: true,
-              builder: (context, params) => ProgramsListWidget(),
+              builder: (context, params) => const ProgramsListWidget(),
             ),
             FFRoute(
               name: MerchantProfileWidget.routeName,
               path: MerchantProfileWidget.routePath,
               requireAuth: true,
-              builder: (context, params) => MerchantProfileWidget(),
+              builder: (context, params) => const MerchantProfileWidget(),
             ),
             FFRoute(
               name: MerchantQrWidget.routeName,
               path: MerchantQrWidget.routePath,
               requireAuth: true,
-              builder: (context, params) => MerchantQrWidget(),
+              builder: (context, params) => const MerchantQrWidget(),
             ),
             FFRoute(
               name: ProgramBrowseWidget.routeName,
               path: ProgramBrowseWidget.routePath,
               requireAuth: true,
-              builder: (context, params) => ProgramBrowseWidget(),
+              builder: (context, params) => const ProgramBrowseWidget(),
             ),
             FFRoute(
               name: ProgramDetailsWidget.routeName,
@@ -216,7 +210,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               name: MyCardsWidget.routeName,
               path: MyCardsWidget.routePath,
               requireAuth: true,
-              builder: (context, params) => MyCardsWidget(),
+              builder: (context, params) => const MyCardsWidget(),
             ),
             FFRoute(
               name: CardDetailsWidget.routeName,
@@ -235,13 +229,19 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               name: RewardsWidget.routeName,
               path: RewardsWidget.routePath,
               requireAuth: true,
-              builder: (context, params) => RewardsWidget(),
+              builder: (context, params) => const RewardsWidget(),
+            ),
+            FFRoute(
+              name: UserInfoWidget.routeName,
+              path: UserInfoWidget.routePath,
+              requireAuth: true,
+              builder: (context, params) => const UserInfoWidget(),
             ),
             FFRoute(
               name: TransactionsWidget.routeName,
               path: TransactionsWidget.routePath,
               requireAuth: true,
-              builder: (context, params) => TransactionsWidget(),
+              builder: (context, params) => const TransactionsWidget(),
             )
           ].map((r) => r.toRoute(appStateNotifier)).toList(),
         ),
@@ -483,7 +483,7 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
-  static TransitionInfo appDefault() => TransitionInfo(hasTransition: false);
+  static TransitionInfo appDefault() => const TransitionInfo(hasTransition: false);
 }
 
 class RootPageContext {

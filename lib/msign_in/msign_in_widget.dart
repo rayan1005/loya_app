@@ -6,15 +6,10 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/upload_data.dart';
-import 'dart:math';
-import 'dart:ui';
 import '/index.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'msign_in_model.dart';
 export 'msign_in_model.dart';
 
@@ -72,22 +67,22 @@ class _MsignInWidgetState extends State<MsignInWidget>
             curve: Curves.easeInOut,
             delay: 0.0.ms,
             duration: 300.0.ms,
-            begin: Offset(0.0, 140.0),
-            end: Offset(0.0, 0.0),
+            begin: const Offset(0.0, 140.0),
+            end: const Offset(0.0, 0.0),
           ),
           ScaleEffect(
             curve: Curves.easeInOut,
             delay: 0.0.ms,
             duration: 300.0.ms,
-            begin: Offset(0.9, 1.0),
-            end: Offset(1.0, 1.0),
+            begin: const Offset(0.9, 1.0),
+            end: const Offset(1.0, 1.0),
           ),
           TiltEffect(
             curve: Curves.easeInOut,
             delay: 0.0.ms,
             duration: 300.0.ms,
-            begin: Offset(-0.349, 0),
-            end: Offset(0, 0),
+            begin: const Offset(-0.349, 0),
+            end: const Offset(0, 0),
           ),
         ],
       ),
@@ -115,7 +110,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         body: Container(
           height: double.infinity,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFF4A90E2), Color(0xFF4B39EF)],
               stops: [0.0, 1.0],
@@ -123,13 +118,13 @@ class _MsignInWidgetState extends State<MsignInWidget>
               end: AlignmentDirectional(-0.87, 1.0),
             ),
           ),
-          alignment: AlignmentDirectional(0.0, -1.0),
+          alignment: const AlignmentDirectional(0.0, -1.0),
           child: Column(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(16.0, 50.0, 16.0, 10.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(16.0, 50.0, 16.0, 10.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -137,9 +132,9 @@ class _MsignInWidgetState extends State<MsignInWidget>
                   children: [
                     Container(
                       width: 100.0,
-                      decoration: BoxDecoration(),
+                      decoration: const BoxDecoration(),
                       child: Align(
-                        alignment: AlignmentDirectional(-1.0, 0.0),
+                        alignment: const AlignmentDirectional(-1.0, 0.0),
                         child: Icon(
                           Icons.language_sharp,
                           color:
@@ -182,7 +177,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                     ),
                     Container(
                       width: 100.0,
-                      decoration: BoxDecoration(),
+                      decoration: const BoxDecoration(),
                       child: Row(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -208,12 +203,12 @@ class _MsignInWidgetState extends State<MsignInWidget>
               Container(
                 width: double.infinity,
                 height: 800.0,
-                constraints: BoxConstraints(
+                constraints: const BoxConstraints(
                   maxWidth: 570.0,
                 ),
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondaryBackground,
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       blurRadius: 4.0,
                       color: Color(0x33000000),
@@ -223,7 +218,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                       ),
                     )
                   ],
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(0.0),
                     bottomRight: Radius.circular(0.0),
                     topLeft: Radius.circular(12.0),
@@ -232,19 +227,19 @@ class _MsignInWidgetState extends State<MsignInWidget>
                 ),
                 child: Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 100.0),
+                      const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 100.0),
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         Padding(
-                          padding: EdgeInsets.all(24.0),
+                          padding: const EdgeInsets.all(24.0),
                           child: Container(
                             width: double.infinity,
                             decoration: BoxDecoration(
                               color: FlutterFlowTheme.of(context)
                                   .primaryBackground,
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                   blurRadius: 8.0,
                                   color: Color(0x1A000000),
@@ -260,7 +255,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                               key: _model.formKey,
                               autovalidateMode: AutovalidateMode.disabled,
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     16.0, 0.0, 16.0, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -300,7 +295,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                                         .fontStyle,
                                               ),
                                         ),
-                                      ].divide(SizedBox(width: 8.0)),
+                                      ].divide(const SizedBox(width: 8.0)),
                                     ),
                                     TextFormField(
                                       controller: _model.textController1,
@@ -377,7 +372,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                         fillColor: FlutterFlowTheme.of(context)
                                             .secondaryBackground,
                                         contentPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
+                                            const EdgeInsetsDirectional.fromSTEB(
                                                 16.0, 16.0, 16.0, 16.0),
                                       ),
                                       style: FlutterFlowTheme.of(context)
@@ -444,7 +439,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                                         .fontStyle,
                                               ),
                                         ),
-                                      ].divide(SizedBox(width: 8.0)),
+                                      ].divide(const SizedBox(width: 8.0)),
                                     ),
                                     TextFormField(
                                       controller: _model.textController2,
@@ -521,7 +516,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                         fillColor: FlutterFlowTheme.of(context)
                                             .secondaryBackground,
                                         contentPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
+                                            const EdgeInsetsDirectional.fromSTEB(
                                                 16.0, 16.0, 16.0, 16.0),
                                       ),
                                       style: FlutterFlowTheme.of(context)
@@ -591,7 +586,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                                         .fontStyle,
                                               ),
                                         ),
-                                      ].divide(SizedBox(width: 8.0)),
+                                      ].divide(const SizedBox(width: 8.0)),
                                     ),
                                     TextFormField(
                                       controller: _model.textController3,
@@ -668,7 +663,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                         fillColor: FlutterFlowTheme.of(context)
                                             .secondaryBackground,
                                         contentPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
+                                            const EdgeInsetsDirectional.fromSTEB(
                                                 16.0, 16.0, 16.0, 16.0),
                                       ),
                                       style: FlutterFlowTheme.of(context)
@@ -736,7 +731,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                                         .fontStyle,
                                               ),
                                         ),
-                                      ].divide(SizedBox(width: 8.0)),
+                                      ].divide(const SizedBox(width: 8.0)),
                                     ),
                                     AuthUserStreamWidget(
                                       builder: (context) => TextFormField(
@@ -823,7 +818,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                               FlutterFlowTheme.of(context)
                                                   .secondaryBackground,
                                           contentPadding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional.fromSTEB(
                                                   16.0, 16.0, 16.0, 16.0),
                                         ),
                                         style: FlutterFlowTheme.of(context)
@@ -900,10 +895,10 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                                         .fontStyle,
                                               ),
                                         ),
-                                      ].divide(SizedBox(width: 8.0)),
+                                      ].divide(const SizedBox(width: 8.0)),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           0.0, 0.0, 0.0, 16.0),
                                       child: TextFormField(
                                         controller: _model.textController5,
@@ -989,7 +984,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                               FlutterFlowTheme.of(context)
                                                   .secondaryBackground,
                                           contentPadding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional.fromSTEB(
                                                   16.0, 16.0, 16.0, 16.0),
                                         ),
                                         style: FlutterFlowTheme.of(context)
@@ -1027,20 +1022,20 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                             .asValidator(context),
                                       ),
                                     ),
-                                  ].divide(SizedBox(height: 20.0)),
+                                  ].divide(const SizedBox(height: 20.0)),
                                 ),
                               ),
                             ),
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.all(24.0),
+                          padding: const EdgeInsets.all(24.0),
                           child: Container(
                             width: double.infinity,
                             decoration: BoxDecoration(
                               color: FlutterFlowTheme.of(context)
                                   .primaryBackground,
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                   blurRadius: 8.0,
                                   color: Color(0x1A000000),
@@ -1053,7 +1048,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                               borderRadius: BorderRadius.circular(16.0),
                             ),
                             child: Padding(
-                              padding: EdgeInsets.all(16.0),
+                              padding: const EdgeInsets.all(16.0),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1091,16 +1086,14 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                                       .fontStyle,
                                             ),
                                       ),
-                                    ].divide(SizedBox(width: 8.0)),
+                                    ].divide(const SizedBox(width: 8.0)),
                                   ),
                                   Row(
                                     mainAxisSize: MainAxisSize.max,
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      if (_model.uploadedLocalFile_uploadDataF6u !=
-                                              null &&
-                                          (_model.uploadedLocalFile_uploadDataF6u
+                                      if ((_model.uploadedLocalFile_uploadDataF6u
                                                   .bytes?.isNotEmpty ??
                                               false))
                                         Container(
@@ -1205,7 +1198,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                           ),
                                           child: Align(
                                             alignment:
-                                                AlignmentDirectional(0.0, 0.0),
+                                                const AlignmentDirectional(0.0, 0.0),
                                             child: Icon(
                                               Icons.add_photo_alternate_rounded,
                                               color:
@@ -1218,20 +1211,18 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                       ),
                                     ],
                                   ),
-                                ].divide(SizedBox(height: 16.0)),
+                                ].divide(const SizedBox(height: 16.0)),
                               ),
                             ),
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               24.0, 0.0, 24.0, 0.0),
                           child: FFButtonWidget(
                             onPressed: () async {
-                              var _shouldSetState = false;
-                              if (_model.uploadedLocalFile_uploadDataF6u !=
-                                      null &&
-                                  (_model.uploadedLocalFile_uploadDataF6u.bytes
+                              var shouldSetState = false;
+                              if ((_model.uploadedLocalFile_uploadDataF6u.bytes
                                           ?.isNotEmpty ??
                                       false)) {
                                 {
@@ -1297,7 +1288,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                   }.withoutNulls,
                                 );
 
-                                if (_shouldSetState) safeSetState(() {});
+                                if (shouldSetState) safeSetState(() {});
                                 return;
                               }
 
@@ -1338,7 +1329,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                   },
                                 ),
                               }, merchantsRecordReference);
-                              _shouldSetState = true;
+                              shouldSetState = true;
 
                               await currentUserReference?.update(
                                 createUserRecordData(
@@ -1357,18 +1348,18 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                 }.withoutNulls,
                               );
 
-                              if (_shouldSetState) safeSetState(() {});
+                              if (shouldSetState) safeSetState(() {});
                             },
                             text: 'Create store',
-                            icon: Icon(
+                            icon: const Icon(
                               Icons.add_rounded,
                               size: 24.0,
                             ),
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 56.0,
-                              padding: EdgeInsets.all(8.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsets.all(8.0),
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               iconColor: Colors.white,
                               color: FlutterFlowTheme.of(context).primary,
@@ -1390,7 +1381,7 @@ class _MsignInWidgetState extends State<MsignInWidget>
                                         .fontStyle,
                                   ),
                               elevation: 2.0,
-                              borderSide: BorderSide(
+                              borderSide: const BorderSide(
                                 color: Colors.transparent,
                                 width: 1.0,
                               ),
@@ -1399,9 +1390,9 @@ class _MsignInWidgetState extends State<MsignInWidget>
                           ),
                         ),
                       ]
-                          .divide(SizedBox(height: 24.0))
-                          .addToStart(SizedBox(height: 16.0))
-                          .addToEnd(SizedBox(height: 32.0)),
+                          .divide(const SizedBox(height: 24.0))
+                          .addToStart(const SizedBox(height: 16.0))
+                          .addToEnd(const SizedBox(height: 32.0)),
                     ),
                   ),
                 ),

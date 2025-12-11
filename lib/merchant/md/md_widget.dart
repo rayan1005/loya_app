@@ -6,9 +6,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/index.dart';
 import '/merchant/components/merchant_nav_bar.dart';
-import '/creat_new_pro/creat_new_pro_widget.dart';
-import '/merchant/scan/merchant_scan_widget.dart';
-import '/merchant/programs_list/programs_list_widget.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -521,32 +518,137 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                                   ),
                                 );
                               }
-                              return Column(
-                                children: programs
-                                    .map((p) => InkWell(
-                                          onTap: () =>
-                                              _showProgramSheet(context, p),
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                bottom: 12),
-                                            child: _programTile(context, p),
-                                          ),
-                                        ))
-                                    .toList(),
-                              );
-                            },
-                          ),
-                        ],
+                          return Column(
+                            children: programs
+                                .map((p) => InkWell(
+                                      onTap: () =>
+                                          _showProgramSheet(context, p),
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                            bottom: 12),
+                                        child: _programTile(context, p),
+                                      ),
+                                    ))
+                                .toList(),
+                          );
+                        },
                       ),
-                    ),
-                  );
-                },
+                      const SizedBox(height: 20),
+                      _activitySection(context, merchantRef),
+                    ],
+                  ),
+                ),
+              );
+            },
               ),
         bottomNavigationBar: MerchantNavBar(
           currentTab: MerchantNavTab.dashboard,
           merchantRef: merchantRef,
         ),
       ),
+    );
+  }
+
+  Widget _activitySection(
+      BuildContext context, DocumentReference<Object?> merchantRef) {
+    return StreamBuilder<List<TransactionsRecord>>(
+      stream: queryTransactionsRecord(
+        queryBuilder: (q) => q
+            .where('merchant_id', isEqualTo: merchantRef)
+            .orderBy('created_at', descending: true),
+        limit: 5,
+      ),
+      builder: (context, snap) {
+        if (!snap.hasData) {
+          return const SizedBox.shrink();
+        }
+        final items = snap.data!;
+        if (items.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Recent activity',
+              style: FlutterFlowTheme.of(context).titleMedium.override(
+                    font: GoogleFonts.interTight(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+            ),
+            const SizedBox(height: 10),
+            ...items.map((t) {
+              final action = t.action.isNotEmpty ? t.action : 'stamp';
+              final value = t.value;
+              final ts = t.createdAt != null
+                  ? dateTimeFormat('relative', t.createdAt)
+                  : '';
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: FlutterFlowTheme.of(context).alternate),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: FlutterFlowTheme.of(context)
+                            .primary
+                            .withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.check_circle,
+                          color: FlutterFlowTheme.of(context).primary, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            action == 'redeem'
+                                ? 'Reward redeemed'
+                                : 'Stamp added',
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  font: GoogleFonts.interTight(
+                                      fontWeight: FontWeight.w700),
+                                ),
+                          ),
+                          if (ts.isNotEmpty)
+                            Text(
+                              ts,
+                              style: FlutterFlowTheme.of(context).bodySmall,
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (value != 0)
+                      Text(
+                        '+$value',
+                        style: FlutterFlowTheme.of(context)
+                            .titleSmall
+                            .override(
+                              font: GoogleFonts.interTight(
+                                  fontWeight: FontWeight.w700),
+                              color: FlutterFlowTheme.of(context).primary,
+                            ),
+                      ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        );
+      },
     );
   }
 }

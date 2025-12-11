@@ -109,13 +109,13 @@ class _ProgramsListWidgetState extends State<ProgramsListWidget> {
                   );
                 }
                 return ListView.builder(
-                  padding: EdgeInsetsDirectional.fromSTEB(
+                  padding: const EdgeInsetsDirectional.fromSTEB(
                       16.0, 16.0, 16.0, 120.0),
                   itemCount: programs.length,
                   itemBuilder: (context, index) {
                     final program = programs[index];
                     return Padding(
-                      padding: EdgeInsetsDirectional.only(bottom: 12.0),
+                      padding: const EdgeInsetsDirectional.only(bottom: 12.0),
                       child: Container(
                         decoration: BoxDecoration(
                           color:
@@ -129,7 +129,7 @@ class _ProgramsListWidgetState extends State<ProgramsListWidget> {
                             )
                           ],
                         ),
-                        padding: EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -159,7 +159,7 @@ class _ProgramsListWidgetState extends State<ProgramsListWidget> {
                                   ),
                                 ),
                                 Container(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: 10.0, vertical: 6.0),
                                   decoration: BoxDecoration(
                                     color: program.status
