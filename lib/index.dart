@@ -14,6 +14,8 @@ export '/merchant/md_plus/md_plus_widget.dart' show MdPlusWidget;
 export '/merchant/scan/merchant_scan_widget.dart' show MerchantScanWidget;
 export '/merchant/edit_program/edit_program_widget.dart'
     show EditProgramWidget;
+export '/merchant/program_details/merchant_program_details_widget.dart'
+    show MerchantProgramDetailsWidget;
 export '/merchant/programs_list/programs_list_widget.dart'
     show ProgramsListWidget;
 export '/merchant/qr/merchant_qr_widget.dart' show MerchantQrWidget;

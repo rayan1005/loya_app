@@ -167,13 +167,37 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               name: MerchantScanWidget.routeName,
               path: MerchantScanWidget.routePath,
               requireAuth: true,
-              builder: (context, params) => const MerchantScanWidget(),
+              builder: (context, params) => MerchantScanWidget(
+                programRef: params.getParam(
+                  'programRef',
+                  ParamType.DocumentReference,
+                  isList: false,
+                  collectionNamePath: ['programs'],
+                ),
+                programTitle: params.getParam(
+                  'programTitle',
+                  ParamType.String,
+                ),
+              ),
             ),
             FFRoute(
               name: ProgramsListWidget.routeName,
               path: ProgramsListWidget.routePath,
               requireAuth: true,
               builder: (context, params) => const ProgramsListWidget(),
+            ),
+            FFRoute(
+              name: MerchantProgramDetailsWidget.routeName,
+              path: MerchantProgramDetailsWidget.routePath,
+              requireAuth: true,
+              builder: (context, params) => MerchantProgramDetailsWidget(
+                programRef: params.getParam(
+                  'programRef',
+                  ParamType.DocumentReference,
+                  isList: false,
+                  collectionNamePath: ['programs'],
+                ),
+              ),
             ),
             FFRoute(
               name: MerchantProfileWidget.routeName,

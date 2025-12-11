@@ -209,8 +209,15 @@ class _ProgramsListWidgetState extends State<ProgramsListWidget> {
                             Row(
                               children: [
                                 FFButtonWidget(
-                                  onPressed: () =>
-                                      _showProgramDetails(context, program),
+                                  onPressed: () => context.pushNamed(
+                                    MerchantProgramDetailsWidget.routeName,
+                                    queryParameters: {
+                                      'programRef': serializeParam(
+                                        program.reference,
+                                        ParamType.DocumentReference,
+                                      ),
+                                    }.withoutNulls,
+                                  ),
                                   text: 'View',
                                   options: FFButtonOptions(
                                     height: 38.0,
@@ -344,164 +351,4 @@ class _ProgramsListWidgetState extends State<ProgramsListWidget> {
     );
   }
 
-  Future<void> _showProgramDetails(
-      BuildContext context, ProgramsRecord program) async {
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      program.title,
-                      style: FlutterFlowTheme.of(context).titleMedium.override(
-                            font: GoogleFonts.interTight(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: program.status
-                            ? FlutterFlowTheme.of(context)
-                                .primary
-                                .withOpacity(0.1)
-                            : FlutterFlowTheme.of(context)
-                                .secondaryText
-                                .withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        program.status ? 'Active' : 'Inactive',
-                        style: FlutterFlowTheme.of(context).bodySmall.override(
-                              font: GoogleFonts.interTight(
-                                fontWeight: FontWeight.w600,
-                              ),
-                              color: program.status
-                                  ? FlutterFlowTheme.of(context).primary
-                                  : FlutterFlowTheme.of(context).secondaryText,
-                            ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  program.description,
-                  style: FlutterFlowTheme.of(context).bodyMedium,
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _infoChip(context, 'Stamps required',
-                        '${program.stampsRequired}'),
-                    if (program.rewardDetails.isNotEmpty)
-                      _infoChip(context, 'Reward', program.rewardDetails),
-                    if (program.termsConditions.isNotEmpty)
-                      _infoChip(context, 'T&C', program.termsConditions),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    _colorDot(program.passBackgroundColor, 'Background'),
-                    const SizedBox(width: 12),
-                    _colorDot(program.passForegroundColor, 'Foreground'),
-                    const SizedBox(width: 12),
-                    _colorDot(program.passLabelColor, 'Labels'),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: FFButtonWidget(
-                    onPressed: () => Navigator.pop(ctx),
-                    text: 'Close',
-                    options: FFButtonOptions(
-                      height: 40,
-                      color: FlutterFlowTheme.of(context).primary,
-                      textStyle: FlutterFlowTheme.of(context)
-                          .titleSmall
-                          .override(
-                            font: GoogleFonts.interTight(
-                              fontWeight: FontWeight.w600,
-                            ),
-                            color: Colors.white,
-                          ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _infoChip(BuildContext context, String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: FlutterFlowTheme.of(context).alternate),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: FlutterFlowTheme.of(context).labelSmall,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: FlutterFlowTheme.of(context).bodyMedium,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _colorDot(String colorCode, String label) {
-    int fallback = 0xFFEEF2F7;
-    final colorInt = int.tryParse(colorCode.replaceAll('#', '0xff'));
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 22,
-          height: 22,
-          decoration: BoxDecoration(
-            color: Color(colorInt ?? fallback),
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0x33000000)),
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(label),
-      ],
-    );
-  }
 }

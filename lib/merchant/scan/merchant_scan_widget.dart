@@ -2,14 +2,21 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/merchant/components/merchant_nav_bar.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 class MerchantScanWidget extends StatefulWidget {
-  const MerchantScanWidget({super.key});
+  const MerchantScanWidget({
+    super.key,
+    this.programRef,
+    this.programTitle,
+  });
+
+  final DocumentReference? programRef;
+  final String? programTitle;
 
   static String routeName = 'MerchantScan';
   static String routePath = 'merchantScan';
@@ -19,101 +26,99 @@ class MerchantScanWidget extends StatefulWidget {
 }
 
 class _MerchantScanWidgetState extends State<MerchantScanWidget> {
-  bool _isScanning = false;
-  String _message = '';
+  final MobileScannerController _scannerController = MobileScannerController(
+    facing: CameraFacing.back,
+    torchEnabled: false,
+  );
+
+  bool _processing = false;
+  bool _torchOn = false;
+  bool _showSuccess = false;
+  String? _statusMessage;
   DocumentReference? _selectedProgram;
-  String _selectedProgramTitle = 'No program selected';
-  DocumentReference? _lastCardRef;
-  int _lastTotal = 0;
+  ProgramsRecord? _programRecord;
+  String _programTitle = 'Choose a program';
 
-  Future<void> _pickProgram() async {
-    final merchantRef = currentUserDocument?.linkedMerchants;
-    if (merchantRef == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No merchant linked.')),
-      );
-      return;
+  @override
+  void initState() {
+    super.initState();
+    _selectedProgram = widget.programRef;
+    _programTitle = widget.programTitle ?? 'Choose a program';
+    if (_selectedProgram != null) {
+      _loadProgramDetails();
+    } else {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _openProgramSheet());
     }
-
-    await showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          child: StreamBuilder<List<ProgramsRecord>>(
-            stream: queryProgramsRecord(
-              queryBuilder: (q) => q
-                  .where('merchant_id', isEqualTo: merchantRef)
-                  .where('status', isEqualTo: true),
-            ),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final programs = snapshot.data!;
-              if (programs.isEmpty) {
-                return const Center(child: Text('No active programs.'));
-              }
-              return ListView.separated(
-                shrinkWrap: true,
-                itemCount: programs.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  final p = programs[index];
-                  return ListTile(
-                    leading: p.stampIcon.isNotEmpty
-                        ? CircleAvatar(backgroundImage: NetworkImage(p.stampIcon))
-                        : const CircleAvatar(child: Icon(Icons.star)),
-                    title: Text(p.title),
-                    subtitle: Text('${p.stampsRequired} stamps required'),
-                    onTap: () {
-                      setState(() {
-                        _selectedProgram = p.reference;
-                        _selectedProgramTitle = p.title;
-                      });
-                      Navigator.of(context).pop();
-                    },
-                  );
-                },
-              );
-            },
-          ),
-        );
-      },
-    );
   }
 
-  Future<void> _startScan() async {
+  Future<void> _loadProgramDetails() async {
+    if (_selectedProgram == null) return;
+    try {
+      final program =
+          await ProgramsRecord.getDocumentOnce(_selectedProgram!);
+      if (mounted) {
+        setState(() {
+          _programRecord = program;
+          _programTitle =
+              program.title.isNotEmpty ? program.title : _programTitle;
+        });
+      }
+    } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    _scannerController.dispose();
+    super.dispose();
+  }
+
+  void _onDetect(BarcodeCapture capture) async {
+    if (_processing || capture.barcodes.isEmpty) return;
+    final value = capture.barcodes.first.rawValue ?? '';
+    if (value.isEmpty) return;
+    await _startProcessing(value);
+  }
+
+  Future<void> _startProcessing(String code) async {
     if (_selectedProgram == null) {
-      await _pickProgram();
+      await _openProgramSheet();
       if (_selectedProgram == null) {
+        setState(() => _statusMessage = 'Select a program to scan.');
         return;
       }
     }
-    if (_isScanning) return;
     setState(() {
-      _isScanning = true;
-      _message = '';
+      _processing = true;
+      _statusMessage = null;
     });
 
-    try {
-      final scanResult = await FlutterBarcodeScanner.scanBarcode(
-        '#FF4A90E2', 'Cancel',
-        false,
-        ScanMode.QR,
-      );
+    final success = await _processStamp(code);
+    if (!mounted) return;
 
-      if (!mounted) return;
-      if (scanResult == '-1') {
+    if (success) {
+      setState(() {
+        _showSuccess = true;
+        _statusMessage = 'Stamp added successfully!';
+      });
+      await Future.delayed(const Duration(milliseconds: 1200));
+      if (mounted) {
         setState(() {
-          _message = 'Scan cancelled.';
-          _isScanning = false;
+          _showSuccess = false;
         });
-        return;
       }
+    }
 
+    setState(() {
+      _processing = false;
+    });
+  }
+
+  Future<bool> _processStamp(String scanResult) async {
+    try {
+      await _scannerController.stop();
+    } catch (_) {}
+    try {
       final parsed = Uri.tryParse(scanResult.trim());
       String? programId = _selectedProgram?.id ??
           parsed?.queryParameters['program'] ??
@@ -121,28 +126,26 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
       String? uid = parsed?.queryParameters['uid'];
       String? serial = parsed?.queryParameters['serial'];
 
-      // Fallback regex parsing if URI failed
-      programId ??= RegExp(r'program=([^&]+)')
-          .firstMatch(scanResult)
-          ?.group(1);
+      programId ??=
+          RegExp(r'program=([^&]+)').firstMatch(scanResult)?.group(1);
       uid ??= RegExp(r'uid=([^&]+)').firstMatch(scanResult)?.group(1);
-      serial ??= RegExp(r'serial=([^&]+)').firstMatch(scanResult)?.group(1);
+      serial ??=
+          RegExp(r'serial=([^&]+)').firstMatch(scanResult)?.group(1);
 
       if (programId == null || programId.isEmpty) {
         setState(() {
-          _message = 'Program ID not found in QR.';
-          _isScanning = false;
+          _statusMessage = 'Program ID not found in QR.';
         });
-        return;
+        return false;
       }
 
       final response = await AddStampCall.call(programId: programId);
       if (!(response.succeeded)) {
         setState(() {
-          _message = 'Failed to add stamp. Check connection or permissions.';
-          _isScanning = false;
+          _statusMessage =
+              'Failed to add stamp. Check connection or permissions.';
         });
-        return;
+        return false;
       }
 
       final total = AddStampCall.totalStamps(response.jsonBody) ?? 0;
@@ -151,7 +154,6 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
       DocumentReference? cardRef;
       DocumentReference? userRef;
 
-      // Try updating the user card if found
       try {
         final programRef =
             FirebaseFirestore.instance.collection('programs').doc(programId);
@@ -173,8 +175,6 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
           cardRef = snap.docs.first.reference;
           final target =
               program != null && program.stampsRequired > 0 ? program.stampsRequired : total;
-          _lastCardRef = cardRef;
-          _lastTotal = total;
           await cardRef.update({
             ...createStampCardsRecordData(
               currentStamps: total,
@@ -186,7 +186,6 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
             }),
           });
 
-          // Log transaction for analytics/history
           try {
             final txRef = TransactionsRecord.collection.doc();
             await txRef.set({
@@ -198,284 +197,461 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
                 action: 'stamp',
                 value: 1,
                 scannedBy: currentUserEmail,
-                createdAt: DateTime.now(),
               ),
+              ...mapToFirestore({
+                'created_at': FieldValue.serverTimestamp(),
+              }),
             });
-          } catch (_) {
-            // ignore logging errors
-          }
+          } catch (_) {}
         }
-      } catch (_) {
-        // Best-effort update; ignore errors.
-      }
-
-      setState(() {
-        _message = 'Stamp added. Total: $total';
-        _isScanning = false;
-      });
-    } catch (e) {
-      setState(() {
-        _message = 'Something went wrong while scanning.';
-        _isScanning = false;
-      });
+      } catch (_) {}
+      return true;
+    } finally {
+      try {
+        await _scannerController.start();
+      } catch (_) {}
     }
   }
 
-  Future<void> _undoLastStamp() async {
-    if (_lastCardRef == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No recent stamp to undo.')),
-      );
+  Future<void> _openProgramSheet() async {
+    final merchantRef = currentUserDocument?.linkedMerchants;
+    if (merchantRef == null) {
+      setState(() => _statusMessage = 'No merchant linked.');
       return;
     }
-    try {
-      await _lastCardRef!.update({
-        'current_stamps': FieldValue.increment(-1),
-        'updated_at': FieldValue.serverTimestamp(),
-      });
-      setState(() {
-        _message = 'Last stamp undone.';
-        _lastCardRef = null;
-        _lastTotal = 0;
-      });
-    } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not undo last stamp.')),
-      );
-    }
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 12,
+              bottom: MediaQuery.of(ctx).padding.bottom + 12,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 42,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).alternate,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Choose a program',
+                  style: FlutterFlowTheme.of(context).titleMedium.override(
+                        font: GoogleFonts.interTight(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                ),
+                const SizedBox(height: 12),
+                StreamBuilder<List<ProgramsRecord>>(
+                  stream: queryProgramsRecord(
+                    queryBuilder: (q) => q
+                        .where('merchant_id', isEqualTo: merchantRef)
+                        .orderBy('created_at', descending: true),
+                  ),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    final programs = snapshot.data!;
+                    if (programs.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Text(
+                          'No programs available.',
+                          style: FlutterFlowTheme.of(context).bodyMedium,
+                        ),
+                      );
+                    }
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: programs.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: 10),
+                      itemBuilder: (context, index) {
+                        final program = programs[index];
+                        final iconUrl = program.passLogo.isNotEmpty
+                            ? program.passLogo
+                            : (program.passIcon.isNotEmpty
+                                ? program.passIcon
+                                : (program.businessIcon.isNotEmpty
+                                    ? program.businessIcon
+                                    : ''));
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(14),
+                          onTap: () {
+                            setState(() {
+                              _selectedProgram = program.reference;
+                              _programRecord = program;
+                              _programTitle = program.title;
+                            });
+                            Navigator.of(ctx).pop();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: FlutterFlowTheme.of(context)
+                                  .primaryBackground,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color:
+                                    FlutterFlowTheme.of(context).alternate,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryBackground,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: iconUrl.isNotEmpty
+                                      ? Image.network(iconUrl,
+                                          fit: BoxFit.cover)
+                                      : Icon(Icons.star_rate_rounded,
+                                          color:
+                                              FlutterFlowTheme.of(context)
+                                                  .primary),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        program.title,
+                                        style: FlutterFlowTheme.of(context)
+                                            .titleMedium
+                                            .override(
+                                              font: GoogleFonts.interTight(
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Stamps required: ${program.stampsRequired}',
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: (program.status
+                                                ? FlutterFlowTheme.of(context)
+                                                    .primary
+                                                : FlutterFlowTheme.of(context)
+                                                    .secondaryText)
+                                            .withOpacity(0.12),
+                                        borderRadius:
+                                            BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        program.status ? 'Active' : 'Inactive',
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodySmall
+                                            .override(
+                                              font: GoogleFonts.interTight(
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                              color: program.status
+                                                  ? FlutterFlowTheme.of(
+                                                          context)
+                                                      .primary
+                                                  : FlutterFlowTheme.of(
+                                                          context)
+                                                      .secondaryText,
+                                            ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
-      appBar: AppBar(
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-        elevation: 0,
-        title: Text(
-          'Scan stamp',
-          style: FlutterFlowTheme.of(context).titleLarge.override(
-                font: GoogleFonts.interTight(
-                  fontWeight: FlutterFlowTheme.of(context).titleLarge.fontWeight,
-                  fontStyle: FlutterFlowTheme.of(context).titleLarge.fontStyle,
-                ),
-                color: FlutterFlowTheme.of(context).primaryText,
-              ),
-        ),
-        centerTitle: true,
-      ),
-      bottomNavigationBar: MerchantNavBar(
-        currentTab: MerchantNavTab.dashboard,
-        merchantRef: currentUserDocument?.linkedMerchants,
-      ),
+      backgroundColor: Colors.black,
       body: SafeArea(
-        top: true,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).secondaryBackground,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Program',
-                              style: FlutterFlowTheme.of(context)
-                                  .bodySmall
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.w700),
-                                  )),
-                          const SizedBox(height: 4),
-                          Text(
-                            _selectedProgramTitle,
-                            style: FlutterFlowTheme.of(context).bodyMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                    FFButtonWidget(
-                      onPressed: _pickProgram,
-                      text: 'Change',
-                      options: FFButtonOptions(
-                        height: 40,
-                        color: FlutterFlowTheme.of(context).primary,
-                        textStyle: FlutterFlowTheme.of(context)
-                            .bodyMedium
-                            .override(
-                              font: GoogleFonts.interTight(
-                                fontWeight: FontWeight.w700,
-                              ),
-                              color: Colors.white,
-                            ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    )
-                  ],
-                ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: MobileScanner(
+                controller: _scannerController,
+                onDetect: _onDetect,
               ),
-              const SizedBox(height: 16),
-              if (_lastCardRef != null)
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).secondaryBackground,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: FlutterFlowTheme.of(context).alternate),
-                  ),
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Recent stamp saved',
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.w700),
-                                ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Total now: $_lastTotal',
-                            style: FlutterFlowTheme.of(context).bodySmall,
-                          ),
-                        ],
-                      ),
-                      FFButtonWidget(
-                        onPressed: _undoLastStamp,
-                        text: 'Undo',
-                        options: FFButtonOptions(
-                          height: 38,
-                          color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
-                          textStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                    color:
-                                        FlutterFlowTheme.of(context).primaryText,
-                                  ),
-                          borderSide: BorderSide(
-                              color: FlutterFlowTheme.of(context).alternate),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).secondaryBackground,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: const [
-                    BoxShadow(
-                      blurRadius: 14,
-                      color: Color(0x14000000),
-                      offset: Offset(0, 6),
-                    )
-                  ],
-                ),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 46,
-                          height: 46,
-                          decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context).accent1,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(Icons.qr_code_scanner,
-                              color: FlutterFlowTheme.of(context).primary),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Add stamp via QR',
-                                style: FlutterFlowTheme.of(context)
-                                    .titleMedium
-                                    .override(
-                                      font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Scan the customer QR to add a stamp.',
-                                style: FlutterFlowTheme.of(context).bodyMedium,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    FFButtonWidget(
-                      onPressed: _isScanning ? null : _startScan,
-                      text: _isScanning ? 'Scanning...' : 'Start scan',
-                      options: FFButtonOptions(
-                        height: 50,
-                        color: FlutterFlowTheme.of(context).primary,
-                        textStyle: FlutterFlowTheme.of(context)
-                            .titleMedium
-                            .override(
-                              font: GoogleFonts.interTight(
-                                fontWeight: FontWeight.w700,
-                              ),
-                              color: Colors.white,
-                            ),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    if (_message.isNotEmpty)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context)
-                              .accent1
-                              .withOpacity(0.25),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          _message,
-                          style: FlutterFlowTheme.of(context).bodyMedium,
-                        ),
-                      ),
-                  ],
-                ),
+            ),
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.25),
               ),
-            ],
-          ),
+            ),
+            Center(child: _scanFrame(context)),
+            _topBar(context),
+            _bottomBar(context),
+            if (_statusMessage != null && !_showSuccess)
+              Positioned(
+                bottom: 120,
+                left: 16,
+                right: 16,
+                child: _statusChip(context, _statusMessage!),
+              ),
+            if (_showSuccess) _successOverlay(context),
+          ],
         ),
       ),
     );
   }
 
+  Widget _topBar(BuildContext context) {
+    return Positioned(
+      top: 12,
+      left: 12,
+      right: 12,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.45),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white),
+              onPressed: () => context.safePop(),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: InkWell(
+                onTap: _openProgramSheet,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _programTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: FlutterFlowTheme.of(context).titleMedium.override(
+                            font: GoogleFonts.interTight(
+                              fontWeight: FontWeight.w700,
+                            ),
+                            color: Colors.white,
+                          ),
+                    ),
+                    if (_programRecord != null)
+                      Text(
+                        '${_programRecord!.stampsRequired} stamps required',
+                        style: FlutterFlowTheme.of(context)
+                            .bodySmall
+                            .override(
+                              font: GoogleFonts.interTight(),
+                              color: Colors.white70,
+                            ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(Icons.qr_code_scanner_rounded,
+                color: Colors.white.withOpacity(0.8)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _bottomBar(BuildContext context) {
+    final bottom = MediaQuery.of(context).padding.bottom;
+    return Positioned(
+      left: 16,
+      right: 16,
+      bottom: 16 + bottom,
+      child: Row(
+        children: [
+          _flashButton(context),
+          const Spacer(),
+          TextButton(
+            onPressed: () => context.safePop(),
+            child: Text(
+              'Cancel',
+              style: FlutterFlowTheme.of(context).titleMedium.override(
+                    font: GoogleFonts.interTight(
+                      fontWeight: FontWeight.w700,
+                    ),
+                    color: Colors.white,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _flashButton(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () async {
+        final next = !_torchOn;
+        try {
+          await _scannerController.toggleTorch();
+        } catch (_) {}
+        setState(() => _torchOn = next);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.45),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              _torchOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _torchOn ? 'Flash on' : 'Flash off',
+              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    font: GoogleFonts.interTight(
+                      fontWeight: FontWeight.w700,
+                    ),
+                    color: Colors.white,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _scanFrame(BuildContext context) {
+    return Container(
+      width: 260,
+      height: 260,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.9),
+          width: 2.4,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x55000000),
+            blurRadius: 24,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statusChip(BuildContext context, String message) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withOpacity(0.15)),
+      ),
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: FlutterFlowTheme.of(context).bodyMedium.override(
+              font: GoogleFonts.interTight(
+                fontWeight: FontWeight.w700,
+              ),
+              color: Colors.white,
+            ),
+      ),
+    );
+  }
+
+  Widget _successOverlay(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.92),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x33000000),
+              blurRadius: 20,
+              offset: Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle_rounded,
+                color: FlutterFlowTheme.of(context).primary),
+            const SizedBox(width: 10),
+            Text(
+              'Stamp added successfully!',
+              style: FlutterFlowTheme.of(context).titleSmall.override(
+                    font: GoogleFonts.interTight(
+                      fontWeight: FontWeight.w700,
+                    ),
+                    color: FlutterFlowTheme.of(context).primaryText,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

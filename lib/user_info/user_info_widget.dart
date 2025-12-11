@@ -2,10 +2,10 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/dashboard/dashboard_widget.dart';
 import '/merchant/md/md_widget.dart';
 import '/pages/rewards/rewards_widget.dart';
+import '/pages/my_cards/my_cards_widget.dart';
 import '/user_or_merchant/user_or_merchant_widget.dart';
 import '/sign_in/sign_in_widget.dart';
 import 'package:flutter/material.dart';
@@ -91,26 +91,6 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     );
   }
 
-  Widget _listItem({
-    required BuildContext context,
-    required String label,
-    required IconData icon,
-    VoidCallback? onTap,
-  }) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: FlutterFlowTheme.of(context).primary),
-      title: Text(
-        label,
-        style: FlutterFlowTheme.of(context).bodyLarge.override(
-              font: GoogleFonts.inter(),
-              fontWeight: FontWeight.w600,
-            ),
-      ),
-      onTap: onTap,
-    );
-  }
-
   Widget _statsRow(BuildContext context) {
     return StreamBuilder<List<StampCardsRecord>>(
       stream: queryStampCardsRecord(
@@ -161,9 +141,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
 
         return Row(
           children: [
-            statTile('Programs joined', '$joined'),
-            const SizedBox(width: 12),
             statTile('Rewards ready', '$completed'),
+            const SizedBox(width: 12),
+            statTile('Programs joined', '$joined'),
           ],
         );
       },
@@ -207,61 +187,36 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                 const SizedBox(height: 16),
                 _statsRow(context),
                 const SizedBox(height: 20),
-                if (hasMerchant && !isMerchant)
-                  FFButtonWidget(
-                    onPressed: () => _switchRole(context, 'merchant'),
-                    text: 'Switch to Merchant',
-                    options: FFButtonOptions(
-                      height: 48,
-                      color: FlutterFlowTheme.of(context).primary,
-                      textStyle:
-                          FlutterFlowTheme.of(context).titleSmall.override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                color: Colors.white,
-                              ),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                if (isMerchant)
-                  FFButtonWidget(
-                    onPressed: () => _switchRole(context, 'user'),
-                    text: 'Switch to User',
-                    options: FFButtonOptions(
-                      height: 48,
-                      color: FlutterFlowTheme.of(context).secondaryBackground,
-                      textStyle:
-                          FlutterFlowTheme.of(context).titleSmall.override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                color: FlutterFlowTheme.of(context).primaryText,
-                              ),
-                      borderSide: BorderSide(
-                        color: FlutterFlowTheme.of(context)
-                            .primary
-                            .withOpacity(0.2),
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                const SizedBox(height: 20),
-                _listItem(
-                  context: context,
+                const SizedBox(height: 4),
+                ProfileActionItem(
                   label: 'My rewards',
                   icon: Icons.card_giftcard,
                   onTap: () => context.pushNamed(RewardsWidget.routeName),
                 ),
-                _listItem(
-                  context: context,
+                ProfileActionItem(
+                  label: 'My cards',
+                  icon: Icons.credit_card,
+                  onTap: () => context.pushNamed(MyCardsWidget.routeName),
+                ),
+                if (hasMerchant && !isMerchant)
+                  ProfileActionItem(
+                    label: 'Switch to Merchant',
+                    icon: Icons.store_mall_directory,
+                    onTap: () => _switchRole(context, 'merchant'),
+                  ),
+                if (isMerchant)
+                  ProfileActionItem(
+                    label: 'Switch to User',
+                    icon: Icons.person_outline,
+                    onTap: () => _switchRole(context, 'user'),
+                  ),
+                ProfileActionItem(
                   label: 'Settings',
                   icon: Icons.settings,
                   onTap: () =>
                       context.pushNamed(UserOrMerchantWidget.routeName),
                 ),
-                _listItem(
-                  context: context,
+                ProfileActionItem(
                   label: 'Logout',
                   icon: Icons.logout,
                   onTap: () async {
@@ -277,6 +232,35 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class ProfileActionItem extends StatelessWidget {
+  const ProfileActionItem({
+    super.key,
+    required this.label,
+    required this.icon,
+    this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon, color: FlutterFlowTheme.of(context).primary),
+      title: Text(
+        label,
+        style: FlutterFlowTheme.of(context).bodyLarge.override(
+              font: GoogleFonts.inter(),
+              fontWeight: FontWeight.w600,
+            ),
+      ),
+      onTap: onTap,
     );
   }
 }
