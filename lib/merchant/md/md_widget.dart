@@ -5,7 +5,6 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/index.dart';
-import '/components/stamp_card_widget.dart';
 import '/merchant/components/merchant_nav_bar.dart';
 import '/creat_new_pro/creat_new_pro_widget.dart';
 import '/merchant/scan/merchant_scan_widget.dart';
@@ -85,54 +84,109 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
   }
 
   Widget _programTile(BuildContext context, ProgramsRecord program) {
-    Color _bg() {
-      final raw = program.passBackgroundColor;
-      if (raw.isEmpty) return const Color(0xFF4A90E2);
-      try {
-        return Color(int.parse('0xFF${raw.replaceAll('#', '')}'));
-      } catch (_) {
-        return const Color(0xFF4A90E2);
-      }
-    }
+    final statusText = program.status ? 'Active' : 'Hidden';
+    final stamps = program.stampsRequired > 0 ? program.stampsRequired : 0;
+    final subtitle = program.rewardDetails.isNotEmpty
+        ? program.rewardDetails
+        : (program.description.isNotEmpty ? program.description : '');
+    final iconUrl = program.passLogo.isNotEmpty
+        ? program.passLogo
+        : (program.passIcon.isNotEmpty
+            ? program.passIcon
+            : (program.businessIcon.isNotEmpty ? program.businessIcon : ''));
 
-    Color _fg() {
-      final raw = program.passForegroundColor;
-      if (raw.isEmpty) return Colors.white;
-      try {
-        return Color(int.parse('0xFF${raw.replaceAll('#', '')}'));
-      } catch (_) {
-        return Colors.white;
-      }
-    }
-
-    Color _label() {
-      final raw = program.passLabelColor;
-      if (raw.isEmpty) return Colors.white.withOpacity(0.8);
-      try {
-        return Color(int.parse('0xFF${raw.replaceAll('#', '')}'));
-      } catch (_) {
-        return Colors.white.withOpacity(0.8);
-      }
-    }
-
-    final bg = _bg();
-    final fg = _fg();
-    final label = _label();
-    final stampCount = program.stampsRequired > 0 ? program.stampsRequired : 1;
-
-    return StampCardWidget(
-      title: program.title,
-      stampCount: stampCount,
-      filledStamps: 0,
-      statusPrimary: program.status ? 'Active' : 'Hidden',
-      statusSecondary: program.termsConditions.isNotEmpty ? 'Draft' : 'Ready',
-      backgroundColor: bg,
-      foregroundColor: fg,
-      labelColor: label,
-      height: 200,
-      onDetails: () => _showProgramSheet(context, program),
-      onTap: () => _showProgramSheet(context, program),
-    );
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F7FB),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x1A000000),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).primary.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              statusText,
+              style: FlutterFlowTheme.of(context).labelMedium.override(
+                    font: GoogleFonts.interTight(
+                      fontWeight: FontWeight.w700,
+                    ),
+                    color: FlutterFlowTheme.of(context).primary,
+                  ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  program.title.isNotEmpty ? program.title : 'Program',
+                  style: FlutterFlowTheme.of(context).titleMedium.override(
+                        font: GoogleFonts.interTight(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (subtitle.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      subtitle,
+                      style: FlutterFlowTheme.of(context).bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    'stamps - $stamps',
+                    style: FlutterFlowTheme.of(context).bodyMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).secondaryBackground,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: iconUrl.isNotEmpty
+                ? Image.network(
+                    iconUrl,
+                    fit: BoxFit.cover,
+                  )
+                : Icon(
+                    Icons.store,
+                    color: FlutterFlowTheme.of(context).primary,
+                  ),
+          ),
+        ],
+      ),
+    ).animateOnPageLoad(animationsMap['containerOnPageLoadAnimation']!);
   }
 
   void _showProgramSheet(BuildContext context, ProgramsRecord program) {
@@ -267,35 +321,17 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Container(
-                                width: 52,
-                                height: 52,
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context).accent1,
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: merchant.logoUrl.isNotEmpty
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Image.network(
-                                          merchant.logoUrl,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      )
-                                    : Icon(Icons.storefront,
-                                        color: FlutterFlowTheme.of(context)
-                                            .primary),
-                              ),
-                              const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
                                       merchant.name.isNotEmpty
                                           ? merchant.name
                                           : 'Merchant dashboard',
+                                      textAlign: TextAlign.end,
                                       style: FlutterFlowTheme.of(context)
                                           .headlineSmall
                                           .override(
@@ -307,11 +343,35 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                                     if (merchant.email.isNotEmpty)
                                       Text(
                                         merchant.email,
+                                        textAlign: TextAlign.end,
                                         style: FlutterFlowTheme.of(context)
                                             .bodySmall,
                                       ),
                                   ],
                                 ),
+                              ),
+                              const SizedBox(width: 12),
+                              Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  color:
+                                      FlutterFlowTheme.of(context).accent1,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: merchant.logoUrl.isNotEmpty
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(14),
+                                        child: Image.network(
+                                          merchant.logoUrl,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : Icon(
+                                        Icons.storefront,
+                                        color: FlutterFlowTheme.of(context)
+                                            .primary,
+                                      ),
                               ),
                             ],
                           ),
@@ -321,39 +381,11 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                               Expanded(
                                 child: FFButtonWidget(
                                   onPressed: () => context.pushNamed(
-                                    MerchantScanWidget.routeName,
-                                    queryParameters: {
-                                      'merchantRef': serializeParam(
-                                        merchantRef,
-                                        ParamType.DocumentReference,
-                                      ),
-                                    }.withoutNulls,
-                                  ),
-                                  text: 'Scan & stamp',
-                                  options: FFButtonOptions(
-                                    height: 48,
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    textStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .override(
-                                          font: GoogleFonts.interTight(
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                          color: Colors.white,
-                                        ),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: FFButtonWidget(
-                                  onPressed: () => context.pushNamed(
                                     CreatNewProWidget.routeName,
                                   ),
                                   text: 'Create program',
                                   options: FFButtonOptions(
-                                    height: 48,
+                                    height: 52,
                                     color: FlutterFlowTheme.of(context)
                                         .secondaryBackground,
                                     textStyle: FlutterFlowTheme.of(context)
@@ -368,9 +400,39 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                                     borderSide: BorderSide(
                                       color: FlutterFlowTheme.of(context)
                                           .primary
-                                          .withOpacity(0.2),
+                                          .withOpacity(0.15),
                                     ),
-                                    borderRadius: BorderRadius.circular(14),
+                                    borderRadius: BorderRadius.circular(18),
+                                    elevation: 3,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: FFButtonWidget(
+                                  onPressed: () => context.pushNamed(
+                                    MerchantScanWidget.routeName,
+                                    queryParameters: {
+                                      'merchantRef': serializeParam(
+                                        merchantRef,
+                                        ParamType.DocumentReference,
+                                      ),
+                                    }.withoutNulls,
+                                  ),
+                                  text: 'Scan & stamp',
+                                  options: FFButtonOptions(
+                                    height: 52,
+                                    color: FlutterFlowTheme.of(context).primary,
+                                    textStyle: FlutterFlowTheme.of(context)
+                                        .titleSmall
+                                        .override(
+                                          font: GoogleFonts.interTight(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                          color: Colors.white,
+                                        ),
+                                    borderRadius: BorderRadius.circular(18),
+                                    elevation: 3,
                                   ),
                                 ),
                               ),
@@ -380,6 +442,22 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+                              TextButton(
+                                onPressed: () => context
+                                    .pushNamed(ProgramsListWidget.routeName),
+                                child: Text(
+                                  'See all',
+                                  style: FlutterFlowTheme.of(context)
+                                      .titleSmall
+                                      .override(
+                                        font: GoogleFonts.interTight(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                        color:
+                                            FlutterFlowTheme.of(context).primary,
+                                      ),
+                                ),
+                              ),
                               Text(
                                 'Your programs',
                                 style: FlutterFlowTheme.of(context)
@@ -390,11 +468,6 @@ class _MdWidgetState extends State<MdWidget> with TickerProviderStateMixin {
                                       ),
                                     ),
                               ),
-                              TextButton(
-                                onPressed: () => context
-                                    .pushNamed(ProgramsListWidget.routeName),
-                                child: const Text('See all'),
-                              )
                             ],
                           ),
                           const SizedBox(height: 8),

@@ -116,11 +116,6 @@ class _DashboardWidgetState extends State<DashboardWidget> {
             ],
           ),
         ),
-        IconButton(
-          icon: const Icon(Icons.settings, size: 22),
-          color: FlutterFlowTheme.of(context).primary,
-          onPressed: () => context.pushNamed(UserInfoWidget.routeName),
-        ),
       ],
     );
   }
