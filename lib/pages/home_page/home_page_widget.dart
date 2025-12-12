@@ -415,6 +415,8 @@ class PassPreviewCard extends StatelessWidget {
     );
   }
 
+}
+
 class SuggestedProgramsList extends StatelessWidget {
   const SuggestedProgramsList({super.key, required this.onTapDiscover});
 
