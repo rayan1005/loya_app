@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
+import '/components/stamp_count_picker.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -28,6 +29,8 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
   late CreatNewProModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  static const int _maxStamps = 12;
+  int _stampsRequired = 6;
 
   bool _colorsValid(String? value) {
     if (value == null || value.trim().isEmpty) return true;
@@ -65,13 +68,13 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
     _model.textController3 ??= TextEditingController();
     _model.textController4 ??= TextEditingController();
     _model.textController5 ??= TextEditingController();
-    _model.textFieldNumberTextController ??= TextEditingController(text: '6');
     _model.passBgColorController ??=
         TextEditingController(text: '#007AFF');
     _model.passFgColorController ??=
         TextEditingController(text: '#FFFFFF');
     _model.passLabelColorController ??=
         TextEditingController(text: '#FFFFFF');
+    _stampsRequired = _stampsRequired.clamp(1, _maxStamps);
   }
 
   @override
@@ -147,6 +150,9 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
         _safeColor(_model.passFgColorController?.text, Colors.white);
     final previewLabel =
         _safeColor(_model.passLabelColorController?.text, previewFg);
+    final programTitle = (_model.textController2?.text ?? '').trim();
+    final programDescription = (_model.textController3?.text ?? '').trim();
+    final rewardPreview = (_model.textController4?.text ?? '').trim();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -216,13 +222,7 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                   label: 'Reward',
                   controller: _model.textController4,
                 ),
-                _textField(
-                  label: 'Stamps required',
-                  controller: _model.textFieldNumberTextController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onChanged: (_) => setState(() {}),
-                ),
+                _stampPicker(context),
                 _textField(
                   label: 'Terms & conditions',
                   controller: _model.textController5,
@@ -318,9 +318,9 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _model.textController2?.text.isNotEmpty == true
-                                    ? _model.textController2!.text
-                                    : 'Loya Program',
+                                programTitle.isNotEmpty
+                                    ? programTitle
+                                    : 'Add a program title',
                                 style: TextStyle(
                                   fontSize: 20,
                                   color: previewFg,
@@ -338,19 +338,25 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Text(
-                        _model.textController3?.text.isNotEmpty == true
-                            ? _model.textController3!.text
-                            : 'Program description preview',
-                        style: TextStyle(
-                          color: previewLabel,
+                      if (programDescription.isNotEmpty)
+                        Text(
+                          programDescription,
+                          style: TextStyle(
+                            color: previewLabel,
+                          ),
+                        )
+                      else
+                        Text(
+                          'Add a short program description',
+                          style: TextStyle(
+                            color: previewLabel.withOpacity(0.7),
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 8),
                       Text(
-                        _model.textController4?.text.isNotEmpty == true
-                            ? _model.textController4!.text
-                            : 'Reward preview',
+                        rewardPreview.isNotEmpty
+                            ? rewardPreview
+                            : 'Describe the reward customers unlock',
                         style: TextStyle(
                           color: previewFg,
                           fontWeight: FontWeight.w600,
@@ -359,35 +365,33 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                       const SizedBox(height: 10),
                       Row(
                         children: List.generate(
-                          (int.tryParse(
-                                      _model.textFieldNumberTextController
-                                              ?.text ??
-                                          '6') ??
-                                  6)
-                              .clamp(1, 15),
-                          (index) => Padding(
-                            padding: const EdgeInsets.only(right: 6),
-                            child: CircleAvatar(
-                              radius: 16,
-                              backgroundColor: index == 0
-                                  ? previewFg
-                                  : previewFg.withValues(alpha: 0.25),
-                              child: _model.uploadedFileUrl_uploadDataXoh
-                                      .isNotEmpty
-                                  ? Image.network(
-                                      _model.uploadedFileUrl_uploadDataXoh,
-                                      width: 18,
-                                      height: 18,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Icon(
-                                      index == 0 ? Icons.check : Icons.star,
-                                      size: 16,
-                                      color:
-                                          index == 0 ? previewBg : previewFg,
-                                    ),
-                            ),
-                          ),
+                          _stampsRequired.clamp(1, _maxStamps),
+                          (index) {
+                            final isFilled = index == 0;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: CircleAvatar(
+                                radius: 16,
+                                backgroundColor: isFilled
+                                    ? previewFg
+                                    : previewFg.withOpacity(0.35),
+                                child: _model.uploadedFileUrl_uploadDataXoh
+                                        .isNotEmpty
+                                    ? Image.network(
+                                        _model.uploadedFileUrl_uploadDataXoh,
+                                        width: 18,
+                                        height: 18,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Icon(
+                                        isFilled ? Icons.check : Icons.star,
+                                        size: 16,
+                                        color:
+                                            isFilled ? previewBg : previewFg,
+                                      ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -459,16 +463,12 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                 final desc = _model.textController3?.text.trim() ?? '';
                 final reward = _model.textController4?.text.trim() ?? '';
                 final terms = _model.textController5?.text.trim() ?? '';
-                final stampsRequired =
-                    int.tryParse(_model.textFieldNumberTextController?.text ?? '');
 
                 final missing = <String>[];
                 if (title.isEmpty) missing.add('title');
                 if (desc.isEmpty) missing.add('description');
                 if (reward.isEmpty) missing.add('reward');
-                if (stampsRequired == null || stampsRequired <= 0) {
-                  missing.add('stamps required');
-                }
+                if (terms.isEmpty) missing.add('terms & conditions');
                 if (missing.isNotEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -505,7 +505,7 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                       title: title,
                       description: desc,
                       rewardDetails: reward,
-                      stampsRequired: stampsRequired,
+                      stampsRequired: _stampsRequired,
                       termsConditions: terms,
                       businessIcon: _model.uploadedFileUrl_uploadData5kx,
                       stampIcon: _model.uploadedFileUrl_uploadDataXoh,
@@ -575,6 +575,19 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
           const SizedBox(height: 12),
           ...children,
         ],
+      ),
+    );
+  }
+
+  Widget _stampPicker(BuildContext context) {
+    return StampCountPicker(
+      title: 'Stamps required',
+      value: _stampsRequired,
+      maxValue: _maxStamps,
+      helperText:
+          'Limited to 12 stamps to keep the Wallet strip fully visible.',
+      onChanged: (value) => setState(
+        () => _stampsRequired = value.clamp(1, _maxStamps),
       ),
     );
   }

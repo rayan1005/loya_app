@@ -16,11 +16,6 @@ class CreatNewProModel extends FlutterFlowModel<CreatNewProWidget> {
   FFUploadedFile uploadedLocalFile_uploadDataP22222 =
       FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
 
-  // State field(s) for TextFieldNumber widget.
-  FocusNode? textFieldNumberFocusNode;
-  TextEditingController? textFieldNumberTextController;
-  String? Function(BuildContext, String?)?
-      textFieldNumberTextControllerValidator;
   // State field(s) for TextField widget.
   FocusNode? textFieldFocusNode1;
   TextEditingController? textController2;
@@ -78,9 +73,6 @@ class CreatNewProModel extends FlutterFlowModel<CreatNewProWidget> {
 
   @override
   void dispose() {
-    textFieldNumberFocusNode?.dispose();
-    textFieldNumberTextController?.dispose();
-
     textFieldFocusNode1?.dispose();
     textController2?.dispose();
 

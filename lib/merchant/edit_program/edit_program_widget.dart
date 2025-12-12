@@ -1,5 +1,6 @@
 import '/backend/backend.dart';
 import '/backend/api_requests/api_calls.dart';
+import '/components/stamp_count_picker.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -23,13 +24,15 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
   late TextEditingController _descController;
   late TextEditingController _rewardController;
   late TextEditingController _termsController;
-  late TextEditingController _stampsController;
   late TextEditingController _passBgController;
   late TextEditingController _passFgController;
   late TextEditingController _passLabelController;
   late TextEditingController _broadcastController;
   late TextEditingController _latController;
   late TextEditingController _lngController;
+  static const int _maxStamps = 12;
+  int _stampsRequired = 1;
+  bool _stampValueInitialized = false;
   DateTime? _expiryDate;
   bool _status = true;
   bool _saving = false;
@@ -43,7 +46,6 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
     _descController = TextEditingController();
     _rewardController = TextEditingController();
     _termsController = TextEditingController();
-    _stampsController = TextEditingController();
     _passBgController = TextEditingController(text: '#007AFF');
     _passFgController = TextEditingController(text: '#FFFFFF');
     _passLabelController = TextEditingController(text: '#FFFFFF');
@@ -58,7 +60,6 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
     _descController.dispose();
     _rewardController.dispose();
     _termsController.dispose();
-    _stampsController.dispose();
     _passBgController.dispose();
     _passFgController.dispose();
     _passLabelController.dispose();
@@ -96,10 +97,17 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
       );
       return;
     }
+    if (_rewardController.text.trim().isEmpty ||
+        _termsController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Reward details and terms & conditions are required.')),
+      );
+      return;
+    }
     _saving = true;
     setState(() {});
 
-    final stamps = int.tryParse(_stampsController.text.trim());
     final lat = double.tryParse(_latController.text.trim());
     final lng = double.tryParse(_lngController.text.trim());
     await program.reference.update({
@@ -109,7 +117,7 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
         rewardDetails: _rewardController.text.trim(),
         termsConditions: _termsController.text.trim(),
         status: _status,
-        stampsRequired: stamps,
+        stampsRequired: _stampsRequired,
         expiryDate: _expiryDate,
         passBackgroundColor: _passBgController.text.trim(),
         passForegroundColor: _passFgController.text.trim(),
@@ -249,11 +257,13 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
                 _termsController.text = _termsController.text.isEmpty
                     ? program.termsConditions
                     : _termsController.text;
-                _stampsController.text = _stampsController.text.isEmpty
-                    ? (program.stampsRequired > 0
-                        ? program.stampsRequired.toString()
-                        : '')
-                    : _stampsController.text;
+                if (!_stampValueInitialized) {
+                  final initial = program.stampsRequired > 0
+                      ? program.stampsRequired.clamp(1, _maxStamps)
+                      : 1;
+                  _stampsRequired = initial;
+                  _stampValueInitialized = true;
+                }
                 _passBgController.text = _passBgController.text.isEmpty
                     ? (program.passBackgroundColor.isNotEmpty
                         ? program.passBackgroundColor
@@ -295,8 +305,7 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
                       _fieldLabel('Description'),
                       _input(_descController, 'Describe the program', maxLines: 3),
                       _fieldLabel('Stamps required'),
-                      _input(_stampsController, 'e.g., 10',
-                          keyboardType: TextInputType.number),
+                      _stampPicker(context),
                       _fieldLabel('Reward details'),
                       _input(_rewardController, 'Reward details', maxLines: 3),
                       _fieldLabel('Terms & conditions'),
@@ -477,6 +486,18 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
                 );
               },
             ),
+    );
+  }
+
+  Widget _stampPicker(BuildContext context) {
+    return StampCountPicker(
+      value: _stampsRequired,
+      maxValue: _maxStamps,
+      helperText:
+          'Limited to 12 stamps to keep the Wallet strip fully visible.',
+      onChanged: (value) => setState(() {
+        _stampsRequired = value.clamp(1, _maxStamps);
+      }),
     );
   }
 
