@@ -70,6 +70,16 @@ class ProgramsRecord extends FirestoreRecord {
   String get rewardDetails => _rewardDetails ?? '';
   bool hasRewardDetails() => _rewardDetails != null;
 
+  // "reward_title" field.
+  String? _rewardTitle;
+  String get rewardTitle => _rewardTitle ?? '';
+  bool hasRewardTitle() => _rewardTitle != null;
+
+  // "reward_description" field.
+  String? _rewardDescription;
+  String get rewardDescription => _rewardDescription ?? '';
+  bool hasRewardDescription() => _rewardDescription != null;
+
   // "status" field.
   bool? _status;
   bool get status => _status ?? false;
@@ -182,6 +192,8 @@ class ProgramsRecord extends FirestoreRecord {
     _updatedAt = snapshotData['updated_at'] as DateTime?;
     _stampIcon = snapshotData['stamp_icon'] as String?;
     _rewardDetails = snapshotData['reward_details'] as String?;
+    _rewardTitle = snapshotData['reward_title'] as String?;
+    _rewardDescription = snapshotData['reward_description'] as String?;
     _status = snapshotData['status'] as bool?;
     _termsConditions = snapshotData['terms_conditions'] as String?;
     _businessIcon = snapshotData['business_icon'] as String?;
@@ -250,6 +262,8 @@ Map<String, dynamic> createProgramsRecordData({
   DateTime? updatedAt,
   String? stampIcon,
   String? rewardDetails,
+  String? rewardTitle,
+  String? rewardDescription,
   bool? status,
   String? termsConditions,
   String? businessIcon,
@@ -283,6 +297,8 @@ Map<String, dynamic> createProgramsRecordData({
       'updated_at': updatedAt,
       'stamp_icon': stampIcon,
       'reward_details': rewardDetails,
+      'reward_title': rewardTitle,
+      'reward_description': rewardDescription,
       'status': status,
       'terms_conditions': termsConditions,
       'business_icon': businessIcon,
@@ -325,6 +341,8 @@ class ProgramsRecordDocumentEquality implements Equality<ProgramsRecord> {
         e1?.updatedAt == e2?.updatedAt &&
         e1?.stampIcon == e2?.stampIcon &&
         e1?.rewardDetails == e2?.rewardDetails &&
+        e1?.rewardTitle == e2?.rewardTitle &&
+        e1?.rewardDescription == e2?.rewardDescription &&
         e1?.status == e2?.status &&
         e1?.termsConditions == e2?.termsConditions &&
         e1?.businessIcon == e2?.businessIcon &&
@@ -360,6 +378,8 @@ class ProgramsRecordDocumentEquality implements Equality<ProgramsRecord> {
         e?.updatedAt,
         e?.stampIcon,
         e?.rewardDetails,
+        e?.rewardTitle,
+        e?.rewardDescription,
         e?.status,
         e?.termsConditions,
         e?.businessIcon,
