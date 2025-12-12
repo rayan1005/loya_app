@@ -65,6 +65,26 @@ class StampCardsRecord extends FirestoreRecord {
   String get qrValue => _qrValue ?? '';
   bool hasQrValue() => _qrValue != null;
 
+  // "member_id" field.
+  String? _memberId;
+  String get memberId => _memberId ?? '';
+  bool hasMemberId() => _memberId != null;
+
+  // "stamps_to_reward" field.
+  int? _stampsToReward;
+  int get stampsToReward => _stampsToReward ?? 0;
+  bool hasStampsToReward() => _stampsToReward != null;
+
+  // "rewards_history" field.
+  List<String>? _rewardsHistory;
+  List<String> get rewardsHistory => _rewardsHistory ?? const [];
+  bool hasRewardsHistory() => _rewardsHistory != null;
+
+  // "latest_pass_update" field.
+  String? _latestPassUpdate;
+  String get latestPassUpdate => _latestPassUpdate ?? '';
+  bool hasLatestPassUpdate() => _latestPassUpdate != null;
+
   void _initializeFields() {
     _cardId = snapshotData['card_id'] as String?;
     _programId = snapshotData['program_id'] as DocumentReference?;
@@ -76,6 +96,10 @@ class StampCardsRecord extends FirestoreRecord {
     _walletPassId = snapshotData['wallet_pass_id'] as String?;
     _walletPassUrl = snapshotData['wallet_pass_url'] as String?;
     _qrValue = snapshotData['qr_value'] as String?;
+    _memberId = snapshotData['member_id'] as String?;
+    _stampsToReward = castToType<int>(snapshotData['stamps_to_reward']);
+    _rewardsHistory = getDataList(snapshotData['rewards_history']);
+    _latestPassUpdate = snapshotData['latest_pass_update'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -123,6 +147,10 @@ Map<String, dynamic> createStampCardsRecordData({
   String? walletPassId,
   String? walletPassUrl,
   String? qrValue,
+  String? memberId,
+  int? stampsToReward,
+  List<String>? rewardsHistory,
+  String? latestPassUpdate,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -136,6 +164,10 @@ Map<String, dynamic> createStampCardsRecordData({
       'wallet_pass_id': walletPassId,
       'wallet_pass_url': walletPassUrl,
       'qr_value': qrValue,
+      'member_id': memberId,
+      'stamps_to_reward': stampsToReward,
+      'rewards_history': rewardsHistory,
+      'latest_pass_update': latestPassUpdate,
     }.withoutNulls,
   );
 
@@ -147,6 +179,7 @@ class StampCardsRecordDocumentEquality implements Equality<StampCardsRecord> {
 
   @override
   bool equals(StampCardsRecord? e1, StampCardsRecord? e2) {
+    const listEquality = ListEquality();
     return e1?.cardId == e2?.cardId &&
         e1?.programId == e2?.programId &&
         e1?.userId == e2?.userId &&
@@ -156,7 +189,11 @@ class StampCardsRecordDocumentEquality implements Equality<StampCardsRecord> {
         e1?.updatedAt == e2?.updatedAt &&
         e1?.walletPassId == e2?.walletPassId &&
         e1?.walletPassUrl == e2?.walletPassUrl &&
-        e1?.qrValue == e2?.qrValue;
+        e1?.qrValue == e2?.qrValue &&
+        e1?.memberId == e2?.memberId &&
+        e1?.stampsToReward == e2?.stampsToReward &&
+        listEquality.equals(e1?.rewardsHistory, e2?.rewardsHistory) &&
+        e1?.latestPassUpdate == e2?.latestPassUpdate;
   }
 
   @override
@@ -170,7 +207,11 @@ class StampCardsRecordDocumentEquality implements Equality<StampCardsRecord> {
         e?.updatedAt,
         e?.walletPassId,
         e?.walletPassUrl,
-        e?.qrValue
+        e?.qrValue,
+        e?.memberId,
+        e?.stampsToReward,
+        e?.rewardsHistory,
+        e?.latestPassUpdate
       ]);
 
   @override

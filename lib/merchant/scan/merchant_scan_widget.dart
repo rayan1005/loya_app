@@ -173,16 +173,38 @@ class _MerchantScanWidgetState extends State<MerchantScanWidget> {
         final snap = await q.limit(1).get();
         if (snap.docs.isNotEmpty) {
           cardRef = snap.docs.first.reference;
+          final existingCard = StampCardsRecord.fromSnapshot(snap.docs.first);
           final target =
               program != null && program.stampsRequired > 0 ? program.stampsRequired : total;
+          final memberId = existingCard.memberId.isNotEmpty
+              ? existingCard.memberId
+              : (existingCard.cardId.isNotEmpty
+                  ? existingCard.cardId
+                  : cardRef.id);
+          final wasCompleted =
+              existingCard.status.toLowerCase() == 'completed';
+          final rewardUnlocked = total >= target && !wasCompleted;
+          final rewardMessage = (program?.rewardDetails.isNotEmpty ?? false)
+              ? 'Reward unlocked: ${program!.rewardDetails}'
+              : 'Reward unlocked';
+          final latestUpdate = rewardUnlocked
+              ? rewardMessage
+              : 'New stamp added ($total/$target)';
           await cardRef.update({
             ...createStampCardsRecordData(
               currentStamps: total,
               walletPassId: serialNumber.isNotEmpty ? serialNumber : null,
               status: total >= target ? 'completed' : 'active',
+              memberId: memberId,
+              stampsToReward: (target - total).clamp(0, target),
+              latestPassUpdate: latestUpdate,
             ),
             ...mapToFirestore({
               'updated_at': FieldValue.serverTimestamp(),
+              if (rewardUnlocked)
+                'rewards_history': FieldValue.arrayUnion([
+                  'Reward unlocked at ${DateTime.now().toIso8601String()}'
+                ]),
             }),
           });
 

@@ -3,6 +3,7 @@ import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/components/wallet_stamp_grid.dart';
 import '/index.dart';
 import 'program_details_model.dart';
 import 'package:flutter/material.dart';
@@ -73,6 +74,7 @@ class _ProgramDetailsWidgetState extends State<ProgramDetailsWidget> {
       final cardRef = StampCardsRecord.collection.doc();
       final deepLink =
           'https://loya.live/add-stamp?uid=$currentUserUid&program=${program.reference.id}&serial=${cardRef.id}';
+      final target = program.stampsRequired > 0 ? program.stampsRequired : 1;
 
       await cardRef.set({
         ...createStampCardsRecordData(
@@ -84,6 +86,9 @@ class _ProgramDetailsWidgetState extends State<ProgramDetailsWidget> {
           qrValue: deepLink,
           walletPassId: '',
           walletPassUrl: '',
+          memberId: cardRef.id,
+          stampsToReward: target,
+          latestPassUpdate: program.passLatestUpdate,
         ),
         ...mapToFirestore({
           'created_at': FieldValue.serverTimestamp(),
@@ -426,7 +431,14 @@ class _ProgramDetailsWidgetState extends State<ProgramDetailsWidget> {
             ],
           ),
           const SizedBox(height: 16),
-          _stampGrid(context, stampsRequired, fg, labelColor),
+          WalletStampGrid(
+            total: stampsRequired,
+            filled: 0,
+            activeColor: fg,
+            inactiveColor: fg.withOpacity(0.35),
+            borderColor: labelColor,
+            stampIconUrl: program.stampIcon,
+          ),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -457,60 +469,6 @@ class _ProgramDetailsWidgetState extends State<ProgramDetailsWidget> {
       ),
     );
   }
-
-  Widget _stampGrid(BuildContext context, int total, Color fg, Color label) {
-    final capped = total.clamp(1, 12);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final firstRow = capped > 6 ? 6 : capped;
-        final secondRow = capped - firstRow;
-        double calcSize(int count) {
-          const spacing = 8.0;
-          return ((constraints.maxWidth - spacing * (count - 1)) / count)
-              .clamp(18.0, 40.0);
-        }
-
-        final firstSize = calcSize(firstRow);
-        final secondSize = secondRow > 0 ? calcSize(secondRow) : firstSize;
-
-        Widget buildRow(int count, double size) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(count, (i) {
-              final filled = i == 0;
-              return Padding(
-                padding: EdgeInsets.only(right: i == count - 1 ? 0 : 8),
-                child: Container(
-                  width: size,
-                  height: size,
-                  decoration: BoxDecoration(
-                    color: filled ? fg : fg.withOpacity(0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    filled ? Icons.check : Icons.star,
-                    size: size * 0.55,
-                    color: filled ? Colors.white : label,
-                  ),
-                ),
-              );
-            }),
-          );
-        }
-
-        return Column(
-          children: [
-            buildRow(firstRow, firstSize),
-            if (secondRow > 0) ...[
-              const SizedBox(height: 8),
-              buildRow(secondRow, secondSize),
-            ],
-          ],
-        );
-      },
-    );
-  }
-
   Widget _infoRow(BuildContext context,
       {required IconData icon, required String text}) {
     return Row(

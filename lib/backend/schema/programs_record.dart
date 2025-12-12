@@ -125,6 +125,51 @@ class ProgramsRecord extends FirestoreRecord {
   String get passLogo => _passLogo ?? '';
   bool hasPassLogo() => _passLogo != null;
 
+  // "pass_latest_update" field.
+  String? _passLatestUpdate;
+  String get passLatestUpdate => _passLatestUpdate ?? '';
+  bool hasPassLatestUpdate() => _passLatestUpdate != null;
+
+  // "pass_latest_update_at" field.
+  DateTime? _passLatestUpdateAt;
+  DateTime? get passLatestUpdateAt => _passLatestUpdateAt;
+  bool hasPassLatestUpdateAt() => _passLatestUpdateAt != null;
+
+  // "pass_collect_rule" field.
+  String? _passCollectRule;
+  String get passCollectRule => _passCollectRule ?? '';
+  bool hasPassCollectRule() => _passCollectRule != null;
+
+  // "pass_locations" field.
+  List<dynamic>? _passLocations;
+  List<dynamic> get passLocations => _passLocations ?? const [];
+  bool hasPassLocations() => _passLocations != null;
+
+  // "pass_instagram" field.
+  String? _passInstagram;
+  String get passInstagram => _passInstagram ?? '';
+  bool hasPassInstagram() => _passInstagram != null;
+
+  // "pass_snapchat" field.
+  String? _passSnapchat;
+  String get passSnapchat => _passSnapchat ?? '';
+  bool hasPassSnapchat() => _passSnapchat != null;
+
+  // "pass_website" field.
+  String? _passWebsite;
+  String get passWebsite => _passWebsite ?? '';
+  bool hasPassWebsite() => _passWebsite != null;
+
+  // "pass_support_email" field.
+  String? _passSupportEmail;
+  String get passSupportEmail => _passSupportEmail ?? '';
+  bool hasPassSupportEmail() => _passSupportEmail != null;
+
+  // "pass_contact_name" field.
+  String? _passContactName;
+  String get passContactName => _passContactName ?? '';
+  bool hasPassContactName() => _passContactName != null;
+
   void _initializeFields() {
     _programId = snapshotData['program_id'] as String?;
     _merchantId = snapshotData['merchant_id'] as DocumentReference?;
@@ -148,6 +193,15 @@ class ProgramsRecord extends FirestoreRecord {
     _passLabelColor = snapshotData['pass_label_color'] as String?;
     _passIcon = snapshotData['pass_icon'] as String?;
     _passLogo = snapshotData['pass_logo'] as String?;
+    _passLatestUpdate = snapshotData['pass_latest_update'] as String?;
+    _passLatestUpdateAt = snapshotData['pass_latest_update_at'] as DateTime?;
+    _passCollectRule = snapshotData['pass_collect_rule'] as String?;
+    _passLocations = getDataList(snapshotData['pass_locations']);
+    _passInstagram = snapshotData['pass_instagram'] as String?;
+    _passSnapchat = snapshotData['pass_snapchat'] as String?;
+    _passWebsite = snapshotData['pass_website'] as String?;
+    _passSupportEmail = snapshotData['pass_support_email'] as String?;
+    _passContactName = snapshotData['pass_contact_name'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -206,6 +260,15 @@ Map<String, dynamic> createProgramsRecordData({
   String? passLogo,
   double? latitude,
   double? longitude,
+  String? passLatestUpdate,
+  DateTime? passLatestUpdateAt,
+  String? passCollectRule,
+  List<dynamic>? passLocations,
+  String? passInstagram,
+  String? passSnapchat,
+  String? passWebsite,
+  String? passSupportEmail,
+  String? passContactName,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -230,6 +293,15 @@ Map<String, dynamic> createProgramsRecordData({
       'pass_label_color': passLabelColor,
       'pass_icon': passIcon,
       'pass_logo': passLogo,
+      'pass_latest_update': passLatestUpdate,
+      'pass_latest_update_at': passLatestUpdateAt,
+      'pass_collect_rule': passCollectRule,
+      'pass_locations': passLocations,
+      'pass_instagram': passInstagram,
+      'pass_snapchat': passSnapchat,
+      'pass_website': passWebsite,
+      'pass_support_email': passSupportEmail,
+      'pass_contact_name': passContactName,
     }.withoutNulls,
   );
 
@@ -263,7 +335,16 @@ class ProgramsRecordDocumentEquality implements Equality<ProgramsRecord> {
         e1?.passForegroundColor == e2?.passForegroundColor &&
         e1?.passLabelColor == e2?.passLabelColor &&
         e1?.passIcon == e2?.passIcon &&
-        e1?.passLogo == e2?.passLogo;
+        e1?.passLogo == e2?.passLogo &&
+        e1?.passLatestUpdate == e2?.passLatestUpdate &&
+        e1?.passLatestUpdateAt == e2?.passLatestUpdateAt &&
+        e1?.passCollectRule == e2?.passCollectRule &&
+        listEquality.equals(e1?.passLocations, e2?.passLocations) &&
+        e1?.passInstagram == e2?.passInstagram &&
+        e1?.passSnapchat == e2?.passSnapchat &&
+        e1?.passWebsite == e2?.passWebsite &&
+        e1?.passSupportEmail == e2?.passSupportEmail &&
+        e1?.passContactName == e2?.passContactName;
   }
 
   @override
@@ -289,7 +370,16 @@ class ProgramsRecordDocumentEquality implements Equality<ProgramsRecord> {
         e?.passForegroundColor,
         e?.passLabelColor,
         e?.passIcon,
-        e?.passLogo
+        e?.passLogo,
+        e?.passLatestUpdate,
+        e?.passLatestUpdateAt,
+        e?.passCollectRule,
+        e?.passLocations,
+        e?.passInstagram,
+        e?.passSnapchat,
+        e?.passWebsite,
+        e?.passSupportEmail,
+        e?.passContactName
       ]);
 
   @override

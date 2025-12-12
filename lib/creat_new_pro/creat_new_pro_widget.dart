@@ -515,6 +515,9 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                           _model.passFgColorController?.text.trim(),
                       passLabelColor:
                           _model.passLabelColorController?.text.trim(),
+                      passCollectRule: 'One stamp per purchase',
+                      passLatestUpdate:
+                          'Welcome to ${title.isNotEmpty ? title : 'your LOYA card'}',
                       status: true,
                       createdAt: getCurrentTimestamp,
                     ),

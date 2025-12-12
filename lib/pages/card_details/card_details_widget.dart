@@ -4,6 +4,8 @@ import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/components/wallet_stamp_grid.dart';
+import '/services/wallet_pass_builder.dart';
 import 'card_details_model.dart';
 
 import 'package:flutter/material.dart';
@@ -45,6 +47,9 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
     ProgramsRecord program,
   ) async {
     if (_model.isCreatingPass) return;
+    final totalSlots = program.stampsRequired > 0 ? program.stampsRequired : 1;
+    final filled =
+        card.currentStamps > totalSlots ? totalSlots : card.currentStamps;
     // If already has a wallet URL, just open it.
     if (card.walletPassUrl.isNotEmpty) {
       await launchURL(card.walletPassUrl);
@@ -60,8 +65,37 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
         );
         return;
       }
-      final response =
-          await CreateWalletPassCall.call(programId: program.reference.id);
+      MerchantsRecord? merchant;
+      try {
+        if (program.merchantId != null) {
+          merchant =
+              await MerchantsRecord.getDocumentOnce(program.merchantId!);
+        }
+      } catch (_) {}
+      final memberId = card.memberId.isNotEmpty
+          ? card.memberId
+          : (card.cardId.isNotEmpty ? card.cardId : card.reference.id);
+      final qrValue = card.qrValue.isNotEmpty
+          ? card.qrValue
+          : 'https://loya.live/add-stamp?uid=$currentUserUid&program=${program.reference.id}&serial=${card.walletPassId.isNotEmpty ? card.walletPassId : card.cardId}';
+      final passPayload = WalletPassBuilder.build(
+        program: program,
+        card: card,
+        merchant: merchant,
+        qrValue: qrValue,
+      );
+      final response = await CreateWalletPassCall.call(
+        programId: program.reference.id,
+        cardId: card.reference.id,
+        memberId: memberId,
+        qrValue: qrValue,
+        payload: passPayload,
+        stamps: {
+          'filled': filled,
+          'total': totalSlots,
+          'remaining': (totalSlots - filled).clamp(0, totalSlots),
+        },
+      );
       if (!(response.succeeded)) {
         final detail = getJsonField(
               response.jsonBody,
@@ -102,6 +136,9 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
           walletPassId: serial,
           walletPassUrl: downloadURL,
           qrValue: deepLink,
+          memberId: memberId,
+          stampsToReward: (totalSlots - card.currentStamps).clamp(0, totalSlots),
+          latestPassUpdate: program.passLatestUpdate,
         ),
         ...mapToFirestore({
           'updated_at': FieldValue.serverTimestamp(),
@@ -266,73 +303,14 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
             ),
           ),
           const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final firstRow = totalSlots > 6 ? 6 : totalSlots;
-              final secondRow = totalSlots - firstRow;
-              double calcSize(int count) {
-                const spacing = 8.0;
-                return ((constraints.maxWidth - spacing * (count - 1)) / count)
-                    .clamp(20.0, 38.0);
-              }
-
-              final size1 = calcSize(firstRow);
-              final size2 = secondRow > 0 ? calcSize(secondRow) : size1;
-
-              Widget buildRow(int count, double size, int offset) {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(count, (i) {
-                    final idx = offset + i;
-                    final filledSlot = idx < filled;
-                    return Padding(
-                      padding:
-                          EdgeInsets.only(right: i == count - 1 ? 0 : 8.0),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        curve: Curves.easeOut,
-                        width: size,
-                        height: size,
-                        decoration: BoxDecoration(
-                          color: filledSlot
-                              ? FlutterFlowTheme.of(context).primary
-                              : FlutterFlowTheme.of(context).alternate,
-                          shape: BoxShape.circle,
-                          boxShadow: filledSlot
-                              ? [
-                                  BoxShadow(
-                                    color: FlutterFlowTheme.of(context)
-                                        .primary
-                                        .withOpacity(0.35),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 3),
-                                  )
-                                ]
-                              : [],
-                        ),
-                        child: Icon(
-                          filledSlot ? Icons.check : Icons.star_border,
-                          color: filledSlot
-                              ? Colors.white
-                              : FlutterFlowTheme.of(context).secondaryText,
-                          size: size * 0.55,
-                        ),
-                      ),
-                    );
-                  }),
-                );
-              }
-
-              return Column(
-                children: [
-                  buildRow(firstRow, size1, 0),
-                  if (secondRow > 0) ...[
-                    const SizedBox(height: 8),
-                    buildRow(secondRow, size2, firstRow),
-                  ],
-                ],
-              );
-            },
+          WalletStampGrid(
+            total: totalSlots,
+            filled: filled,
+            activeColor: FlutterFlowTheme.of(context).primary,
+            inactiveColor:
+                FlutterFlowTheme.of(context).primary.withOpacity(0.35),
+            borderColor: FlutterFlowTheme.of(context).primary,
+            stampIconUrl: program.stampIcon,
           ),
           const SizedBox(height: 12),
           Text(
@@ -510,8 +488,3 @@ class _CardDetailsWidgetState extends State<CardDetailsWidget> {
     );
   }
 }
-
-
-
-
-

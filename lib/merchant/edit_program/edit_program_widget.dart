@@ -27,6 +27,15 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
   late TextEditingController _passBgController;
   late TextEditingController _passFgController;
   late TextEditingController _passLabelController;
+  late TextEditingController _stampIconController;
+  late TextEditingController _updatesController;
+  late TextEditingController _collectRuleController;
+  late TextEditingController _instagramController;
+  late TextEditingController _snapchatController;
+  late TextEditingController _websiteController;
+  late TextEditingController _supportEmailController;
+  late TextEditingController _contactController;
+  late TextEditingController _locationsController;
   late TextEditingController _broadcastController;
   late TextEditingController _latController;
   late TextEditingController _lngController;
@@ -49,6 +58,15 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
     _passBgController = TextEditingController(text: '#007AFF');
     _passFgController = TextEditingController(text: '#FFFFFF');
     _passLabelController = TextEditingController(text: '#FFFFFF');
+    _stampIconController = TextEditingController();
+    _updatesController = TextEditingController();
+    _collectRuleController = TextEditingController();
+    _instagramController = TextEditingController();
+    _snapchatController = TextEditingController();
+    _websiteController = TextEditingController();
+    _supportEmailController = TextEditingController();
+    _contactController = TextEditingController();
+    _locationsController = TextEditingController();
     _broadcastController = TextEditingController();
     _latController = TextEditingController();
     _lngController = TextEditingController();
@@ -63,6 +81,15 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
     _passBgController.dispose();
     _passFgController.dispose();
     _passLabelController.dispose();
+    _stampIconController.dispose();
+    _updatesController.dispose();
+    _collectRuleController.dispose();
+    _instagramController.dispose();
+    _snapchatController.dispose();
+    _websiteController.dispose();
+    _supportEmailController.dispose();
+    _contactController.dispose();
+    _locationsController.dispose();
     _broadcastController.dispose();
     _latController.dispose();
     _lngController.dispose();
@@ -89,6 +116,31 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
             hex.hasMatch(_passLabelController.text.trim()));
   }
 
+  List<Map<String, String>> _parseLocations(String input) {
+    final lines = input.split('\n');
+    final result = <Map<String, String>>[];
+    for (final raw in lines) {
+      final line = raw.trim();
+      if (line.isEmpty) continue;
+      if (line.contains(':')) {
+        final parts = line.split(':');
+        final city = parts.first.trim();
+        final branches = parts.sublist(1).join(':').split(',').map((b) => b.trim()).where((b) => b.isNotEmpty);
+        for (final branch in branches) {
+          result.add({'city': city, 'label': branch});
+        }
+      } else if (line.contains('-')) {
+        final parts = line.split('-');
+        if (parts.length >= 2) {
+          result.add({'city': parts.first.trim(), 'label': parts.sublist(1).join('-').trim()});
+        }
+      } else {
+        result.add({'city': 'General', 'label': line});
+      }
+    }
+    return result;
+  }
+
   Future<void> _save(ProgramsRecord program) async {
     if (_saving) return;
     if (!_colorsValid()) {
@@ -110,6 +162,8 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
 
     final lat = double.tryParse(_latController.text.trim());
     final lng = double.tryParse(_lngController.text.trim());
+    final locations = _parseLocations(_locationsController.text);
+    final latestUpdate = _updatesController.text.trim();
     await program.reference.update({
       ...createProgramsRecordData(
         title: _titleController.text.trim(),
@@ -122,11 +176,24 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
         passBackgroundColor: _passBgController.text.trim(),
         passForegroundColor: _passFgController.text.trim(),
         passLabelColor: _passLabelController.text.trim(),
+        stampIcon: _stampIconController.text.trim().isNotEmpty
+            ? _stampIconController.text.trim()
+            : null,
         latitude: lat,
         longitude: lng,
+        passLatestUpdate: latestUpdate,
+        passCollectRule: _collectRuleController.text.trim(),
+        passInstagram: _instagramController.text.trim(),
+        passSnapchat: _snapchatController.text.trim(),
+        passWebsite: _websiteController.text.trim(),
+        passSupportEmail: _supportEmailController.text.trim(),
+        passContactName: _contactController.text.trim(),
+        passLocations: locations.isNotEmpty ? locations : null,
       ),
       ...mapToFirestore({
         'updated_at': FieldValue.serverTimestamp(),
+        if (latestUpdate.isNotEmpty)
+          'pass_latest_update_at': FieldValue.serverTimestamp(),
       }),
     });
 
@@ -191,6 +258,13 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
       );
       if (resp.succeeded) {
         final updated = BroadcastProgramMessageCall.updated(resp.jsonBody) ?? 0;
+        await program.reference.update({
+          ...createProgramsRecordData(passLatestUpdate: msg),
+          ...mapToFirestore({
+            'pass_latest_update_at': FieldValue.serverTimestamp(),
+            'updated_at': FieldValue.serverTimestamp(),
+          }),
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Broadcast sent to $updated passes')),
         );
@@ -257,6 +331,46 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
                 _termsController.text = _termsController.text.isEmpty
                     ? program.termsConditions
                     : _termsController.text;
+                _updatesController.text = _updatesController.text.isEmpty
+                    ? program.passLatestUpdate
+                    : _updatesController.text;
+                _collectRuleController.text = _collectRuleController.text.isEmpty
+                    ? program.passCollectRule
+                    : _collectRuleController.text;
+                _instagramController.text = _instagramController.text.isEmpty
+                    ? program.passInstagram
+                    : _instagramController.text;
+                _snapchatController.text = _snapchatController.text.isEmpty
+                    ? program.passSnapchat
+                    : _snapchatController.text;
+                _websiteController.text = _websiteController.text.isEmpty
+                    ? program.passWebsite
+                    : _websiteController.text;
+                _supportEmailController.text = _supportEmailController.text.isEmpty
+                    ? program.passSupportEmail
+                    : _supportEmailController.text;
+                _contactController.text = _contactController.text.isEmpty
+                    ? (program.passContactName.isNotEmpty
+                        ? program.passContactName
+                        : program.title)
+                    : _contactController.text;
+                if (_locationsController.text.isEmpty &&
+                    program.passLocations.isNotEmpty) {
+                  final formatted = program.passLocations
+                      .map((loc) {
+                        if (loc is Map) {
+                          final city = (loc['city'] ?? '').toString();
+                          final label = (loc['label'] ?? loc['branch'] ?? '')
+                              .toString();
+                          if (city.isEmpty && label.isEmpty) return '';
+                          return city.isNotEmpty ? '$city - $label' : label;
+                        }
+                        return loc.toString();
+                      })
+                      .where((line) => line.isNotEmpty)
+                      .join('\n');
+                  _locationsController.text = formatted;
+                }
                 if (!_stampValueInitialized) {
                   final initial = program.stampsRequired > 0
                       ? program.stampsRequired.clamp(1, _maxStamps)
@@ -279,6 +393,9 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
                         ? program.passLabelColor
                         : '#FFFFFF')
                     : _passLabelController.text;
+                _stampIconController.text = _stampIconController.text.isEmpty
+                    ? program.stampIcon
+                    : _stampIconController.text;
                 _latController.text = _latController.text.isEmpty
                     ? (program.hasLatitude() ? program.latitude.toString() : '')
                     : _latController.text;
@@ -310,6 +427,30 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
                       _input(_rewardController, 'Reward details', maxLines: 3),
                       _fieldLabel('Terms & conditions'),
                       _input(_termsController, 'Terms', maxLines: 3),
+                      _fieldLabel('Latest update (Wallet back)'),
+                      _input(_updatesController,
+                          'e.g., Offer valid until Thursday',
+                          maxLines: 2),
+                      _fieldLabel('How to collect stamps'),
+                      _input(_collectRuleController,
+                          'One stamp per purchase or SAR amount',
+                          maxLines: 2),
+                      _fieldLabel('Locations (one per line: City - Branch)'),
+                      _input(
+                          _locationsController,
+                          'Riyadh - King Road\nJeddah - Corniche',
+                          maxLines: 3),
+                      _fieldLabel('Instagram'),
+                      _input(_instagramController, '@brand or link'),
+                      _fieldLabel('Snapchat'),
+                      _input(_snapchatController, 'snapchat.com/add/brand'),
+                      _fieldLabel('Website'),
+                      _input(_websiteController, 'https://brand.com'),
+                      _fieldLabel('Support email'),
+                      _input(_supportEmailController, 'support@brand.com',
+                          keyboardType: TextInputType.emailAddress),
+                      _fieldLabel('Contact name'),
+                      _input(_contactController, 'Merchant or support lead'),
                       _fieldLabel('Expiry date'),
                       Row(
                         children: [
@@ -356,6 +497,8 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
                       _input(_passBgController, '#007AFF'),
                       _input(_passFgController, '#FFFFFF'),
                       _input(_passLabelController, '#FFFFFF'),
+                      _fieldLabel('Stamp icon URL'),
+                      _input(_stampIconController, 'https://.../stamp.png'),
                       _fieldLabel('Store location (latitude)'),
                       _input(_latController, 'e.g., 24.7136'),
                       _fieldLabel('Store location (longitude)'),

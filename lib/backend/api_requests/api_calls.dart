@@ -13,11 +13,24 @@ const _kPrivateApiFunctionName = 'ffPrivateApiCall';
 class CreateWalletPassCall {
   static Future<ApiCallResponse> call({
     String? programId = '',
+    String? cardId = '',
+    String? memberId = '',
+    String? qrValue = '',
+    dynamic payload,
+    Map<String, dynamic>? stamps,
   }) async {
-    final ffApiRequestBody = '''
-{
-  "program_id": "${escapeStringForJson(programId)}"
-}''';
+    final body = <String, dynamic>{
+      'program_id': escapeStringForJson(programId),
+      if (cardId != null && cardId.isNotEmpty)
+        'card_id': escapeStringForJson(cardId),
+      if (memberId != null && memberId.isNotEmpty)
+        'member_id': escapeStringForJson(memberId),
+      if (qrValue != null && qrValue.isNotEmpty)
+        'qr_value': escapeStringForJson(qrValue),
+      if (payload != null) 'pass_payload': payload,
+      if (stamps != null) 'stamps': stamps,
+    };
+    final ffApiRequestBody = json.encode(body);
     return ApiManager.instance.makeApiCall(
       callName: 'createWalletPass',
       apiUrl:

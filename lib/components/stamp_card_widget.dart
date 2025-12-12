@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/components/wallet_stamp_grid.dart';
 
 class StampCardWidget extends StatelessWidget {
   const StampCardWidget({
@@ -21,6 +22,7 @@ class StampCardWidget extends StatelessWidget {
     this.onDetails,
     this.width,
     this.height,
+    this.stampIconUrl,
   });
 
   final String title;
@@ -35,6 +37,7 @@ class StampCardWidget extends StatelessWidget {
   final VoidCallback? onDetails;
   final double? width;
   final double? height;
+  final String? stampIconUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +47,6 @@ class StampCardWidget extends StatelessWidget {
         width ?? math.min(MediaQuery.sizeOf(context).width * 0.9, 420.0);
     final cardHeight = height ?? 220.0;
     final fg = foregroundColor ?? Colors.white;
-    final muted = (foregroundColor ?? Colors.white).withOpacity(0.25);
     final tagColor = labelColor ?? fg;
 
     return InkWell(
@@ -86,61 +88,13 @@ class StampCardWidget extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final rows = total > 6 ? 2 : 1;
-                  final row1 = math.min(total, 6);
-                  final row2 = total - row1;
-                  const spacing = 8.0;
-                  final rowWidth = constraints.maxWidth;
-                  final maxPerRow = rows == 2 ? 6 : row1;
-                  final diameter = ((rowWidth - (maxPerRow - 1) * spacing) /
-                          math.max(maxPerRow, 1))
-                      .clamp(16.0, 32.0);
-                  final rowSpacing = rows == 2 ? 12.0 : 0.0;
-
-                  Widget buildRow(int count, int offset) {
-                    if (count <= 0) {
-                      return const SizedBox.shrink();
-                    }
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(count, (index) {
-                        final stampIndex = offset + index;
-                        final isFilled = stampIndex < filled;
-                        return Padding(
-                          padding: EdgeInsets.only(
-                              right: index == count - 1 ? 0 : spacing),
-                          child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 180),
-                            curve: Curves.easeInOut,
-                            opacity: 1,
-                            child: CircleAvatar(
-                              radius: diameter / 2,
-                              backgroundColor: isFilled ? fg : muted,
-                              child: Icon(
-                                isFilled ? Icons.check : Icons.star,
-                                size: diameter / 2,
-                                color: isFilled ? backgroundColor : fg,
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                    );
-                  }
-
-                  return Column(
-                    mainAxisAlignment: rows == 1
-                        ? MainAxisAlignment.center
-                        : MainAxisAlignment.spaceEvenly,
-                    children: [
-                      buildRow(row1, 0),
-                      if (rows == 2) SizedBox(height: rowSpacing),
-                      if (rows == 2) buildRow(row2, row1),
-                    ],
-                  );
-                },
+              child: WalletStampGrid(
+                total: total,
+                filled: filled,
+                activeColor: fg,
+                inactiveColor: fg.withOpacity(0.35),
+                borderColor: tagColor,
+                stampIconUrl: stampIconUrl ?? '',
               ),
             ),
             const SizedBox(height: 10),

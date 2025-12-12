@@ -3,6 +3,7 @@ import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/components/wallet_stamp_grid.dart';
 import '/pages/card_details/card_details_widget.dart';
 import '/pages/program_browse/program_browse_widget.dart';
 import 'home_page_model.dart';
@@ -372,11 +373,13 @@ class PassPreviewCard extends StatelessWidget {
             ),
             if (totalStamps > 0) ...[
               const SizedBox(height: 14),
-              DynamicStampGrid(
-                totalStamps: totalStamps,
-                filledStamps: filledStamps,
-                color: fg,
-                badgeColor: label,
+              WalletStampGrid(
+                total: totalStamps,
+                filled: filledStamps,
+                activeColor: fg,
+                inactiveColor: fg.withOpacity(0.35),
+                borderColor: label,
+                stampIconUrl: program.stampIcon,
               ),
             ] else ...[
               const SizedBox(height: 10),
@@ -411,84 +414,6 @@ class PassPreviewCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class DynamicStampGrid extends StatelessWidget {
-  const DynamicStampGrid({
-    super.key,
-    required this.totalStamps,
-    required this.filledStamps,
-    required this.color,
-    required this.badgeColor,
-  });
-
-  final int totalStamps;
-  final int filledStamps;
-  final Color color;
-  final Color badgeColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final rows = (totalStamps / 6).ceil().clamp(1, 2);
-    final stampsPerRow = List.generate(rows, (i) {
-      final start = i * 6;
-      final end = (start + 6).clamp(0, totalStamps);
-      return end - start;
-    });
-
-    return Column(
-      children: stampsPerRow.asMap().entries.map((entry) {
-        final rowIndex = entry.key;
-        final count = entry.value;
-        final filledBefore =
-            stampsPerRow.take(rowIndex).fold<int>(0, (p, c) => p + c);
-        return LayoutBuilder(
-          builder: (ctx, constraints) {
-            final spacing = 8.0;
-            final size = (constraints.maxWidth / count) - spacing;
-            final stampSize = size.clamp(18.0, 40.0);
-            return Padding(
-              padding: EdgeInsets.only(
-                  bottom: rowIndex == stampsPerRow.length - 1 ? 0 : 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(count, (index) {
-                  final globalIndex = filledBefore + index;
-                  final isFilled = globalIndex < filledStamps;
-                  return Padding(
-                    padding:
-                        EdgeInsets.only(right: index == count - 1 ? 0 : spacing),
-                    child: Container(
-                      width: stampSize,
-                      height: stampSize,
-                      decoration: BoxDecoration(
-                        color: isFilled
-                            ? Colors.white.withValues(alpha: 0.18)
-                            : Colors.white.withValues(alpha: 0.12),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isFilled
-                              ? badgeColor
-                              : badgeColor.withValues(alpha: 0.6),
-                          width: 1.3,
-                        ),
-                      ),
-                      child: Icon(
-                        isFilled ? Icons.star : Icons.star_border_rounded,
-                        color: color,
-                        size: stampSize * 0.55,
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            );
-          },
-        );
-      }).toList(),
-    );
-  }
-}
 
 class SuggestedProgramsList extends StatelessWidget {
   const SuggestedProgramsList({super.key, required this.onTapDiscover});

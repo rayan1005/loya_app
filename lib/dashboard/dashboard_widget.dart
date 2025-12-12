@@ -477,6 +477,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       backgroundColor: bg,
       foregroundColor: fg,
       labelColor: labelColor,
+      stampIconUrl: program.stampIcon,
       onTap: () {
         context.pushNamed(
           CardDetailsWidget.routeName,
