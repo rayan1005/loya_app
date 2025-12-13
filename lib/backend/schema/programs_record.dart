@@ -25,6 +25,16 @@ class ProgramsRecord extends FirestoreRecord {
   DocumentReference? get merchantId => _merchantId;
   bool hasMerchantId() => _merchantId != null;
 
+  // "merchant_uid" field.
+  String? _merchantUid;
+  String get merchantUid => _merchantUid ?? '';
+  bool hasMerchantUid() => _merchantUid != null;
+
+  // "merchant_ref" field.
+  DocumentReference? _merchantRef;
+  DocumentReference? get merchantRef => _merchantRef;
+  bool hasMerchantRef() => _merchantRef != null;
+
   // "title" field.
   String? _title;
   String get title => _title ?? '';
@@ -183,6 +193,8 @@ class ProgramsRecord extends FirestoreRecord {
   void _initializeFields() {
     _programId = snapshotData['program_id'] as String?;
     _merchantId = snapshotData['merchant_id'] as DocumentReference?;
+    _merchantUid = snapshotData['merchant_uid'] as String?;
+    _merchantRef = snapshotData['merchant_ref'] as DocumentReference?;
     _title = snapshotData['title'] as String?;
     _description = snapshotData['description'] as String?;
     _rewardType = snapshotData['reward_type'] as String?;
@@ -253,6 +265,8 @@ class ProgramsRecord extends FirestoreRecord {
 Map<String, dynamic> createProgramsRecordData({
   String? programId,
   DocumentReference? merchantId,
+  String? merchantUid,
+  DocumentReference? merchantRef,
   String? title,
   String? description,
   String? rewardType,
@@ -288,6 +302,8 @@ Map<String, dynamic> createProgramsRecordData({
     <String, dynamic>{
       'program_id': programId,
       'merchant_id': merchantId,
+      'merchant_uid': merchantUid,
+      'merchant_ref': merchantRef,
       'title': title,
       'description': description,
       'reward_type': rewardType,
@@ -332,6 +348,8 @@ class ProgramsRecordDocumentEquality implements Equality<ProgramsRecord> {
     const listEquality = ListEquality();
     return e1?.programId == e2?.programId &&
         e1?.merchantId == e2?.merchantId &&
+        e1?.merchantUid == e2?.merchantUid &&
+        e1?.merchantRef == e2?.merchantRef &&
         e1?.title == e2?.title &&
         e1?.description == e2?.description &&
         e1?.rewardType == e2?.rewardType &&
@@ -369,6 +387,8 @@ class ProgramsRecordDocumentEquality implements Equality<ProgramsRecord> {
   int hash(ProgramsRecord? e) => const ListEquality().hash([
         e?.programId,
         e?.merchantId,
+        e?.merchantUid,
+        e?.merchantRef,
         e?.title,
         e?.description,
         e?.rewardType,

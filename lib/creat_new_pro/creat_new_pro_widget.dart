@@ -502,6 +502,8 @@ class _CreatNewProWidgetState extends State<CreatNewProWidget> {
                     ...createProgramsRecordData(
                       programId: docRef.id,
                       merchantId: merchantRef,
+                      merchantUid: currentUserUid,
+                      merchantRef: merchantRef,
                       title: title,
                       description: desc,
                       rewardDetails: reward,

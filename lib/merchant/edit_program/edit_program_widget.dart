@@ -1,3 +1,4 @@
+import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/components/stamp_count_picker.dart';
@@ -166,6 +167,9 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
     final latestUpdate = _updatesController.text.trim();
     await program.reference.update({
       ...createProgramsRecordData(
+        merchantUid: currentUserUid,
+        merchantRef:
+            program.merchantRef ?? program.merchantId ?? currentUserDocument?.linkedMerchants,
         title: _titleController.text.trim(),
         description: _descController.text.trim(),
         rewardDetails: _rewardController.text.trim(),
@@ -259,7 +263,12 @@ class _EditProgramWidgetState extends State<EditProgramWidget> {
       if (resp.succeeded) {
         final updated = BroadcastProgramMessageCall.updated(resp.jsonBody) ?? 0;
         await program.reference.update({
-          ...createProgramsRecordData(passLatestUpdate: msg),
+          ...createProgramsRecordData(
+            merchantUid: currentUserUid,
+            merchantRef:
+                program.merchantRef ?? program.merchantId ?? currentUserDocument?.linkedMerchants,
+            passLatestUpdate: msg,
+          ),
           ...mapToFirestore({
             'pass_latest_update_at': FieldValue.serverTimestamp(),
             'updated_at': FieldValue.serverTimestamp(),
