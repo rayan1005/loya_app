@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Loya - إضافة طابع</title>
+    <style>
+        :root {
+            --primary: #007AFF;
+            --bg: #F5F5F7;
+            --card: #FFFFFF;
+            --text: #1D1D1F;
+            --text-secondary: #86868B;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans Arabic', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        
+        .container {
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 40px 32px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        }
+        
+        .icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), #0056CC);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+        
+        .icon svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+        
+        p {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .highlight {
+            background: #E3F2FD;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 24px;
+        }
+        
+        .highlight p {
+            color: var(--primary);
+            font-weight: 500;
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        .logo {
+            margin-top: 32px;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .info {
+            margin-top: 24px;
+            padding: 16px;
+            background: #FFF3E0;
+            border-radius: 12px;
+        }
+        
+        .info p {
+            color: #E65100;
+            font-size: 14px;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 11h8V3H3v8zm2-6h4v4H5V5zm8-2v8h8V3h-8zm6 6h-4V5h4v4zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm13 0h-2v2h2v-2zm0 4h-2v2h2v-2zm-4-4h-2v2h2v-2zm4 0h2v2h-2v-2zm0 4h2v2h-2v-2zm-4 0h2v2h-2v-2zm4-8h-2v2h2v-2z"/>
+                </svg>
+            </div>
+            
+            <h1>رمز QR للتاجر</h1>
+            
+            <p>هذا الرابط مخصص للمسح الضوئي من قبل التاجر فقط</p>
+            
+            <div class="highlight">
+                <p>💡 قم بإظهار رمز QR الموجود على بطاقتك للتاجر ليقوم بمسحها وإضافة الطابع</p>
+            </div>
+            
+            <div class="info">
+                <p>⚠️ لا يمكن إضافة الطوابع من خلال فتح هذا الرابط في المتصفح</p>
+            </div>
+        </div>
+        
+        <div class="logo">LOYA</div>
+    </div>
+</body>
+</html>

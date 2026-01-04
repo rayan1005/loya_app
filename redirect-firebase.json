@@ -1,0 +1,13 @@
+﻿{
+  "hosting": {
+    "site": "loya-app-ziqygx",
+    "public": "redirect",
+    "redirects": [
+      {
+        "source": "/:path*",
+        "destination": "https://loya-app-ziqygx-9bc8a.web.app/:path*",
+        "type": 301
+      }
+    ]
+  }
+}

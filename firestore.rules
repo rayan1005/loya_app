@@ -1,0 +1,206 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(ownerId) {
+      return isAuthenticated() && request.auth.uid == ownerId;
+    }
+    
+    function getBusiness(businessId) {
+      return get(/databases/$(database)/documents/businesses/$(businessId)).data;
+    }
+    
+    function isBusinessOwner(businessId) {
+      return isAuthenticated() && getBusiness(businessId).ownerId == request.auth.uid;
+    }
+    
+    // Businesses collection
+    match /businesses/{businessId} {
+      // Allow read if user is the owner
+      allow read: if isOwner(resource.data.ownerId);
+      
+      // Allow create for authenticated users
+      allow create: if isAuthenticated() 
+        && request.resource.data.ownerId == request.auth.uid;
+      
+      // Allow update if user is the owner
+      allow update: if isOwner(resource.data.ownerId)
+        && request.resource.data.ownerId == resource.data.ownerId; // Can't change owner
+      
+      // No delete allowed (soft delete instead)
+      allow delete: if false;
+      
+      // Automation rules subcollection
+      match /automationRules/{ruleId} {
+        // Allow read/list for business owner
+        allow read, list: if isBusinessOwner(businessId);
+        
+        // Allow create for business owner
+        allow create: if isBusinessOwner(businessId);
+        
+        // Allow update for business owner
+        allow update: if isBusinessOwner(businessId);
+        
+        // Allow delete for business owner
+        allow delete: if isBusinessOwner(businessId);
+      }
+    }
+    
+    // Programs collection
+    match /programs/{programId} {
+      // Allow public read of individual programs (for customer join page)
+      allow get: if true;
+      
+      // Allow list for authenticated users (filtered by businessId in query)
+      allow list: if isAuthenticated();
+      
+      // Allow create if user owns the business
+      allow create: if isAuthenticated()
+        && isBusinessOwner(request.resource.data.businessId);
+      
+      // Allow update if user owns the business
+      allow update: if isBusinessOwner(resource.data.businessId);
+      
+      // Allow delete if user owns the business
+      allow delete: if isBusinessOwner(resource.data.businessId);
+    }
+    
+    // Customers collection
+    match /customers/{customerId} {
+      // Allow read if user owns the business
+      allow read: if isAuthenticated() && isBusinessOwner(resource.data.businessId);
+      
+      // Allow list for authenticated users (filtered by businessId in query)  
+      allow list: if isAuthenticated();
+      
+      // Allow create if user owns the business
+      allow create: if isAuthenticated()
+        && isBusinessOwner(request.resource.data.businessId);
+      
+      // Allow update if user owns the business
+      allow update: if isBusinessOwner(resource.data.businessId);
+      
+      // No delete allowed
+      allow delete: if false;
+    }
+    
+    // Customer progress collection
+    match /customerProgress/{progressId} {
+      // Allow read/list for authenticated users
+      allow read, list: if isAuthenticated();
+      
+      // Allow create if user owns the business
+      allow create: if isAuthenticated()
+        && isBusinessOwner(request.resource.data.businessId);
+      
+      // Allow update if user owns the business
+      allow update: if isBusinessOwner(resource.data.businessId);
+      
+      // No delete allowed
+      allow delete: if false;
+    }
+    
+    // Activity collection (activity_log)
+    match /activity/{activityId} {
+      // Allow read/list for authenticated users
+      allow read, list: if isAuthenticated();
+      
+      // Allow create if user owns the business
+      allow create: if isAuthenticated()
+        && isBusinessOwner(request.resource.data.businessId);
+      
+      // No update or delete allowed (logs are immutable)
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Activity log collection (alternate name used in some screens)
+    match /activity_log/{activityId} {
+      // Allow read/list for authenticated users
+      allow read, list: if isAuthenticated();
+      
+      // Allow create for authenticated users
+      allow create: if isAuthenticated();
+      
+      // No update or delete allowed (logs are immutable)
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Messages collection (push notifications)
+    match /messages/{messageId} {
+      // Allow read/list for authenticated users
+      allow read, list: if isAuthenticated();
+      
+      // Allow create for authenticated users
+      allow create: if isAuthenticated();
+      
+      // Allow update if user owns the business
+      allow update: if isAuthenticated();
+      
+      // No delete allowed
+      allow delete: if false;
+    }
+    
+    // Locations collection (business branches)
+    match /locations/{locationId} {
+      // Allow read for authenticated users
+      allow read, list: if isAuthenticated();
+      
+      // Allow create for authenticated users who own the business
+      allow create: if isAuthenticated();
+      
+      // Allow update for authenticated users
+      allow update: if isAuthenticated();
+      
+      // Allow delete for authenticated users
+      allow delete: if isAuthenticated();
+    }
+    
+    // Wallet passes collection (Apple Wallet passes)
+    match /wallet_passes/{passId} {
+      // Allow read for authenticated users
+      allow read, list: if isAuthenticated();
+      
+      // Allow create (typically from backend, but allow for flexibility)
+      allow create: if isAuthenticated();
+      
+      // Allow update for authenticated users (stamper needs to update points)
+      allow update: if isAuthenticated();
+      
+      // No delete allowed
+      allow delete: if false;
+    }
+    
+    // Device registrations collection (for Apple Wallet push notifications)
+    match /device_registrations/{deviceId} {
+      // Allow read/write for authenticated users and backend
+      allow read, write: if true;
+    }
+    
+    // Users collection (for additional user profile data)
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    // Subscriptions collection (for billing)
+    match /subscriptions/{subscriptionId} {
+      allow read: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid;
+      
+      // Only backend (Cloud Functions) can write subscriptions
+      allow write: if false;
+    }
+    
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

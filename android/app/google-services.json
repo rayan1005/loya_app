@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "900836887479",
+    "project_id": "loya-app-ziqygx",
+    "storage_bucket": "loya-app-ziqygx.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900836887479:android:716ad502e234a9a8bcf632",
+        "android_client_info": {
+          "package_name": "com.mycompany.loya"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "900836887479-mm6j6kqh4e8rbqkoshpg006cbt7h3uni.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mycompany.loya",
+            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
+          }
+        },
+        {
+          "client_id": "900836887479-v9e5f5vdt4j0u8iv5lv054sssllom0it.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzzxO96eqnLjoG9yQoCEl1jSxhj5rHCf4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "900836887479-v9e5f5vdt4j0u8iv5lv054sssllom0it.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "900836887479-8qrrvnacm4s25v01hc2qookusms0en5n.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.loya",
+                "app_store_id": "6753060376"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,85 @@
+workflows:
+  ios_testflight:
+    name: iOS TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+
+    environment:
+      flutter: stable
+      xcode: latest
+      vars:
+        BUNDLE_ID: com.mycompany.loya
+      groups:
+        - app_store_connect
+        - ios_signing
+
+    scripts:
+      - name: Flutter pub get
+        script: |
+          flutter pub get
+
+      - name: Set up signing
+        script: |
+          KEYCHAIN_PASSWORD=${KEYCHAIN_PASSWORD:-codemagic}
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -lut 21600 build.keychain
+
+          echo "$APPLE_CERT_BASE64" | base64 --decode > /tmp/dist.p12
+          security import /tmp/dist.p12 -k build.keychain -P "$APPLE_CERT_PASSWORD" -A
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "$IOS_PROVISIONING_PROFILE" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision
+          PROFILE_NAME=$(security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision | /usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin)
+
+          cat > /tmp/ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>${BUNDLE_ID}</key><string>${PROFILE_NAME}</string>
+            </dict>
+            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
+          </dict>
+          </plist>
+          EOF
+
+      # ------------------------ AUTO BUILD NUMBER ------------------------
+      - name: Auto-increment build number
+        script: |
+          BUILD_NUMBER=$(date +%s)
+          echo "Using build number: $BUILD_NUMBER"
+          echo $BUILD_NUMBER > /tmp/build_number.txt
+      # --------------------------------------------------------------------
+
+      - name: Build IPA
+        script: |
+          BUILD_NUMBER=$(cat /tmp/build_number.txt)
+          flutter build ipa --release --export-options-plist=/tmp/ExportOptions.plist --build-number=$BUILD_NUMBER
+
+      - name: Prepare App Store Connect API key
+        script: |
+          echo "$APP_STORE_CONNECT_KEY_BASE64" | base64 --decode > /tmp/AuthKey.p8
+          cat > /tmp/api_key.json <<EOF
+          {
+            "key_id": "${APP_STORE_CONNECT_KEY_ID}",
+            "issuer_id": "${APP_STORE_CONNECT_ISSUER_ID}",
+            "key": "$(cat /tmp/AuthKey.p8 | sed 's/$/\\n/' | tr -d '\n')",
+            "in_house": false
+          }
+          EOF
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/api_key.json
+
+    publishing:
+      app_store_connect:
+        api_key: /tmp/api_key.json
+        submit_to_testflight: true
