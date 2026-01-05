@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:html' as html;
 import 'dart:async';
+
+import '../../../../core/utils/platform_utils.dart' as platform_utils;
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -752,16 +753,9 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
   }
 
   Future<Map<String, double>?> _getCurrentLocation() async {
-    final completer = Completer<Map<String, double>?>();
-
     try {
-      html.window.navigator.geolocation.getCurrentPosition().then((position) {
-        completer.complete({
-          'latitude': position.coords!.latitude!.toDouble(),
-          'longitude': position.coords!.longitude!.toDouble(),
-        });
-      }).catchError((error) {
-        print('Geolocation error: $error');
+      final location = await platform_utils.getCurrentLocationWeb();
+      if (location == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content:
@@ -770,21 +764,8 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
             duration: Duration(seconds: 4),
           ),
         );
-        completer.complete(null);
-      });
-
-      return completer.future.timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('انتهت مهلة تحديد الموقع، حاول مرة أخرى'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-          return null;
-        },
-      );
+      }
+      return location;
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -917,7 +898,7 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                     onPressed: () {
                       final url =
                           'https://www.google.com/maps?q=$selectedLat,$selectedLng';
-                      html.window.open(url, '_blank');
+                      platform_utils.openUrl(url);
                     },
                     icon: const Icon(LucideIcons.externalLink),
                     label: const Text('فتح في خرائط Google'),
@@ -1088,9 +1069,8 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: () {
-                        html.window.open(
-                            'https://www.google.com/maps/@${latController.text},${lngController.text},17z',
-                            '_blank');
+                        platform_utils.openUrl(
+                            'https://www.google.com/maps/@${latController.text},${lngController.text},17z');
                       },
                       icon: const Icon(LucideIcons.externalLink, size: 16),
                       label: const Text(
