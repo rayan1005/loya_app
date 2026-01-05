@@ -44,19 +44,19 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDAzQDo2Ju3tN-ilDBzlTfcJcSAOcyT6A0',
-    appId: '1:900836887479:ios:PLACEHOLDER',
+    appId: '1:900836887479:ios:08ccdf80abd75ce2bcf632',
     messagingSenderId: '900836887479',
     projectId: 'loya-app-ziqygx',
     storageBucket: 'loya-app-ziqygx.firebasestorage.app',
-    iosBundleId: 'com.loyaapp.loya',
+    iosBundleId: 'com.mycompany.loya',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyDAzQDo2Ju3tN-ilDBzlTfcJcSAOcyT6A0',
-    appId: '1:900836887479:ios:PLACEHOLDER',
+    appId: '1:900836887479:ios:08ccdf80abd75ce2bcf632',
     messagingSenderId: '900836887479',
     projectId: 'loya-app-ziqygx',
     storageBucket: 'loya-app-ziqygx.firebasestorage.app',
-    iosBundleId: 'com.loyaapp.loya',
+    iosBundleId: 'com.mycompany.loya',
   );
 }
