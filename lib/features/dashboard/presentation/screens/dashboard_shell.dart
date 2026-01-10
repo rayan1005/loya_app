@@ -79,27 +79,29 @@ class _DashboardShellState extends ConsumerState<DashboardShell> {
       data: (business) => Scaffold(
         backgroundColor: AppColors.background,
         drawer: isMobile ? _buildDrawer(l10n) : null,
-        body: Builder(
-          builder: (scaffoldContext) => Row(
-            children: [
-              // Sidebar (desktop only)
-              if (!isMobile) _buildSidebar(l10n),
+        body: SafeArea(
+          child: Builder(
+            builder: (scaffoldContext) => Row(
+              children: [
+                // Sidebar (desktop only)
+                if (!isMobile) _buildSidebar(l10n),
 
-              // Main content
-              Expanded(
-                child: Column(
-                  children: [
-                    // Top bar
-                    _buildTopBar(l10n, isMobile, scaffoldContext),
+                // Main content
+                Expanded(
+                  child: Column(
+                    children: [
+                      // Top bar
+                      _buildTopBar(l10n, isMobile, scaffoldContext),
 
-                    // Content
-                    Expanded(
-                      child: widget.child,
-                    ),
-                  ],
+                      // Content
+                      Expanded(
+                        child: widget.child,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -544,4 +544,64 @@ class FirestoreService {
       };
     }
   }
+
+  // ==================== Program Stats ====================
+
+  /// Get count of unique customers enrolled in a specific program
+  Future<int> getProgramCustomersCount(String businessId, String programId) async {
+    try {
+      final query = await _progressRef
+          .where('businessId', isEqualTo: businessId)
+          .where('programId', isEqualTo: programId)
+          .get();
+      return query.docs.length;
+    } catch (e) {
+      print('getProgramCustomersCount error: $e');
+      return 0;
+    }
+  }
+
+  /// Get count of stamps given today for a specific program
+  Future<int> getProgramTodayStamps(String businessId, String programId) async {
+    try {
+      final now = DateTime.now();
+      final startOfDay = DateTime(now.year, now.month, now.day);
+      
+      final query = await _activityRef
+          .where('businessId', isEqualTo: businessId)
+          .where('programId', isEqualTo: programId)
+          .where('type', isEqualTo: 'stamp')
+          .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+          .get();
+      
+      return query.docs.length;
+    } catch (e) {
+      // Fallback: query without compound index
+      try {
+        final now = DateTime.now();
+        final startOfDay = DateTime(now.year, now.month, now.day);
+        final startTs = Timestamp.fromDate(startOfDay);
+        
+        final query = await _activityRef
+            .where('businessId', isEqualTo: businessId)
+            .orderBy('timestamp', descending: true)
+            .limit(200)
+            .get();
+        
+        int count = 0;
+        for (final doc in query.docs) {
+          final data = doc.data();
+          final ts = data['timestamp'] as Timestamp?;
+          if (ts == null || ts.compareTo(startTs) < 0) continue;
+          if (data['programId'] == programId && data['type'] == 'stamp') {
+            count++;
+          }
+        }
+        return count;
+      } catch (e2) {
+        print('getProgramTodayStamps fallback error: $e2');
+        return 0;
+      }
+    }
+  }
 }

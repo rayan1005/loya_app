@@ -301,3 +301,21 @@ final stampNotifierProvider =
   final businessId = ref.watch(currentBusinessIdProvider);
   return StampNotifier(service, businessId);
 });
+
+/// Provider for program customers count
+final programCustomersCountProvider = FutureProvider.family<int, String>((ref, programId) async {
+  final businessId = ref.watch(currentBusinessIdProvider);
+  if (businessId == null) return 0;
+  
+  final service = ref.watch(firestoreServiceProvider);
+  return service.getProgramCustomersCount(businessId, programId);
+});
+
+/// Provider for program today stamps count
+final programTodayStampsProvider = FutureProvider.family<int, String>((ref, programId) async {
+  final businessId = ref.watch(currentBusinessIdProvider);
+  if (businessId == null) return 0;
+  
+  final service = ref.watch(firestoreServiceProvider);
+  return service.getProgramTodayStamps(businessId, programId);
+});

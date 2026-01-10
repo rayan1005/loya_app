@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -7,8 +8,10 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/data/models/models.dart';
+import '../../../../core/data/providers/data_providers.dart';
+import '../../../../core/utils/number_formatter.dart';
 
-class ProgramCard extends StatelessWidget {
+class ProgramCard extends ConsumerWidget {
   final LoyaltyProgram program;
   final VoidCallback? onTap;
 
@@ -18,7 +21,7 @@ class ProgramCard extends StatelessWidget {
     this.onTap,
   });
 
-  Color get _programColor {
+  Color _programColor() {
     // Parse color from string or use default
     try {
       if (program.color.startsWith('#')) {
@@ -32,9 +35,13 @@ class ProgramCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final color = _programColor;
+    final color = _programColor();
+    
+    // Get real customer count for this program
+    final customersAsync = ref.watch(programCustomersCountProvider(program.id));
+    final todayStampsAsync = ref.watch(programTodayStampsProvider(program.id));
 
     return Material(
       color: Colors.white,
@@ -129,13 +136,21 @@ class ProgramCard extends StatelessWidget {
                 children: [
                   _StatItem(
                     icon: LucideIcons.users,
-                    value: '0', // Will be updated with real count
+                    value: customersAsync.when(
+                      data: (count) => formatCompactNumber(count),
+                      loading: () => '-',
+                      error: (_, __) => '0',
+                    ),
                     label: l10n.get('customers'),
                   ),
                   const SizedBox(width: 24),
                   _StatItem(
                     icon: LucideIcons.stamp,
-                    value: '0', // Will be updated with real count
+                    value: todayStampsAsync.when(
+                      data: (count) => formatCompactNumber(count),
+                      loading: () => '-',
+                      error: (_, __) => '0',
+                    ),
                     label: l10n.get('today'),
                   ),
                   const Spacer(),

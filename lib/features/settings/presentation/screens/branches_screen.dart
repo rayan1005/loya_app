@@ -21,8 +21,8 @@ class _BranchesScreenState extends ConsumerState<BranchesScreen> {
   final List<Branch> _branches = [
     Branch(
       id: '1',
-      name: 'Main Branch',
-      address: 'Riyadh, King Fahd Road',
+      name: 'الفرع الرئيسي',
+      address: 'الرياض، طريق الملك فهد',
       isMain: true,
     ),
   ];

@@ -313,7 +313,7 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: LoyaButton(
               label: 'حفظ',
               onPressed: _isSaving ? null : _saveProgram,
