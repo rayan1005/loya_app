@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:io' show Platform;
 
 import 'core/config/firebase_options.dart';
 import 'core/router/app_router.dart';
@@ -16,9 +17,12 @@ void main() async {
 
   // Initialize Firebase with error handling
   try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    // On iOS, Firebase is configured in AppDelegate, so check if already initialized
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
   } catch (e) {
     debugPrint('Firebase init error: $e');
   }

@@ -28,6 +28,42 @@ import '../../features/messaging/presentation/screens/messages_screen.dart';
 import '../../features/marketing/presentation/screens/referral_program_screen.dart';
 import '../../features/marketing/presentation/screens/automation_screen.dart';
 import '../../features/stamper/presentation/screens/stamper_screen.dart';
+import '../theme/app_colors.dart';
+
+/// Splash screen shown while loading auth state
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/logo.png',
+              width: 120,
+              height: 120,
+              errorBuilder: (_, __, ___) => Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Icon(Icons.store, size: 60, color: Colors.white),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const CircularProgressIndicator(),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -36,12 +72,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     debugLogDiagnostics: true,
     redirect: (context, state) {
+      // While auth state is loading, show splash
+      final isLoading = authState.isLoading;
+      final isSplash = state.matchedLocation == '/splash';
+      
+      if (isLoading && !isSplash) {
+        return '/splash';
+      }
+      
       final isLoggedIn = authState.valueOrNull != null;
       final isLoggingIn =
           state.matchedLocation == '/login' || state.matchedLocation == '/otp';
 
+      // If done loading and on splash, redirect appropriately
+      if (!isLoading && isSplash) {
+        return isLoggedIn ? '/' : '/login';
+      }
+
       // If not logged in and not on login pages, redirect to login
-      if (!isLoggedIn && !isLoggingIn) {
+      if (!isLoading && !isLoggedIn && !isLoggingIn) {
         return '/login';
       }
 
@@ -53,6 +102,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      // Splash Route
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const _SplashScreen(),
+      ),
       // Auth Routes
       GoRoute(
         path: '/login',
