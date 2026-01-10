@@ -19,6 +19,7 @@ class BranchesScreen extends ConsumerStatefulWidget {
 }
 
 class _BranchesScreenState extends ConsumerState<BranchesScreen> {
+  // Dummy data - will be replaced with real data from Firebase
   final List<Branch> _branches = [
     Branch(
       id: '1',
@@ -54,90 +55,87 @@ class _BranchesScreenState extends ConsumerState<BranchesScreen> {
     final maxBranches = planConfig?.limits.branches ?? 1;
     final canAddMore = maxBranches == -1 || _branches.length < maxBranches;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
-          // Main content
-          SingleChildScrollView(
-            padding: EdgeInsets.all(
-                isMobile ? AppSpacing.pagePaddingMobile : AppSpacing.pagePadding),
-            child: Center(
-              child: ConstrainedBox(
-                constraints:
-                    const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.get('branches'),
-                              style: AppTypography.displaySmall.copyWith(
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${_branches.length} ${l10n.get('branches').toLowerCase()}',
-                              style: AppTypography.body.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        // Only show create button in header on desktop
-                        if (!isMobile && canAddMore)
-                          SizedBox(
-                            width: 180,
-                            child: LoyaButton(
-                              label: l10n.get('add_branch'),
-                              icon: LucideIcons.plus,
-                              onPressed: _showAddBranchDialog,
-                              height: 44,
+    return Stack(
+      children: [
+        // Main content
+        SingleChildScrollView(
+          padding: EdgeInsets.all(
+              isMobile ? AppSpacing.pagePaddingMobile : AppSpacing.pagePadding),
+          child: Center(
+            child: ConstrainedBox(
+              constraints:
+                  const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header - same as programs
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.get('branches'),
+                            style: AppTypography.displaySmall.copyWith(
+                              color: AppColors.textPrimary,
                             ),
                           ),
-                        if (!isMobile && !canAddMore) _buildUpgradeButton(l10n),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.sectionSmall),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${_branches.length} ${l10n.get('branches').toLowerCase()}',
+                            style: AppTypography.body.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Only show create button in header on desktop
+                      if (!isMobile && canAddMore)
+                        SizedBox(
+                          width: 180,
+                          child: LoyaButton(
+                            label: l10n.get('add_branch'),
+                            icon: LucideIcons.plus,
+                            onPressed: _showAddBranchDialog,
+                            height: 44,
+                          ),
+                        ),
+                      if (!isMobile && !canAddMore) _buildUpgradeButton(l10n),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sectionSmall),
 
-                    // Branches list
-                    if (_branches.isEmpty)
-                      _buildEmptyState(context, l10n)
-                    else
-                      _buildBranchesList(context, l10n),
+                  // Branches list - same style as programs
+                  if (_branches.isEmpty)
+                    _buildEmptyState(context, l10n)
+                  else
+                    _buildBranchesList(context, l10n, isMobile),
 
-                    // Add bottom spacing for FAB on mobile
-                    if (isMobile) const SizedBox(height: 80),
-                  ],
-                ),
+                  // Add bottom spacing for FAB on mobile
+                  if (isMobile) const SizedBox(height: 80),
+                ],
               ),
             ),
           ),
+        ),
 
-          // Floating Action Button for mobile
-          if (isMobile && canAddMore)
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 16,
-              child: SafeArea(
-                child: LoyaButton(
-                  label: l10n.get('add_branch'),
-                  icon: LucideIcons.plus,
-                  onPressed: _showAddBranchDialog,
-                  height: 52,
-                ),
+        // Floating Action Button for mobile - same as programs
+        if (isMobile && canAddMore)
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 16,
+            child: SafeArea(
+              child: LoyaButton(
+                label: l10n.get('add_branch'),
+                icon: LucideIcons.plus,
+                onPressed: _showAddBranchDialog,
+                height: 52,
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 
@@ -151,7 +149,6 @@ class _BranchesScreenState extends ConsumerState<BranchesScreen> {
       ),
       child: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               width: 80,
@@ -160,16 +157,16 @@ class _BranchesScreenState extends ConsumerState<BranchesScreen> {
                 color: AppColors.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Icon(
-                LucideIcons.building2,
-                size: 40,
+              child: const Icon(
+                LucideIcons.store,
+                size: 36,
                 color: AppColors.primary,
               ),
             ),
             const SizedBox(height: 24),
             Text(
               l10n.get('no_branches'),
-              style: AppTypography.title.copyWith(
+              style: AppTypography.headline.copyWith(
                 color: AppColors.textPrimary,
               ),
             ),
@@ -181,29 +178,37 @@ class _BranchesScreenState extends ConsumerState<BranchesScreen> {
               ),
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: 200,
+              child: LoyaButton(
+                label: l10n.get('add_branch'),
+                icon: LucideIcons.plus,
+                onPressed: _showAddBranchDialog,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBranchesList(BuildContext context, AppLocalizations l10n) {
+  Widget _buildBranchesList(BuildContext context, AppLocalizations l10n, bool isMobile) {
+    // Same layout as programs - vertical list on mobile
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _branches.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        return _BranchCard(
-          branch: _branches[index],
-          onTap: () => _showEditBranchDialog(_branches[index]),
-          onDelete: () {
-            setState(() {
-              _branches.removeAt(index);
-            });
-          },
-        );
-      },
+      separatorBuilder: (_, __) => const SizedBox(height: 16),
+      itemBuilder: (context, index) => _BranchCard(
+        branch: _branches[index],
+        onTap: () => _showEditBranchDialog(_branches[index]),
+        onDelete: () {
+          setState(() {
+            _branches.removeAt(index);
+          });
+        },
+      ),
     );
   }
 
@@ -250,7 +255,7 @@ class _BranchesScreenState extends ConsumerState<BranchesScreen> {
                 color: AppColors.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(LucideIcons.building2,
+              child: Icon(LucideIcons.store,
                   color: AppColors.primary, size: 20),
             ),
             const SizedBox(width: 12),
@@ -446,6 +451,7 @@ class _BranchesScreenState extends ConsumerState<BranchesScreen> {
   }
 }
 
+/// Branch Card - EXACTLY like ProgramCard
 class _BranchCard extends StatelessWidget {
   final Branch branch;
   final VoidCallback? onTap;
@@ -473,16 +479,14 @@ class _BranchCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
             boxShadow: AppColors.softShadow,
             border: Border.all(
-              color: branch.isMain
-                  ? AppColors.primary.withOpacity(0.3)
-                  : AppColors.borderLight,
-              width: branch.isMain ? 2 : 1,
+              color: AppColors.borderLight,
+              width: 1,
             ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header row
+              // Header row - same as program card
               Row(
                 children: [
                   // Icon
@@ -490,17 +494,13 @@ class _BranchCard extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: branch.isMain
-                          ? AppColors.primary.withOpacity(0.1)
-                          : AppColors.textSecondary.withOpacity(0.1),
+                      color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      branch.isMain ? LucideIcons.crown : LucideIcons.store,
+                      LucideIcons.store,
                       size: 20,
-                      color: branch.isMain
-                          ? AppColors.primary
-                          : AppColors.textSecondary,
+                      color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -515,7 +515,6 @@ class _BranchCard extends StatelessWidget {
                           style: AppTypography.title.copyWith(
                             color: AppColors.textPrimary,
                           ),
-                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
@@ -524,14 +523,13 @@ class _BranchCard extends StatelessWidget {
                           style: AppTypography.caption.copyWith(
                             color: AppColors.textSecondary,
                           ),
-                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
 
-                  // Status badge
+                  // Status badge - same as program card
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -555,7 +553,7 @@ class _BranchCard extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Stats row
+              // Stats row - same as program card
               Row(
                 children: [
                   _StatItem(
@@ -565,88 +563,41 @@ class _BranchCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 24),
                   _StatItem(
-                    icon: LucideIcons.calendarCheck,
+                    icon: LucideIcons.stamp,
                     value: branch.todayVisits.toString(),
                     label: l10n.get('today'),
                   ),
-                  if (branch.manager != null) ...[
-                    const SizedBox(width: 24),
-                    _StatItem(
-                      icon: LucideIcons.user,
-                      value: branch.manager!,
-                      label: l10n.get('manager'),
-                      isText: true,
-                    ),
-                  ],
                   const Spacer(),
-
-                  // Menu button
-                  if (!branch.isMain)
-                    PopupMenuButton<String>(
-                      icon: Icon(
-                        LucideIcons.moreVertical,
-                        color: AppColors.textSecondary,
-                        size: 20,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      onSelected: (value) {
-                        if (value == 'delete' && onDelete != null) {
-                          onDelete!();
-                        }
+                  // Location button - like share button in programs
+                  Material(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    child: InkWell(
+                      onTap: () {
+                        // TODO: Open location settings
                       },
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              Icon(LucideIcons.edit,
-                                  size: 18, color: AppColors.textSecondary),
-                              const SizedBox(width: 8),
-                              Text(l10n.get('edit')),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              const Icon(LucideIcons.trash2,
-                                  size: 18, color: Colors.red),
-                              const SizedBox(width: 8),
-                              Text(l10n.get('delete'),
-                                  style: const TextStyle(color: Colors.red)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    )
-                  else
-                    // Main branch indicator
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(LucideIcons.star,
-                              size: 14, color: AppColors.primary),
-                          const SizedBox(width: 4),
-                          Text(
-                            l10n.get('main_branch'),
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(LucideIcons.mapPin,
+                                size: 16, color: AppColors.primary),
+                            const SizedBox(width: 6),
+                            Text(
+                              l10n.get('location'),
+                              style: AppTypography.labelSmall.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
+                  ),
                 ],
               ),
             ],
@@ -661,13 +612,11 @@ class _StatItem extends StatelessWidget {
   final IconData icon;
   final String value;
   final String label;
-  final bool isText;
 
   const _StatItem({
     required this.icon,
     required this.value,
     required this.label,
-    this.isText = false,
   });
 
   @override
@@ -683,16 +632,10 @@ class _StatItem extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           value,
-          style: isText
-              ? AppTypography.caption.copyWith(
-                  color: AppColors.textPrimary,
-                )
-              : AppTypography.label.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+          style: AppTypography.label.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const SizedBox(width: 4),
         Text(
