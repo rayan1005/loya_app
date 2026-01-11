@@ -32,7 +32,8 @@ target 'Runner' do
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-  pod 'FirebaseFirestore', :git => 'https://github.com/invertase/firestore-ios-sdk-frameworks.git', :tag => '11.15.0'
+  # Removed precompiled FirebaseFirestore - invertase repo has corrupted tags
+  # Build will take longer but will work reliably
 end
 
 post_install do |installer|
