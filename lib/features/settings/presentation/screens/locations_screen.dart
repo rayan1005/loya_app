@@ -25,371 +25,201 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-                Icon(LucideIcons.mapPin, size: 28, color: AppColors.primary),
-                const SizedBox(width: 12),
-                Text('الفروع والمواقع', style: AppTypography.headline),
-                const Spacer(),
-                ElevatedButton.icon(
-                  onPressed: () => _showAddLocationDialog(businessId),
-                  icon: const Icon(LucideIcons.plus),
-                  label: const Text('إضافة فرع'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'أضف فروع متجرك لإرسال إشعارات موقعية للعملاء',
-              style:
-                  AppTypography.body.copyWith(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 24),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Icon(LucideIcons.mapPin, size: 28, color: AppColors.primary),
+                  const SizedBox(width: 12),
+                  Text('الفروع والمواقع', style: AppTypography.headline),
+                ],
+              ),
+              const SizedBox(height: 24),
 
-            // Locations List
-            Expanded(
-              child: businessId == null
-                  ? const Center(child: Text('يرجى تسجيل الدخول'))
-                  : _buildLocationsList(businessId),
-            ),
-          ],
+              // Content
+              Expanded(
+                child: businessId == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('locations')
+                            .where('businessId', isEqualTo: businessId)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+
+                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                            return _buildEmptyState(businessId);
+                          }
+
+                          final locations = snapshot.data!.docs;
+                          return Column(
+                            children: [
+                              Expanded(
+                                child: ListView.separated(
+                                  itemCount: locations.length,
+                                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                                  itemBuilder: (context, index) {
+                                    final doc = locations[index];
+                                    final location = BusinessLocation.fromFirestore(doc);
+                                    return _buildLocationCard(location);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 52,
+                                child: ElevatedButton.icon(
+                                  onPressed: () => _showAddLocationDialog(businessId),
+                                  icon: const Icon(LucideIcons.plus, size: 20),
+                                  label: const Text('إضافة فرع جديد +', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildLocationsList(String businessId) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('locations')
-          .where('businessId', isEqualTo: businessId)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(LucideIcons.mapPin,
-                      size: 48, color: AppColors.primary),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'لا توجد فروع مسجلة',
-                  style: AppTypography.headline
-                      .copyWith(color: AppColors.textPrimary),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'أضف فروعك لإرسال إشعارات تلقائية للعملاء القريبين',
-                  style: AppTypography.body
-                      .copyWith(color: AppColors.textSecondary),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                ElevatedButton.icon(
-                  onPressed: () => _showAddLocationDialog(businessId),
-                  icon: const Icon(LucideIcons.plus, size: 20),
-                  label: const Text('إضافة فرع جديد',
-                      style: TextStyle(fontSize: 16)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ],
+  Widget _buildEmptyState(String businessId) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
             ),
-          );
-        }
-
-        return Column(
-          children: [
-            Expanded(
-              child: ListView.separated(
-                itemCount: snapshot.data!.docs.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 16),
-                itemBuilder: (context, index) {
-                  final doc = snapshot.data!.docs[index];
-                  final location = BusinessLocation.fromFirestore(doc);
-                  return _buildLocationCard(location);
-                },
-              ),
+            child: Icon(LucideIcons.mapPin, size: 48, color: AppColors.primary),
+          ),
+          const SizedBox(height: 24),
+          Text('لا توجد فروع مسجلة', style: AppTypography.headline.copyWith(color: AppColors.textPrimary)),
+          const SizedBox(height: 8),
+          Text('أضف فروعك لإرسال إشعارات تلقائية للعملاء القريبين', style: AppTypography.body.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
+          const SizedBox(height: 32),
+          ElevatedButton.icon(
+            onPressed: () => _showAddLocationDialog(businessId),
+            icon: const Icon(LucideIcons.plus, size: 20),
+            label: const Text('إضافة فرع جديد +', style: TextStyle(fontSize: 16)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            // Fixed bottom button
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton.icon(
-                onPressed: () => _showAddLocationDialog(businessId),
-                icon: const Icon(LucideIcons.plus, size: 20),
-                label: const Text('إضافة فرع جديد', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildLocationCard(BusinessLocation location) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: location.isActive
-              ? AppColors.divider
-              : Colors.red.withOpacity(0.3),
+    return Card(
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(LucideIcons.mapPin, color: AppColors.primary),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+        title: Text(location.name, style: AppTypography.titleMedium),
+        subtitle: Text(
+          location.isActive ? 'نشط' : 'غير نشط',
+          style: TextStyle(
+            color: location.isActive ? Colors.green : Colors.red,
+            fontSize: 12,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(LucideIcons.store, color: AppColors.primary),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(location.name, style: AppTypography.titleMedium),
-                    if (location.nameAr != null)
-                      Text(
-                        location.nameAr!,
-                        style: AppTypography.bodySmall
-                            .copyWith(color: AppColors.textSecondary),
-                      ),
-                  ],
-                ),
-              ),
-              PopupMenuButton<String>(
-                icon: const Icon(LucideIcons.moreVertical),
-                onSelected: (value) => _handleLocationAction(value, location),
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(LucideIcons.pencil, size: 18),
-                        SizedBox(width: 8),
-                        Text('تعديل'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'geo',
-                    child: Row(
-                      children: [
-                        Icon(LucideIcons.bell, size: 18),
-                        SizedBox(width: 8),
-                        Text('رسالة موقعية'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: location.isActive ? 'disable' : 'enable',
-                    child: Row(
-                      children: [
-                        Icon(
-                          location.isActive
-                              ? LucideIcons.eyeOff
-                              : LucideIcons.eye,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(location.isActive ? 'تعطيل' : 'تفعيل'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(LucideIcons.trash2, size: 18, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('حذف', style: TextStyle(color: Colors.red)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (location.address != null)
-            Row(
-              children: [
-                Icon(LucideIcons.mapPin,
-                    size: 14, color: AppColors.textTertiary),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    location.address!,
-                    style: AppTypography.bodySmall
-                        .copyWith(color: AppColors.textSecondary),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+        ),
+        trailing: PopupMenuButton<String>(
+          icon: const Icon(LucideIcons.moreVertical),
+          onSelected: (value) => _handleLocationAction(value, location),
+          itemBuilder: (context) => [
+            const PopupMenuItem(value: 'edit', child: Text('تعديل')),
+            PopupMenuItem(
+              value: location.isActive ? 'disable' : 'enable',
+              child: Text(location.isActive ? 'إيقاف' : 'تفعيل'),
             ),
-          const Spacer(),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: location.latitude != null
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      location.latitude != null
-                          ? LucideIcons.mapPin
-                          : LucideIcons.mapPinOff,
-                      size: 12,
-                      color: location.latitude != null
-                          ? Colors.green
-                          : Colors.orange,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      location.latitude != null ? 'موقع محدد' : 'بدون موقع',
-                      style: AppTypography.caption.copyWith(
-                        color: location.latitude != null
-                            ? Colors.green
-                            : Colors.orange,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(LucideIcons.radar, size: 12, color: Colors.blue),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${location.geofenceRadius}م',
-                      style: AppTypography.caption.copyWith(color: Colors.blue),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
+            const PopupMenuItem(value: 'delete', child: Text('حذف')),
+          ],
+        ),
       ),
     );
   }
 
-  void _handleLocationAction(String action, BusinessLocation location) async {
+  void _handleLocationAction(String action, BusinessLocation location) {
     switch (action) {
       case 'edit':
         _showEditLocationDialog(location);
         break;
-      case 'geo':
-        _showGeoMessageDialog(location);
-        break;
       case 'disable':
       case 'enable':
-        await FirebaseFirestore.instance
-            .collection('locations')
-            .doc(location.id)
-            .update({'isActive': action == 'enable'});
+        _toggleLocationStatus(location);
         break;
       case 'delete':
-        final confirm = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('حذف الفرع'),
-            content: Text('هل أنت متأكد من حذف "${location.name}"؟'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('إلغاء'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('حذف'),
-              ),
-            ],
-          ),
-        );
-        if (confirm == true) {
-          await FirebaseFirestore.instance
-              .collection('locations')
-              .doc(location.id)
-              .delete();
-        }
+        _deleteLocation(location);
         break;
+    }
+  }
+
+  void _toggleLocationStatus(BusinessLocation location) async {
+    await FirebaseFirestore.instance
+        .collection('locations')
+        .doc(location.id)
+        .update({'isActive': !location.isActive});
+  }
+
+  void _deleteLocation(BusinessLocation location) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('حذف الفرع'),
+        content: Text('هل أنت متأكد من حذف "${location.name}"؟'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('حذف'),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await FirebaseFirestore.instance
+          .collection('locations')
+          .doc(location.id)
+          .delete();
     }
   }
 
