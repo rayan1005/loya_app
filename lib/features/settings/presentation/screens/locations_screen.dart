@@ -135,59 +135,32 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
         return Column(
           children: [
             Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 2.2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                ),
-                itemCount: snapshot.data!.docs.length + 1, // +1 for add button
+              child: ListView.separated(
+                itemCount: snapshot.data!.docs.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
                 itemBuilder: (context, index) {
-                  // Last item is the add button
-                  if (index == snapshot.data!.docs.length) {
-                    return InkWell(
-                      onTap: () => _showAddLocationDialog(businessId),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.primary.withOpacity(0.3),
-                            width: 2,
-                            style: BorderStyle.solid,
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(LucideIcons.plus,
-                                  color: AppColors.primary, size: 28),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'إضافة فرع جديد',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
                   final doc = snapshot.data!.docs[index];
                   final location = BusinessLocation.fromFirestore(doc);
                   return _buildLocationCard(location);
                 },
+              ),
+            ),
+            // Fixed bottom button
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: () => _showAddLocationDialog(businessId),
+                icon: const Icon(LucideIcons.plus, size: 20),
+                label: const Text('إضافة فرع جديد', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
             ),
           ],
