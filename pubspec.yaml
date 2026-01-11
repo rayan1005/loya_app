@@ -1,7 +1,7 @@
 name: loya
 description: Loya - Premium Business Loyalty Platform
 publish_to: 'none'
-version: 1.0.33+1
+version: 1.0.34+34
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
@@ -12,12 +12,12 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   
-  # Firebase
-  firebase_core: ^3.8.1
-  firebase_auth: ^5.3.4
-  cloud_firestore: ^5.6.0
-  firebase_storage: ^12.4.0
-  firebase_messaging: ^15.1.7
+  # Firebase (latest versions for Play Integrity phone auth)
+  firebase_core: ^3.9.0
+  firebase_auth: ^5.4.0
+  cloud_firestore: ^5.6.1
+  firebase_storage: ^12.4.1
+  firebase_messaging: ^15.2.0
   
   # State Management
   flutter_riverpod: ^2.6.1
@@ -56,7 +56,10 @@ dependencies:
   image_picker_for_web: ^3.1.1
   
   # QR Scanner
-  mobile_scanner: ^6.0.0
+  mobile_scanner: ^5.2.3
+  
+  # Deep Links / Universal Links
+  app_links: ^6.3.3
 
 dev_dependencies:
   flutter_test:
@@ -71,5 +74,4 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
-
 

@@ -11,8 +11,10 @@ import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/providers/locale_provider.dart';
 import '../../../../core/data/providers/business_init_provider.dart';
 import '../../../../core/data/providers/data_providers.dart';
+import '../../../../core/utils/deep_link_service.dart';
 import '../../../shared/widgets/loya_logo.dart';
 import '../../../shared/widgets/upgrade_prompt.dart';
+import '../../../shared/widgets/quick_action_sheet.dart';
 
 class DashboardShell extends ConsumerStatefulWidget {
   final Widget child;
@@ -79,6 +81,9 @@ class _DashboardShellState extends ConsumerState<DashboardShell> {
       data: (business) => Scaffold(
         backgroundColor: AppColors.background,
         drawer: isMobile ? _buildDrawer(l10n) : null,
+        // Floating Action Button for quick actions
+        floatingActionButton: isMobile ? _buildQuickActionFab(context) : null,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         body: SafeArea(
           child: Builder(
             builder: (scaffoldContext) => Row(
@@ -614,6 +619,70 @@ class _DashboardShellState extends ConsumerState<DashboardShell> {
         ],
       ),
     );
+  }
+
+  /// Build the floating action button for quick stamp/redeem actions
+  Widget _buildQuickActionFab(BuildContext context) {
+    return FloatingActionButton.extended(
+      onPressed: () => _showQuickActionSheet(context),
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.white,
+      elevation: 8,
+      icon: const Icon(LucideIcons.scanLine),
+      label: const Text(
+        'مسح',
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
+  /// Show the quick action sheet modal
+  void _showQuickActionSheet(BuildContext context) {
+    showQuickActionSheet(
+      context,
+      onStampPressed: () => _handleStampAction(context),
+      onRedeemPressed: () => _handleRedeemAction(context),
+    );
+  }
+
+  /// Handle stamp action - either process scanned customer or open scanner
+  void _handleStampAction(BuildContext context) {
+    final scannedCustomer = ref.read(scannedCustomerProvider);
+    
+    if (scannedCustomer != null) {
+      // Customer already scanned via deep link - go to stamp with data
+      context.push('/stamp', extra: {
+        'customerId': scannedCustomer.customerId,
+        'programId': scannedCustomer.programId,
+        'action': 'stamp',
+      });
+    } else {
+      // No customer scanned - go to stamper page which has scanner
+      context.go('/stamper');
+    }
+    
+    // Clear the scanned customer after action
+    ref.read(scannedCustomerProvider.notifier).state = null;
+  }
+
+  /// Handle redeem action - either process scanned customer or open scanner
+  void _handleRedeemAction(BuildContext context) {
+    final scannedCustomer = ref.read(scannedCustomerProvider);
+    
+    if (scannedCustomer != null) {
+      // Customer already scanned via deep link - go to redeem with data
+      context.push('/stamp', extra: {
+        'customerId': scannedCustomer.customerId,
+        'programId': scannedCustomer.programId,
+        'action': 'redeem',
+      });
+    } else {
+      // No customer scanned - go to stamper page (will add redeem tab)
+      context.go('/stamper');
+    }
+    
+    // Clear the scanned customer after action
+    ref.read(scannedCustomerProvider.notifier).state = null;
   }
 }
 
