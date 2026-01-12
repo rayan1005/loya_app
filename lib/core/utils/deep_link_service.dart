@@ -4,9 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_links/app_links.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../features/shared/widgets/quick_action_sheet.dart';
 import '../data/models/models.dart';
+import '../router/app_router.dart';
 
 /// Deep Link Action Types
 enum DeepLinkAction {
@@ -32,7 +34,8 @@ class DeepLinkData {
   });
 
   @override
-  String toString() => 'DeepLinkData(action: $action, customerId: $customerId, programId: $programId)';
+  String toString() =>
+      'DeepLinkData(action: $action, customerId: $customerId, programId: $programId)';
 }
 
 /// Provider to track pending deep link data
@@ -78,13 +81,41 @@ class DeepLinkService {
       final data = parseUri(uri);
       if (data != null) {
         _ref.read(pendingDeepLinkProvider.notifier).state = data;
-        
-        // Also fetch and set customer data for the quick action sheet
-        _fetchAndSetCustomerData(data);
+
+        // NEW FLOW: Navigate directly to Customer Action Screen
+        // No bottom sheet, no premature action choice
+        _navigateToCustomerAction(data);
       }
     } catch (e) {
       debugPrint('Error parsing deep link: $e');
     }
+  }
+
+  /// Navigate directly to Customer Action Screen
+  /// This is the new flow: SCAN → IDENTIFY → SHOW DATA → ACTION
+  void _navigateToCustomerAction(DeepLinkData data) {
+    if (data.customerId == null) {
+      debugPrint('No customer ID in deep link');
+      return;
+    }
+
+    // Use a small delay to ensure the app is ready
+    Future.delayed(const Duration(milliseconds: 300), () {
+      try {
+        final router = _ref.read(appRouterProvider);
+
+        // Build the route with query parameters
+        String route = '/customer-action/${data.customerId}';
+        if (data.programId != null) {
+          route += '?programId=${data.programId}';
+        }
+
+        debugPrint('Navigating to: $route');
+        router.push(route);
+      } catch (e) {
+        debugPrint('Error navigating to customer action: $e');
+      }
+    });
   }
 
   /// Parse URI into DeepLinkData
@@ -102,7 +133,7 @@ class DeepLinkService {
     String? serialNumber;
 
     final path = uri.path.toLowerCase();
-    
+
     // Determine action
     if (path.contains('redeem')) {
       action = DeepLinkAction.redeem;
@@ -118,15 +149,15 @@ class DeepLinkService {
     }
 
     // Get query parameters
-    customerId ??= uri.queryParameters['uid'] ?? 
-                   uri.queryParameters['customerId'] ?? 
-                   uri.queryParameters['cid'];
-    
-    programId = uri.queryParameters['program'] ?? 
-                uri.queryParameters['programId'] ?? 
-                uri.queryParameters['pid'] ??
-                uri.queryParameters['p'];
-    
+    customerId ??= uri.queryParameters['uid'] ??
+        uri.queryParameters['customerId'] ??
+        uri.queryParameters['cid'];
+
+    programId = uri.queryParameters['program'] ??
+        uri.queryParameters['programId'] ??
+        uri.queryParameters['pid'] ??
+        uri.queryParameters['p'];
+
     phone = uri.queryParameters['phone'];
     serialNumber = uri.queryParameters['serial'] ?? uri.queryParameters['sn'];
 
@@ -161,8 +192,8 @@ class DeepLinkService {
       }
 
       final customerData = customerDoc.data()!;
-      final customerName = customerData['name'] as String? ?? 
-                          customerData['displayName'] as String?;
+      final customerName = customerData['name'] as String? ??
+          customerData['displayName'] as String?;
 
       // Fetch program info if available
       String? programName;
@@ -192,7 +223,8 @@ class DeepLinkService {
             .get();
 
         if (progressQuery.docs.isNotEmpty) {
-          final progress = CustomerProgress.fromFirestore(progressQuery.docs.first);
+          final progress =
+              CustomerProgress.fromFirestore(progressQuery.docs.first);
           currentStamps = progress.stamps;
           // Calculate available rewards based on stamps
           if (stampsRequired != null && stampsRequired > 0) {
@@ -214,7 +246,6 @@ class DeepLinkService {
 
       // Show the quick action sheet
       _ref.read(quickActionSheetVisibleProvider.notifier).state = true;
-
     } catch (e) {
       debugPrint('Error fetching customer data: $e');
     }

@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:http/http.dart' as http;
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -34,7 +35,7 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
   CustomerProgress? _lastScannedProgress;
   LoyaltyProgram? _lastScannedProgram;
   String? _lastScannedCustomerId;
-  
+
   // Custom field controllers
   final _customField1Controller = TextEditingController();
   final _customField2Controller = TextEditingController();
@@ -138,11 +139,11 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
         children: [
           // Program Selector
           programsAsync.when(
-              data: (programs) {
-                if (_selectedProgramId == null && programs.isNotEmpty) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    setState(() => _selectedProgramId = programs.first.id);
-                  });
+            data: (programs) {
+              if (_selectedProgramId == null && programs.isNotEmpty) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  setState(() => _selectedProgramId = programs.first.id);
+                });
               }
               return DropdownButtonFormField<String>(
                 initialValue: _selectedProgramId,
@@ -302,8 +303,162 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
         // QR format: https://loya.live/add-stamp?uid=XXX&program=YYY&serial=ZZZ
         try {
           final uri = Uri.parse(code);
-          customerId = uri.queryParameters['uid'] ?? uri.queryParameters['customerId'];
-          programId = uri.queryParameters['program'] ?? uri.queryParameters['pid'] ?? uri.queryParameters['programId'];
+          customerId =
+              uri.queryParameters['uid'] ?? uri.queryParameters['customerId'];
+          programId = uri.queryParameters['program'] ??
+              uri.queryParameters['pid'] ??
+              uri.queryParameters['programId'];
+          phone = uri.queryParameters['phone'];
+
+          // Also check path segments for short URL format: /s/CUSTOMER_ID
+          if (customerId == null &&
+              uri.pathSegments.length >= 2 &&
+              uri.pathSegments[0] == 's') {
+            customerId = uri.pathSegments[1];
+            programId ??= uri.queryParameters['p'];
+          }
+        } catch (_) {
+          // Invalid URL
+        }
+      } else {
+        // Treat as phone number
+        phone = code;
+      }
+
+      // NEW FLOW: Navigate to Customer Action Screen instead of auto-adding stamps
+      // SCAN → IDENTIFY → SHOW DATA → ENABLE ACTIONS
+
+      if (customerId != null) {
+        // Verify customer belongs to this business
+        final customerDoc = await FirebaseFirestore.instance
+            .collection('customers')
+            .doc(customerId)
+            .get();
+
+        if (!customerDoc.exists) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('العميل غير موجود'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          setState(() => _isProcessing = false);
+          return;
+        }
+
+        final customerData = customerDoc.data()!;
+        final customerBusinessId = customerData['businessId'] as String?;
+
+        // Verify customer belongs to THIS business
+        if (customerBusinessId != null && customerBusinessId != businessId) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('هذه البطاقة تابعة لنشاط تجاري آخر'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          setState(() => _isProcessing = false);
+          return;
+        }
+
+        // Use program from QR or selected program
+        final targetProgramId = programId ?? _selectedProgramId;
+
+        // Navigate to Customer Action Screen
+        if (mounted) {
+          String route = '/customer-action/$customerId';
+          if (targetProgramId != null) {
+            route += '?programId=$targetProgramId';
+          }
+          context.push(route);
+        }
+      } else if (phone != null) {
+        // Phone number scanned - look up customer by phone
+        final customerQuery = await FirebaseFirestore.instance
+            .collection('customers')
+            .where('businessId', isEqualTo: businessId)
+            .where('phone', isEqualTo: phone)
+            .limit(1)
+            .get();
+
+        if (customerQuery.docs.isNotEmpty) {
+          final customerDoc = customerQuery.docs.first;
+          if (mounted) {
+            String route = '/customer-action/${customerDoc.id}';
+            if (_selectedProgramId != null) {
+              route += '?programId=$_selectedProgramId';
+            }
+            context.push(route);
+          }
+        } else {
+          // Customer not found - show message
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('العميل غير موجود - يرجى التسجيل أولاً'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('رمز QR غير صالح'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطأ: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+  }
+
+  /// LEGACY: Auto-add stamp method (kept for backward compatibility)
+  Future<void> _processScannedCodeLegacy(String code, String businessId) async {
+    setState(() => _isProcessing = true);
+
+    try {
+      // Try to parse as JSON (customer pass QR)
+      Map<String, dynamic>? qrData;
+      try {
+        qrData = jsonDecode(code) as Map<String, dynamic>;
+      } catch (_) {
+        // Not JSON, might be a URL, phone number, or customer ID
+      }
+
+      String? customerId;
+      String? phone;
+      String? programId;
+
+      if (qrData != null) {
+        // JSON format from pass
+        customerId = qrData['customerId'] as String?;
+        phone = qrData['phone'] as String?;
+        programId = qrData['programId'] as String?;
+      } else if (code.startsWith('http://') || code.startsWith('https://')) {
+        // URL format - extract parameters
+        // QR format: https://loya.live/add-stamp?uid=XXX&program=YYY&serial=ZZZ
+        try {
+          final uri = Uri.parse(code);
+          customerId =
+              uri.queryParameters['uid'] ?? uri.queryParameters['customerId'];
+          programId = uri.queryParameters['program'] ??
+              uri.queryParameters['pid'] ??
+              uri.queryParameters['programId'];
           phone = uri.queryParameters['phone'];
         } catch (_) {
           // Invalid URL
@@ -314,7 +469,7 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
       }
 
       bool success = false;
-      
+
       // If we have a customerId from QR, verify it belongs to this business
       if (customerId != null) {
         // FIRST: Check if the program from QR belongs to this business
@@ -323,7 +478,7 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
               .collection('programs')
               .doc(programId)
               .get();
-          
+
           if (!scannedProgramDoc.exists) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -335,8 +490,9 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
             }
             return;
           }
-          
-          final scannedProgramBusinessId = scannedProgramDoc.data()?['businessId'] as String?;
+
+          final scannedProgramBusinessId =
+              scannedProgramDoc.data()?['businessId'] as String?;
           if (scannedProgramBusinessId != businessId) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -349,13 +505,13 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
             return;
           }
         }
-        
+
         // Check if this customer exists
         final customerDoc = await FirebaseFirestore.instance
             .collection('customers')
             .doc(customerId)
             .get();
-        
+
         if (!customerDoc.exists) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -367,10 +523,10 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
           }
           return;
         }
-        
+
         final customerData = customerDoc.data()!;
         final customerBusinessId = customerData['businessId'] as String?;
-        
+
         // Verify customer belongs to THIS business
         if (customerBusinessId != null && customerBusinessId != businessId) {
           if (mounted) {
@@ -383,10 +539,10 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
           }
           return;
         }
-        
+
         // Use the selected program (since QR might not have programId)
         final targetProgramId = programId ?? _selectedProgramId;
-        
+
         if (targetProgramId == null) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -398,14 +554,15 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
           }
           return;
         }
-        
+
         // Verify the program belongs to this business too
         final programDoc = await FirebaseFirestore.instance
             .collection('programs')
             .doc(targetProgramId)
             .get();
-        
-        if (!programDoc.exists || programDoc.data()?['businessId'] != businessId) {
+
+        if (!programDoc.exists ||
+            programDoc.data()?['businessId'] != businessId) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -416,10 +573,9 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
           }
           return;
         }
-        
+
         await _addStamp(businessId, customerId, targetProgramId);
         success = true;
-        
       } else if (phone != null) {
         _phoneController.text = phone;
         success = await _addStampByPhone(businessId);
@@ -495,8 +651,7 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
         const SizedBox(height: 8),
         Text(
           'أو أدخل رقم الهاتف',
-          style: AppTypography.body
-              .copyWith(color: AppColors.textSecondary),
+          style: AppTypography.body.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: 12),
         TextField(
@@ -508,7 +663,8 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
             hintText: '05xxxxxxxx',
             prefixIcon: const Icon(LucideIcons.phone),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           ),
         ),
         const SizedBox(height: 12),
@@ -548,8 +704,8 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
     final program = _lastScannedProgram!;
     final isComplete = progress.stamps >= program.stampsRequired;
     final passFieldConfig = program.passFieldConfig;
-    final hasCustomFields = passFieldConfig.showCustomField1 || 
-        passFieldConfig.showCustomField2 || 
+    final hasCustomFields = passFieldConfig.showCustomField1 ||
+        passFieldConfig.showCustomField2 ||
         passFieldConfig.showCustomField3;
 
     return Column(
@@ -582,7 +738,9 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
                         Text(
                           isComplete ? '🎉 مكافأة مستحقة!' : '✓ تم إضافة الختم',
                           style: AppTypography.titleMedium.copyWith(
-                            color: isComplete ? AppColors.success : AppColors.primary,
+                            color: isComplete
+                                ? AppColors.success
+                                : AppColors.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -607,7 +765,9 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
                             : LucideIcons.circle,
                         size: program.stampsRequired > 10 ? 12 : 16,
                         color: i < progress.stamps
-                            ? (isComplete ? AppColors.success : AppColors.primary)
+                            ? (isComplete
+                                ? AppColors.success
+                                : AppColors.primary)
                             : AppColors.textTertiary.withOpacity(0.4),
                       ),
                     ),
@@ -617,7 +777,7 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
             ],
           ),
         ),
-        
+
         // === CUSTOM FIELDS SECTION ===
         if (hasCustomFields && !_customFieldsSaved) ...[
           const SizedBox(height: 16),
@@ -628,11 +788,14 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
               child: TextField(
                 controller: _customField1Controller,
                 decoration: InputDecoration(
-                  labelText: passFieldConfig.customField1Label?.isNotEmpty == true 
-                      ? passFieldConfig.customField1Label 
-                      : 'حقل 1',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  labelText:
+                      passFieldConfig.customField1Label?.isNotEmpty == true
+                          ? passFieldConfig.customField1Label
+                          : 'حقل 1',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
               ),
             ),
@@ -642,11 +805,14 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
               child: TextField(
                 controller: _customField2Controller,
                 decoration: InputDecoration(
-                  labelText: passFieldConfig.customField2Label?.isNotEmpty == true 
-                      ? passFieldConfig.customField2Label 
-                      : 'حقل 2',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  labelText:
+                      passFieldConfig.customField2Label?.isNotEmpty == true
+                          ? passFieldConfig.customField2Label
+                          : 'حقل 2',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
               ),
             ),
@@ -656,20 +822,25 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
               child: TextField(
                 controller: _customField3Controller,
                 decoration: InputDecoration(
-                  labelText: passFieldConfig.customField3Label?.isNotEmpty == true 
-                      ? passFieldConfig.customField3Label 
-                      : 'حقل 3',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  labelText:
+                      passFieldConfig.customField3Label?.isNotEmpty == true
+                          ? passFieldConfig.customField3Label
+                          : 'حقل 3',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
               ),
             ),
           FilledButton.icon(
             onPressed: _isProcessing ? null : _saveCustomFields,
-            icon: _isProcessing 
+            icon: _isProcessing
                 ? const SizedBox(
-                    width: 16, height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white),
                   )
                 : const Icon(LucideIcons.save, size: 16),
             label: Text(_isProcessing ? 'جاري الحفظ...' : 'حفظ'),
@@ -684,16 +855,16 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
       ],
     );
   }
-  
+
   Future<void> _saveCustomFields() async {
     if (_lastScannedCustomerId == null || _lastScannedProgram == null) return;
-    
+
     final customerId = _lastScannedCustomerId!;
     final programId = _lastScannedProgram!.id;
     final passFieldConfig = _lastScannedProgram!.passFieldConfig;
-    
+
     setState(() => _isProcessing = true);
-    
+
     try {
       // Save to customer_progress
       final db = FirebaseFirestore.instance;
@@ -703,11 +874,11 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
           .where('programId', isEqualTo: programId)
           .limit(1)
           .get();
-      
+
       final updateData = <String, dynamic>{
         'updatedAt': FieldValue.serverTimestamp(),
       };
-      
+
       if (passFieldConfig.showCustomField1) {
         updateData['customField1'] = _customField1Controller.text.trim();
       }
@@ -717,7 +888,7 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
       if (passFieldConfig.showCustomField3) {
         updateData['customField3'] = _customField3Controller.text.trim();
       }
-      
+
       if (progressQuery.docs.isNotEmpty) {
         await progressQuery.docs.first.reference.update(updateData);
       } else {
@@ -733,14 +904,15 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
           ...updateData,
         });
       }
-      
+
       // Update wallet pass via API
       try {
         final user = FirebaseAuth.instance.currentUser;
         final idToken = await user?.getIdToken();
-        
+
         await http.post(
-          Uri.parse('https://api-v4xex7aj3a-uc.a.run.app/api/updateCustomFields'),
+          Uri.parse(
+              'https://api-v4xex7aj3a-uc.a.run.app/api/updateCustomFields'),
           headers: {
             'Content-Type': 'application/json',
             if (idToken != null) 'Authorization': 'Bearer $idToken',
@@ -756,12 +928,12 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
       } catch (e) {
         debugPrint('[Stamper] Failed to update custom fields via API: $e');
       }
-      
+
       setState(() {
         _customFieldsSaved = true;
         _isProcessing = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -1051,7 +1223,8 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
-        await _addStamp(businessId, newCustomerRef.id, _selectedProgramId!, phone: normalizedPhone);
+        await _addStamp(businessId, newCustomerRef.id, _selectedProgramId!,
+            phone: normalizedPhone);
         _phoneController.clear();
 
         if (mounted) {
@@ -1073,12 +1246,13 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
 
       // Use firebaseUid if available (for customers who joined via join page)
       // Otherwise use the document ID
-      final customerId = customerData['firebaseUid'] as String? ?? 
-                         customerData['uid'] as String? ?? 
-                         customerDoc.id;
+      final customerId = customerData['firebaseUid'] as String? ??
+          customerData['uid'] as String? ??
+          customerDoc.id;
       final customerPhone = customerData['phone'] as String?;
 
-      await _addStamp(businessId, customerId, _selectedProgramId!, phone: customerPhone);
+      await _addStamp(businessId, customerId, _selectedProgramId!,
+          phone: customerPhone);
       _phoneController.clear();
       return true;
     } catch (e) {
@@ -1095,8 +1269,8 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
     }
   }
 
-  Future<void> _addStamp(
-      String businessId, String customerId, String programId, {String? phone}) async {
+  Future<void> _addStamp(String businessId, String customerId, String programId,
+      {String? phone}) async {
     final db = FirebaseFirestore.instance;
 
     // Get program
@@ -1115,7 +1289,7 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
     // Get customer info - try to find by customerId first, if not found try by phone
     var customerDoc = await db.collection('customers').doc(customerId).get();
     Map<String, dynamic>? customerData = customerDoc.data();
-    
+
     // If customer not found by ID and we have phone, search by phone
     if (customerData == null && phone != null) {
       final phoneVariants = PhoneUtils.getSearchVariants(phone);
@@ -1131,7 +1305,7 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
         }
       }
     }
-    
+
     // Get phone from customer data if not provided
     final customerPhone = phone ?? customerData?['phone'] as String?;
 

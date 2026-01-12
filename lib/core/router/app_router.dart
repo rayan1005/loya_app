@@ -12,6 +12,7 @@ import '../../features/programs/presentation/screens/program_designer_screen.dar
 import '../../features/programs/presentation/screens/share_program_screen.dart';
 import '../../features/customers/presentation/screens/customers_screen.dart';
 import '../../features/customers/presentation/screens/customer_detail_screen.dart';
+import '../../features/customers/presentation/screens/customer_action_screen.dart';
 import '../../features/customers/presentation/screens/stamp_flow_screen.dart';
 import '../../features/activity/presentation/screens/activity_screen.dart';
 import '../../features/analytics/presentation/screens/analytics_screen.dart';
@@ -75,11 +76,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // While auth state is loading, show splash
       final isLoading = authState.isLoading;
       final isSplash = state.matchedLocation == '/splash';
-      
+
       if (isLoading && !isSplash) {
         return '/splash';
       }
-      
+
       final isLoggedIn = authState.valueOrNull != null;
       final isLoggingIn =
           state.matchedLocation == '/login' || state.matchedLocation == '/otp';
@@ -189,11 +190,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // Stamp Flow
+          // Stamp Flow (legacy - phone input)
           GoRoute(
             path: '/stamp',
             name: 'stamp',
             builder: (context, state) => const StampFlowScreen(),
+          ),
+
+          // Customer Action Screen - NEW PRIMARY FLOW
+          // SCAN → IDENTIFY → SHOW DATA → ACTION
+          GoRoute(
+            path: '/customer-action/:customerId',
+            name: 'customer-action',
+            builder: (context, state) {
+              final customerId = state.pathParameters['customerId']!;
+              final programId = state.uri.queryParameters['programId'];
+              return CustomerActionScreen(
+                customerId: customerId,
+                programId: programId,
+              );
+            },
           ),
 
           // Activity

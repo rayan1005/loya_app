@@ -1700,7 +1700,7 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
                     child: Switch(
                       value: config.value,
                       onChanged: config.onChanged,
-                      activeColor: AppColors.primary,
+                      activeThumbColor: AppColors.primary,
                     ),
                   ),
                 ),
@@ -2496,8 +2496,6 @@ class _FieldConfig {
     required this.onChanged,
     this.labelController,
     this.labelHint,
-    this.contentController,
-    this.contentHint,
     this.isCustomerField = false,
   });
 }
