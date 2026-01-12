@@ -1,7 +1,7 @@
 name: loya
 description: Loya - Premium Business Loyalty Platform
 publish_to: 'none'
-version: 1.0.35+1
+version: 1.0.36+2
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
