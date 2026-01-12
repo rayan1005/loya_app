@@ -56,7 +56,7 @@ dependencies:
   image_picker_for_web: ^3.1.1
   
   # QR Scanner
-  mobile_scanner: ^5.2.3
+  mobile_scanner: ^7.1.3
   
   # Deep Links / Universal Links
   app_links: ^6.3.3
