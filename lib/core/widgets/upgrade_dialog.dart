@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
-import '../../subscription/models/models.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
+import '../subscription/models/models.dart';
 
 /// Shows an upgrade dialog when a limit is reached
 class UpgradeDialog extends StatelessWidget {

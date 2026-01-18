@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
-import '../../../core/subscription/models/models.dart';
-import '../../../core/subscription/providers/subscription_provider.dart';
-import '../../../core/subscription/services/subscription_service.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/subscription/models/models.dart';
+import '../../../../core/subscription/providers/subscription_provider.dart';
+import '../../../../core/subscription/services/subscription_service.dart';
 
 class PaywallScreen extends ConsumerStatefulWidget {
   final String? highlightedPlan;

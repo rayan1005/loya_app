@@ -7,7 +7,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
 import 'package:in_app_purchase_storekit/store_kit_wrappers.dart';
 
-import 'models/models.dart';
+import '../models/models.dart';
 
 /// Service for managing subscriptions and in-app purchases
 class SubscriptionService {
