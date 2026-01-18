@@ -11,6 +11,8 @@ import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/data/providers/data_providers.dart';
 import '../../../../core/data/models/models.dart';
 import '../../../../core/utils/phone_utils.dart';
+import '../../../../core/subscription/providers/subscription_provider.dart';
+import '../../../../core/widgets/upgrade_dialog.dart';
 
 class CustomersScreen extends ConsumerStatefulWidget {
   const CustomersScreen({super.key});
@@ -261,6 +263,16 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
   void _showAddCustomerSheet(
       BuildContext context, AppLocalizations l10n, String? businessId) {
     if (businessId == null) return;
+
+    // Check subscription limits before showing sheet
+    final subscription = ref.read(subscriptionProvider).value;
+    final customersAsync = ref.read(customersProvider);
+    final currentCount = customersAsync.valueOrNull?.length ?? 0;
+    
+    if (subscription != null && !subscription.canAddCustomer(currentCount)) {
+      UpgradeDialog.showCustomerLimit(context, subscription.limits.maxCustomers);
+      return;
+    }
 
     final phoneController = TextEditingController();
     final nameController = TextEditingController();

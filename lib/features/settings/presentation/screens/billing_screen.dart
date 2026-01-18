@@ -8,6 +8,8 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/config/app_config.dart';
+import '../../../../core/subscription/providers/subscription_provider.dart';
+import '../../../../core/subscription/models/plan_type.dart';
 import '../../../shared/widgets/loya_button.dart';
 
 class BillingScreen extends ConsumerStatefulWidget {
@@ -102,70 +104,101 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
   }
 
   Widget _buildCurrentPlanBanner(AppLocalizations l10n) {
+    final subscription = ref.watch(subscriptionProvider).value;
+    final plan = subscription?.plan ?? PlanType.free;
+    final limits = subscription?.limits ?? PlanType.free.limits;
+    
+    final usedStamps = subscription?.stampsUsedThisMonth ?? 0;
+    final maxStamps = limits.maxStampsPerMonth;
+    final stampUsageText = maxStamps >= 999999 
+        ? '∞' 
+        : '$usedStamps/$maxStamps';
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppColors.primary,
-            AppColors.primary.withBlue(230),
-          ],
+          colors: plan == PlanType.business 
+              ? [AppColors.programOrange, AppColors.programOrange.withRed(230)]
+              : plan == PlanType.pro
+                  ? [AppColors.programPurple, AppColors.programPurple.withBlue(230)]
+                  : [AppColors.primary, AppColors.primary.withBlue(230)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              LucideIcons.sparkles,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.get('current_plan'),
-                  style: AppTypography.caption.copyWith(
-                    color: Colors.white.withOpacity(0.8),
-                  ),
-                ),
-                Text(
-                  l10n.get('free_plan'),
-                  style: AppTypography.headline.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          Row(
             children: [
-              Text(
-                '1/1',
-                style: AppTypography.numberMedium.copyWith(
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  plan == PlanType.free 
+                      ? LucideIcons.gift
+                      : LucideIcons.crown,
                   color: Colors.white,
+                  size: 24,
                 ),
               ),
-              Text(
-                l10n.get('programs'),
-                style: AppTypography.caption.copyWith(
-                  color: Colors.white.withOpacity(0.8),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.get('current_plan'),
+                      style: AppTypography.caption.copyWith(
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                    Text(
+                      plan.displayName(l10n.isRtl ? 'ar' : 'en'),
+                      style: AppTypography.headline.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    stampUsageText,
+                    style: AppTypography.numberMedium.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    l10n.isRtl ? 'ختم/الشهر' : 'stamps/mo',
+                    style: AppTypography.caption.copyWith(
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
+          if (plan == PlanType.free) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => context.push('/settings/upgrade'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.primary,
+                ),
+                child: Text(l10n.isRtl ? 'ترقية الباقة' : 'Upgrade Plan'),
+              ),
+            ),
+          ],
         ],
       ),
     );

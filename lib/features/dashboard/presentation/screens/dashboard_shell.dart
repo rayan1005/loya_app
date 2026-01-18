@@ -538,7 +538,8 @@ class _DashboardShellState extends ConsumerState<DashboardShell> {
     );
   }
 
-  Widget _buildTopBar(AppLocalizations l10n, bool isMobile, BuildContext scaffoldContext) {
+  Widget _buildTopBar(
+      AppLocalizations l10n, bool isMobile, BuildContext scaffoldContext) {
     return Container(
       height: AppSpacing.topBarHeight,
       decoration: const BoxDecoration(
@@ -622,9 +623,10 @@ class _DashboardShellState extends ConsumerState<DashboardShell> {
   }
 
   /// Build the floating action button for quick stamp/redeem actions
+  /// NEW FLOW: FAB goes directly to scanner, not bottom sheet
   Widget _buildQuickActionFab(BuildContext context) {
     return FloatingActionButton.extended(
-      onPressed: () => _showQuickActionSheet(context),
+      onPressed: () => _openScanner(context),
       backgroundColor: AppColors.primary,
       foregroundColor: Colors.white,
       elevation: 8,
@@ -636,19 +638,18 @@ class _DashboardShellState extends ConsumerState<DashboardShell> {
     );
   }
 
-  /// Show the quick action sheet modal
-  void _showQuickActionSheet(BuildContext context) {
-    showQuickActionSheet(
-      context,
-      onStampPressed: () => _handleStampAction(context),
-      onRedeemPressed: () => _handleRedeemAction(context),
-    );
+  /// Open scanner directly - NEW PRIMARY FLOW
+  /// SCAN → IDENTIFY CUSTOMER → SHOW DATA → ENABLE ACTIONS
+  void _openScanner(BuildContext context) {
+    // Go directly to stamper screen which has the scanner
+    // After scanning, it will navigate to Customer Action Screen
+    context.go('/stamper');
   }
 
   /// Handle stamp action - either process scanned customer or open scanner
   void _handleStampAction(BuildContext context) {
     final scannedCustomer = ref.read(scannedCustomerProvider);
-    
+
     if (scannedCustomer != null) {
       // Customer already scanned via deep link - go to stamp with data
       context.push('/stamp', extra: {
@@ -660,7 +661,7 @@ class _DashboardShellState extends ConsumerState<DashboardShell> {
       // No customer scanned - go to stamper page which has scanner
       context.go('/stamper');
     }
-    
+
     // Clear the scanned customer after action
     ref.read(scannedCustomerProvider.notifier).state = null;
   }
@@ -668,7 +669,7 @@ class _DashboardShellState extends ConsumerState<DashboardShell> {
   /// Handle redeem action - either process scanned customer or open scanner
   void _handleRedeemAction(BuildContext context) {
     final scannedCustomer = ref.read(scannedCustomerProvider);
-    
+
     if (scannedCustomer != null) {
       // Customer already scanned via deep link - go to redeem with data
       context.push('/stamp', extra: {
@@ -680,7 +681,7 @@ class _DashboardShellState extends ConsumerState<DashboardShell> {
       // No customer scanned - go to stamper page (will add redeem tab)
       context.go('/stamper');
     }
-    
+
     // Clear the scanned customer after action
     ref.read(scannedCustomerProvider.notifier).state = null;
   }

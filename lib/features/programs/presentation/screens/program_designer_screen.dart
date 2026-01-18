@@ -1700,7 +1700,7 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
                     child: Switch(
                       value: config.value,
                       onChanged: config.onChanged,
-                      activeColor: AppColors.primary,
+                      activeThumbColor: AppColors.primary,
                     ),
                   ),
                 ),

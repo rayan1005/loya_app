@@ -26,9 +26,10 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
     final businessId = ref.watch(currentBusinessIdProvider);
     final userPhone = ref.watch(currentUserPhoneProvider);
     final currentPlan = business?.plan ?? 'free';
-    
+
     // Automation requires Growth plan (admin phones get full access)
-    final hasAccess = AppConfig.businessHasFeature(currentPlan, userPhone, PlanFeature.automatedPush);
+    final hasAccess = AppConfig.businessHasFeature(
+        currentPlan, userPhone, PlanFeature.automatedPush);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -66,7 +67,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(LucideIcons.list, size: 20, color: AppColors.primary),
+                        Icon(LucideIcons.list,
+                            size: 20, color: AppColors.primary),
                         const SizedBox(width: 8),
                         Text(
                           l10n.get('automation_rules'),
@@ -75,7 +77,7 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Stream rules from Firestore
                     if (businessId != null)
                       StreamBuilder<QuerySnapshot>(
@@ -86,7 +88,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                             .orderBy('createdAt', descending: true)
                             .snapshots(),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
                             return const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(40),
@@ -96,7 +99,7 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                           }
 
                           final rules = snapshot.data?.docs ?? [];
-                          
+
                           if (rules.isEmpty) {
                             return _buildEmptyState(l10n);
                           }
@@ -104,10 +107,11 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                           return Column(
                             children: rules.map((doc) {
                               final data = doc.data() as Map<String, dynamic>;
-                              final rule = AutomationRule.fromFirestore(doc.id, data);
+                              final rule =
+                                  AutomationRule.fromFirestore(doc.id, data);
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 16),
-                                child: _buildRuleCard(rule, l10n, businessId!),
+                                child: _buildRuleCard(rule, l10n, businessId),
                               );
                             }).toList(),
                           );
@@ -166,7 +170,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.primary,
                 side: BorderSide(color: AppColors.primary),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -178,17 +183,22 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
     );
   }
 
-  Widget _buildRuleCard(AutomationRule rule, AppLocalizations l10n, String businessId) {
+  Widget _buildRuleCard(
+      AutomationRule rule, AppLocalizations l10n, String businessId) {
     final triggerInfo = _getTriggerInfo(rule.trigger, l10n);
     final actionInfo = _getActionInfo(rule.action, l10n);
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: rule.isEnabled ? AppColors.primary.withOpacity(0.02) : AppColors.background,
+        color: rule.isEnabled
+            ? AppColors.primary.withOpacity(0.02)
+            : AppColors.background,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         border: Border.all(
-          color: rule.isEnabled ? AppColors.primary.withOpacity(0.3) : AppColors.divider,
+          color: rule.isEnabled
+              ? AppColors.primary.withOpacity(0.3)
+              : AppColors.divider,
           width: 1,
         ),
       ),
@@ -209,7 +219,9 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                 ),
                 child: Icon(
                   triggerInfo.icon,
-                  color: rule.isEnabled ? AppColors.primary : AppColors.textSecondary,
+                  color: rule.isEnabled
+                      ? AppColors.primary
+                      : AppColors.textSecondary,
                 ),
               ),
               const SizedBox(width: 12),
@@ -323,19 +335,25 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
             children: [
               TextButton.icon(
                 onPressed: () => _showEditRuleDialog(rule, businessId),
-                icon: Icon(LucideIcons.pencil, size: 16, color: AppColors.primary),
-                label: Text(l10n.get('edit'), style: TextStyle(color: AppColors.primary)),
+                icon: Icon(LucideIcons.pencil,
+                    size: 16, color: AppColors.primary),
+                label: Text(l10n.get('edit'),
+                    style: TextStyle(color: AppColors.primary)),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
               ),
               const SizedBox(width: 8),
               TextButton.icon(
                 onPressed: () => _deleteRule(businessId, rule.id, l10n),
-                icon: Icon(LucideIcons.trash2, size: 16, color: AppColors.error),
-                label: Text(l10n.get('delete'), style: TextStyle(color: AppColors.error)),
+                icon:
+                    Icon(LucideIcons.trash2, size: 16, color: AppColors.error),
+                label: Text(l10n.get('delete'),
+                    style: TextStyle(color: AppColors.error)),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
               ),
             ],
@@ -345,11 +363,14 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
     );
   }
 
-  Widget _buildCustomToggle({required bool value, required ValueChanged<bool> onChanged}) {
+  Widget _buildCustomToggle(
+      {required bool value, required ValueChanged<bool> onChanged}) {
     return GestureDetector(
-      behavior: HitTestBehavior.opaque, // Ensure tap is detected even on transparent areas
+      behavior: HitTestBehavior
+          .opaque, // Ensure tap is detected even on transparent areas
       onTap: () {
-        debugPrint('[AutomationToggle] Toggle tapped, current value: $value, new value: ${!value}');
+        debugPrint(
+            '[AutomationToggle] Toggle tapped, current value: $value, new value: ${!value}');
         onChanged(!value);
       },
       child: Padding(
@@ -410,7 +431,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
     }
   }
 
-  Future<void> _deleteRule(String businessId, String ruleId, AppLocalizations l10n) async {
+  Future<void> _deleteRule(
+      String businessId, String ruleId, AppLocalizations l10n) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -458,7 +480,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
       case 'inactive_7':
         return TriggerInfo(
           icon: LucideIcons.userX,
-          label: '${l10n.get('trigger_inactive')} (7 ${l10n.get('inactive_days')})',
+          label:
+              '${l10n.get('trigger_inactive')} (7 ${l10n.get('inactive_days')})',
         );
       case 'reward_expiring':
         return TriggerInfo(
@@ -522,7 +545,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
               Icon(LucideIcons.plus, color: AppColors.primary),
@@ -544,7 +568,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                       hintText: l10n.get('rule_name_hint'),
                       prefixIcon: Icon(LucideIcons.tag),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusMd),
                       ),
                     ),
                   ),
@@ -555,7 +580,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                       labelText: l10n.get('trigger'),
                       prefixIcon: Icon(LucideIcons.zap),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusMd),
                       ),
                     ),
                     items: [
@@ -587,7 +613,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                       labelText: l10n.get('action'),
                       prefixIcon: Icon(LucideIcons.send),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusMd),
                       ),
                     ),
                     items: [
@@ -616,7 +643,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                         child: Icon(LucideIcons.messageCircle),
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusMd),
                       ),
                     ),
                   ),
@@ -679,7 +707,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
               Icon(LucideIcons.pencil, color: AppColors.primary),
@@ -700,7 +729,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                       labelText: l10n.get('rule_name'),
                       prefixIcon: Icon(LucideIcons.tag),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusMd),
                       ),
                     ),
                   ),
@@ -711,7 +741,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                       labelText: l10n.get('trigger'),
                       prefixIcon: Icon(LucideIcons.zap),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusMd),
                       ),
                     ),
                     items: [
@@ -743,7 +774,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                       labelText: l10n.get('action'),
                       prefixIcon: Icon(LucideIcons.send),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusMd),
                       ),
                     ),
                     items: [
@@ -771,7 +803,8 @@ class _AutomationScreenState extends ConsumerState<AutomationScreen> {
                         child: Icon(LucideIcons.messageCircle),
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusMd),
                       ),
                     ),
                   ),

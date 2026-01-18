@@ -58,7 +58,7 @@ class ShareProgramScreen extends ConsumerWidget {
   Widget _buildContent(
       BuildContext context, LoyaltyProgram program, AppLocalizations l10n) {
     final joinUrl =
-        'https://loya-app-ziqygx-9bc8a.web.app/join/?program=${program.id}';
+        'https://loya-app-ziqygx.web.app/join/?program=${program.id}';
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < AppSpacing.breakpointTablet;
 

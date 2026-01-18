@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:go_router/go_router.dart';
 
 import 'core/config/firebase_options.dart';
 import 'core/router/app_router.dart';
@@ -14,6 +16,10 @@ import 'core/utils/deep_link_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Use path-based URLs on web (instead of hash URLs)
+  GoRouter.optionURLReflectsImperativeAPIs = true;
+  usePathUrlStrategy();
 
   // Initialize Firebase with error handling
   try {
