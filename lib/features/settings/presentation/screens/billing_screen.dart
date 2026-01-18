@@ -105,7 +105,8 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
   }
 
   Widget _buildCurrentPlanBanner(AppLocalizations l10n) {
-    final subscription = ref.watch(subscriptionProvider).value;
+    final subscriptionAsync = ref.watch(subscriptionProvider);
+    final subscription = subscriptionAsync.valueOrNull;
     final plan = subscription?.planType ?? PlanType.free;
     final limits = subscription?.limits ?? sub.PlanLimits.forPlan(PlanType.free);
     
