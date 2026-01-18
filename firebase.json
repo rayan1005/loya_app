@@ -1,4 +1,7 @@
 {
+  "firestore": {
+    "rules": "firestore.rules"
+  },
   "storage": {
     "rules": "storage.rules"
   },
@@ -11,14 +14,6 @@
       "**/node_modules/**"
     ],
     "rewrites": [
-      {
-        "source": "/join/**",
-        "destination": "/join/index.html"
-      },
-      {
-        "source": "/add-stamp/**",
-        "destination": "/add-stamp/index.html"
-      },
       {
         "source": "**",
         "destination": "/index.html"

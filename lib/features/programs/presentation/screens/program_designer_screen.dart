@@ -2496,6 +2496,8 @@ class _FieldConfig {
     required this.onChanged,
     this.labelController,
     this.labelHint,
+    this.contentController,
+    this.contentHint,
     this.isCustomerField = false,
   });
 }

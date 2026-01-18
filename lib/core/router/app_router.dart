@@ -10,6 +10,7 @@ import '../../features/dashboard/presentation/screens/overview_screen.dart';
 import '../../features/programs/presentation/screens/programs_screen.dart';
 import '../../features/programs/presentation/screens/program_designer_screen.dart';
 import '../../features/programs/presentation/screens/share_program_screen.dart';
+import '../../features/programs/presentation/screens/join_program_screen.dart';
 import '../../features/customers/presentation/screens/customers_screen.dart';
 import '../../features/customers/presentation/screens/customer_detail_screen.dart';
 import '../../features/customers/presentation/screens/customer_action_screen.dart';
@@ -25,11 +26,21 @@ import '../../features/settings/presentation/screens/locations_screen.dart';
 import '../../features/settings/presentation/screens/export_screen.dart';
 import '../../features/settings/presentation/screens/team_members_screen.dart';
 import '../../features/settings/presentation/screens/branches_screen.dart';
+import '../../features/settings/presentation/screens/paywall_screen.dart';
 import '../../features/messaging/presentation/screens/messages_screen.dart';
 import '../../features/marketing/presentation/screens/referral_program_screen.dart';
 import '../../features/marketing/presentation/screens/automation_screen.dart';
 import '../../features/stamper/presentation/screens/stamper_screen.dart';
 import '../theme/app_colors.dart';
+
+/// List of public routes that don't require authentication
+const _publicRoutes = ['/join', '/join/'];
+
+/// Check if a path is a public route
+bool _isPublicRoute(String path) {
+  final lowerPath = path.toLowerCase();
+  return _publicRoutes.any((route) => lowerPath.startsWith(route));
+}
 
 /// Splash screen shown while loading auth state
 class _SplashScreen extends StatelessWidget {
@@ -73,17 +84,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     debugLogDiagnostics: true,
     redirect: (context, state) {
+      final fullPath = state.uri.toString();
+      final matchedPath = state.matchedLocation;
+      
+      // PUBLIC ROUTES - Check first, NEVER redirect these
+      if (_isPublicRoute(fullPath) || _isPublicRoute(matchedPath)) {
+        return null; // Allow access - no redirect
+      }
+      
       // While auth state is loading, show splash
       final isLoading = authState.isLoading;
-      final isSplash = state.matchedLocation == '/splash';
+      final isSplash = matchedPath == '/splash';
 
       if (isLoading && !isSplash) {
         return '/splash';
       }
 
       final isLoggedIn = authState.valueOrNull != null;
-      final isLoggingIn =
-          state.matchedLocation == '/login' || state.matchedLocation == '/otp';
+      final isLoggingIn = matchedPath == '/login' || matchedPath == '/otp';
 
       // If done loading and on splash, redirect appropriately
       if (!isLoading && isSplash) {
@@ -121,6 +139,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final phoneNumber = state.extra as String? ?? '';
           return OtpScreen(phoneNumber: phoneNumber);
+        },
+      ),
+      
+      // Public Routes (no auth required)
+      GoRoute(
+        path: '/join',
+        name: 'join-program',
+        builder: (context, state) {
+          final programId = state.uri.queryParameters['program'];
+          return JoinProgramScreen(programId: programId);
         },
       ),
 
@@ -290,6 +318,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: 'billing',
                 name: 'billing',
                 builder: (context, state) => const BillingScreen(),
+              ),
+              GoRoute(
+                path: 'upgrade',
+                name: 'upgrade',
+                builder: (context, state) {
+                  final extra = state.extra as Map<String, dynamic>?;
+                  return PaywallScreen(
+                    highlightedPlan: extra?['highlightedPlan'],
+                    limitReachedMessage: extra?['limitReachedMessage'],
+                  );
+                },
               ),
               GoRoute(
                 path: 'subusers',

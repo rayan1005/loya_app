@@ -60,6 +60,10 @@ dependencies:
   
   # Deep Links / Universal Links
   app_links: ^6.3.3
+  
+  # In-App Purchases
+  in_app_purchase: ^3.2.0
+  in_app_purchase_storekit: ^0.3.18
 
 dev_dependencies:
   flutter_test:

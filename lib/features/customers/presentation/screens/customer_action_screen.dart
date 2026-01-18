@@ -9,6 +9,9 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/data/providers/data_providers.dart';
 import '../../../../core/data/models/models.dart';
+import '../../../../core/subscription/providers/subscription_provider.dart';
+import '../../../../core/subscription/services/subscription_service.dart';
+import '../../../../core/widgets/upgrade_dialog.dart';
 import '../../../shared/widgets/loya_button.dart';
 
 /// Customer Info & Action Screen
@@ -162,6 +165,13 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
   Future<void> _addStamp() async {
     if (_isProcessing || _program == null) return;
 
+    // Check subscription stamp limit
+    final subscription = ref.read(subscriptionProvider).value;
+    if (subscription != null && !subscription.canAddStamp()) {
+      UpgradeDialog.showStampLimit(context, subscription.limits.maxStampsPerMonth);
+      return;
+    }
+
     setState(() => _isProcessing = true);
 
     try {
@@ -220,6 +230,10 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
         'totalVisits': FieldValue.increment(1),
         'lastVisit': FieldValue.serverTimestamp(),
       });
+
+      // Increment subscription stamp usage
+      final subService = ref.read(subscriptionServiceProvider);
+      await subService.incrementStampUsage();
 
       setState(() {
         _stampSuccess = true;
@@ -373,7 +387,7 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
         title: Text(
           'معلومات العميل',
           style:
-              AppTypography.titleLarge.copyWith(color: AppColors.textPrimary),
+              AppTypography.title.copyWith(color: AppColors.textPrimary),
         ),
         centerTitle: true,
       ),
@@ -571,7 +585,7 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
         const SizedBox(height: 4),
         Text(
           value,
-          style: AppTypography.titleLarge.copyWith(
+          style: AppTypography.title.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
