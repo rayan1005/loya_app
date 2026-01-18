@@ -10,6 +10,7 @@ import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/subscription/providers/subscription_provider.dart';
 import '../../../../core/subscription/models/plan_type.dart';
+import '../../../../core/subscription/models/plan_limits.dart';
 import '../../../shared/widgets/loya_button.dart';
 
 class BillingScreen extends ConsumerStatefulWidget {
@@ -105,8 +106,8 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
 
   Widget _buildCurrentPlanBanner(AppLocalizations l10n) {
     final subscription = ref.watch(subscriptionProvider).value;
-    final plan = subscription?.plan ?? PlanType.free;
-    final limits = subscription?.limits ?? PlanType.free.limits;
+    final plan = subscription?.planType ?? PlanType.free;
+    final limits = subscription?.limits ?? PlanLimits.forPlan(PlanType.free);
     
     final usedStamps = subscription?.stampsUsedThisMonth ?? 0;
     final maxStamps = limits.maxStampsPerMonth;

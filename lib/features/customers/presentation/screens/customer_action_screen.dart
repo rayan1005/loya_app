@@ -233,7 +233,7 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
 
       // Increment subscription stamp usage
       final subService = ref.read(subscriptionServiceProvider);
-      await subService.incrementStampUsage();
+      await subService.incrementStampUsage(businessId);
 
       setState(() {
         _stampSuccess = true;
