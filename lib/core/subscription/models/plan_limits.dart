@@ -29,7 +29,7 @@ class PlanLimits {
   /// Free plan - try everything with tight limits
   static const free = PlanLimits(
     maxCustomers: 50,
-    maxStampsPerMonth: 200,
+    maxStampsPerMonth: 100,
     maxPrograms: 1,
     maxTeamMembers: 1,
     maxLocations: 1,
