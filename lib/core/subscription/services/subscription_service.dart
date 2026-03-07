@@ -91,15 +91,20 @@ class SubscriptionService {
   }
 
   /// Load products from store
+  String? lastLoadError;
+  List<String> notFoundIds = [];
+
   Future<void> _loadProducts() async {
     final ProductDetailsResponse response =
         await _iap.queryProductDetails(_productIds);
 
+    notFoundIds = response.notFoundIDs.toList();
     if (response.notFoundIDs.isNotEmpty) {
       debugPrint('Products not found: ${response.notFoundIDs}');
     }
 
     if (response.error != null) {
+      lastLoadError = response.error.toString();
       debugPrint('Error loading products: ${response.error}');
       return;
     }

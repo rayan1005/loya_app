@@ -37,13 +37,21 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
     try {
       final subscriptionService = ref.read(subscriptionServiceProvider);
       await subscriptionService.initialize();
-      final msg = 'IAP: available=${subscriptionService.isAvailable}, products=${subscriptionService.products.map((p) => p.id).toList()}';
+      final products = subscriptionService.products.map((p) => p.id).toList();
+      final notFound = subscriptionService.notFoundIds;
+      final error = subscriptionService.lastLoadError;
+      final msg = 'IAP: available=${subscriptionService.isAvailable}\n'
+          'Products found: $products\n'
+          'Not found: $notFound\n'
+          'Error: $error';
       debugPrint(msg);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('IAP Debug'),
             content: Text(msg),
-            duration: const Duration(seconds: 5),
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))],
           ),
         );
       }
