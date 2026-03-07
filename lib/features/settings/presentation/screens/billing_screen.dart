@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -25,6 +26,22 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
   PlanType _selectedPlan = PlanType.pro;
   bool _isYearly = false;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initIAP();
+  }
+
+  Future<void> _initIAP() async {
+    try {
+      final subscriptionService = ref.read(subscriptionServiceProvider);
+      await subscriptionService.initialize();
+      debugPrint('IAP initialized, available: ${subscriptionService.isAvailable}, products: ${subscriptionService.products.length}');
+    } catch (e) {
+      debugPrint('IAP init error: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,21 +129,22 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
     final subscription = subscriptionAsync.valueOrNull;
     final plan = subscription?.planType ?? PlanType.free;
     final limits = subscription?.limits ?? PlanLimits.forPlan(PlanType.free);
-    
+
     final usedStamps = subscription?.stampsUsedThisMonth ?? 0;
     final maxStamps = limits.maxStampsPerMonth;
-    final stampUsageText = maxStamps >= 999999 
-        ? '∞' 
-        : '$usedStamps/$maxStamps';
-    
+    final stampUsageText = maxStamps >= 999999 ? '∞' : '$usedStamps/$maxStamps';
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: plan == PlanType.business 
+          colors: plan == PlanType.business
               ? [AppColors.programOrange, AppColors.programOrange.withRed(230)]
               : plan == PlanType.pro
-                  ? [AppColors.programPurple, AppColors.programPurple.withBlue(230)]
+                  ? [
+                      AppColors.programPurple,
+                      AppColors.programPurple.withBlue(230)
+                    ]
                   : [AppColors.primary, AppColors.primary.withBlue(230)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -144,9 +162,7 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  plan == PlanType.free 
-                      ? LucideIcons.gift
-                      : LucideIcons.crown,
+                  plan == PlanType.free ? LucideIcons.gift : LucideIcons.crown,
                   color: Colors.white,
                   size: 24,
                 ),
@@ -236,7 +252,9 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
                   child: Text(
                     l10n.isRtl ? 'شهري' : 'Monthly',
                     style: AppTypography.button.copyWith(
-                      color: !_isYearly ? AppColors.textPrimary : AppColors.textSecondary,
+                      color: !_isYearly
+                          ? AppColors.textPrimary
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -260,12 +278,15 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
                       Text(
                         l10n.isRtl ? 'سنوي' : 'Yearly',
                         style: AppTypography.button.copyWith(
-                          color: _isYearly ? AppColors.textPrimary : AppColors.textSecondary,
+                          color: _isYearly
+                              ? AppColors.textPrimary
+                              : AppColors.textSecondary,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppColors.success.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
@@ -291,8 +312,9 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
 
   Widget _buildPlanCard(PlanType planType, AppLocalizations l10n) {
     final subscriptionAsync = ref.watch(subscriptionProvider);
-    final currentPlan = subscriptionAsync.valueOrNull?.planType ?? PlanType.free;
-    
+    final currentPlan =
+        subscriptionAsync.valueOrNull?.planType ?? PlanType.free;
+
     final isSelected = _selectedPlan == planType;
     final isCurrent = currentPlan == planType;
     final isPopular = planType == PlanType.pro;
@@ -302,7 +324,7 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
     String price;
     String period;
     String? originalPrice;
-    
+
     if (_isYearly) {
       if (planType == PlanType.pro) {
         price = '\$189.99';
@@ -325,47 +347,51 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
 
     List<String> features;
     if (planType == PlanType.pro) {
-      features = l10n.isRtl ? [
-        '${limits.maxCustomers} عميل',
-        '${PlanLimits.formatLimit(limits.maxStampsPerMonth)} ختم/شهر',
-        '${limits.maxPrograms} برامج',
-        '${limits.maxLocations} فروع',
-        '${limits.maxTeamMembers} أعضاء فريق',
-        'تحليلات متقدمة',
-        'دعم بالأولوية',
-      ] : [
-        '${limits.maxCustomers} customers',
-        '${PlanLimits.formatLimit(limits.maxStampsPerMonth)} stamps/month',
-        '${limits.maxPrograms} programs',
-        '${limits.maxLocations} locations',
-        '${limits.maxTeamMembers} team members',
-        'Advanced analytics',
-        'Priority support',
-      ];
+      features = l10n.isRtl
+          ? [
+              '${limits.maxCustomers} عميل',
+              '${PlanLimits.formatLimit(limits.maxStampsPerMonth)} ختم/شهر',
+              '${limits.maxPrograms} برامج',
+              '${limits.maxLocations} فروع',
+              '${limits.maxTeamMembers} أعضاء فريق',
+              'تحليلات متقدمة',
+              'دعم بالأولوية',
+            ]
+          : [
+              '${limits.maxCustomers} customers',
+              '${PlanLimits.formatLimit(limits.maxStampsPerMonth)} stamps/month',
+              '${limits.maxPrograms} programs',
+              '${limits.maxLocations} locations',
+              '${limits.maxTeamMembers} team members',
+              'Advanced analytics',
+              'Priority support',
+            ];
     } else {
-      features = l10n.isRtl ? [
-        'عملاء غير محدودين',
-        'أختام غير محدودة',
-        'برامج غير محدودة',
-        'فروع غير محدودة',
-        '${limits.maxTeamMembers} أعضاء فريق',
-        'وصول API',
-        'Webhooks',
-        'دعم مخصص',
-      ] : [
-        'Unlimited customers',
-        'Unlimited stamps',
-        'Unlimited programs',
-        'Unlimited locations',
-        '${limits.maxTeamMembers} team members',
-        'API access',
-        'Webhooks',
-        'Dedicated support',
-      ];
+      features = l10n.isRtl
+          ? [
+              'عملاء غير محدودين',
+              'أختام غير محدودة',
+              'برامج غير محدودة',
+              'فروع غير محدودة',
+              '${limits.maxTeamMembers} أعضاء فريق',
+              'وصول API',
+              'Webhooks',
+              'دعم مخصص',
+            ]
+          : [
+              'Unlimited customers',
+              'Unlimited stamps',
+              'Unlimited programs',
+              'Unlimited locations',
+              '${limits.maxTeamMembers} team members',
+              'API access',
+              'Webhooks',
+              'Dedicated support',
+            ];
     }
 
-    Color accentColor = planType == PlanType.pro 
-        ? AppColors.programPurple 
+    Color accentColor = planType == PlanType.pro
+        ? AppColors.programPurple
         : AppColors.programOrange;
 
     return GestureDetector(
@@ -454,7 +480,7 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
                 ),
               ),
             ],
-            
+
             // Free trial badge
             const SizedBox(height: 12),
             Container(
@@ -471,7 +497,7 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 20),
 
             // Features
@@ -520,7 +546,8 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
                     )
                   : LoyaButton(
                       label: l10n.isRtl ? 'اشترك الآن' : 'Subscribe Now',
-                      onPressed: _isLoading ? null : () => _handleSubscribe(planType),
+                      onPressed:
+                          _isLoading ? null : () => _handleSubscribe(planType),
                       isOutlined: !isPopular,
                       isLoading: _isLoading && _selectedPlan == planType,
                     ),
@@ -552,8 +579,8 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
           ),
           const Divider(height: 1),
           _FAQItem(
-            question: l10n.isRtl 
-                ? 'هل يمكنني تغيير باقتي لاحقاً؟' 
+            question: l10n.isRtl
+                ? 'هل يمكنني تغيير باقتي لاحقاً؟'
                 : 'Can I change my plan later?',
             answer: l10n.isRtl
                 ? 'نعم، يمكنك الترقية أو تخفيض باقتك في أي وقت. سيتم احتساب الفرق تلقائياً.'
@@ -561,8 +588,8 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
           ),
           const Divider(height: 1, indent: 20, endIndent: 20),
           _FAQItem(
-            question: l10n.isRtl 
-                ? 'ما هي طرق الدفع المتاحة؟' 
+            question: l10n.isRtl
+                ? 'ما هي طرق الدفع المتاحة؟'
                 : 'What payment methods are available?',
             answer: l10n.isRtl
                 ? 'نستخدم Apple Pay للدفع الآمن. جميع المعاملات مشفرة ومحمية.'
@@ -570,8 +597,8 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
           ),
           const Divider(height: 1, indent: 20, endIndent: 20),
           _FAQItem(
-            question: l10n.isRtl 
-                ? 'هل يمكنني إلغاء اشتراكي؟' 
+            question: l10n.isRtl
+                ? 'هل يمكنني إلغاء اشتراكي؟'
                 : 'Can I cancel my subscription?',
             answer: l10n.isRtl
                 ? 'نعم، يمكنك إلغاء اشتراكك في أي وقت من إعدادات حسابك في App Store. ستستمر في الوصول حتى نهاية فترة الفوترة.'
@@ -584,25 +611,32 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
 
   Future<void> _handleSubscribe(PlanType planType) async {
     setState(() => _isLoading = true);
-    
+
     try {
       final subscriptionService = ref.read(subscriptionServiceProvider);
       final business = ref.read(currentBusinessProvider).valueOrNull;
-      final productId = _isYearly 
-          ? planType.yearlyProductId 
-          : planType.monthlyProductId;
-      
+      final productId =
+          _isYearly ? planType.yearlyProductId : planType.monthlyProductId;
+
+      debugPrint('Subscribe: plan=$planType, productId=$productId, business=${business?.id}, isAvailable=${subscriptionService.isAvailable}');
+      debugPrint('Available products: ${subscriptionService.products.map((p) => p.id).toList()}');
+
       if (productId == null || business == null) {
-        throw Exception('Invalid product or business');
+        throw Exception('Invalid product (productId=$productId) or business (${business?.id})');
       }
-      
-      final success = await subscriptionService.purchaseSubscription(productId, business.id);
-      
+
+      if (!subscriptionService.isAvailable) {
+        throw Exception('IAP not available on this device');
+      }
+
+      final success = await subscriptionService.purchaseSubscription(
+          productId, business.id);
+
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.isRtl 
-                ? 'تم الاشتراك بنجاح!' 
+            content: Text(context.l10n.isRtl
+                ? 'تم الاشتراك بنجاح!'
                 : 'Subscription successful!'),
             backgroundColor: AppColors.success,
           ),
@@ -612,8 +646,8 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.isRtl 
-                ? 'فشل الاشتراك. حاول مرة أخرى.' 
+            content: Text(context.l10n.isRtl
+                ? 'فشل الاشتراك. حاول مرة أخرى.'
                 : 'Subscription failed. Please try again.'),
             backgroundColor: AppColors.error,
           ),

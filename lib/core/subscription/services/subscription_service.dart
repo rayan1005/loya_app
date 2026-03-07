@@ -61,7 +61,8 @@ class SubscriptionService {
       await iosPlatformAddition.setDelegate(PaymentQueueDelegate());
     }
 
-    debugPrint('SubscriptionService: Initialized, ${_products.length} products loaded');
+    debugPrint(
+        'SubscriptionService: Initialized, ${_products.length} products loaded');
   }
 
   /// Dispose the service
@@ -259,7 +260,10 @@ class SubscriptionService {
       return subscription.copyWith(id: doc.id);
     } else {
       // Update existing
-      await _firestore.collection('subscriptions').doc(subscription.id).update(data);
+      await _firestore
+          .collection('subscriptions')
+          .doc(subscription.id)
+          .update(data);
       return subscription;
     }
   }
