@@ -21,6 +21,7 @@ class SubscriptionService {
   StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
   List<ProductDetails> _products = [];
   bool _isAvailable = false;
+  String? _currentBusinessId;
 
   /// All product IDs
   static const Set<String> _productIds = {
@@ -144,16 +145,48 @@ class SubscriptionService {
     // For now, we trust the purchase and save to Firestore
 
     try {
+      final businessId = _currentBusinessId;
+      if (businessId == null || businessId.isEmpty) {
+        debugPrint('Error: No businessId set for purchase delivery');
+        return false;
+      }
+
       final planType = PlanType.fromProductId(purchase.productID);
       final isYearly = purchase.productID.contains('yearly');
 
       // Calculate end date
-      final endDate = DateTime.now().add(
+      final now = DateTime.now();
+      final endDate = now.add(
         isYearly ? const Duration(days: 365) : const Duration(days: 30),
       );
 
       debugPrint('Delivering purchase: $planType, ends: $endDate');
 
+      // Save subscription to Firestore
+      final subscription = Subscription(
+        id: '',
+        businessId: businessId,
+        planType: planType,
+        isActive: true,
+        startDate: now,
+        endDate: endDate,
+        isTrial: false,
+        appleProductId: purchase.productID,
+        appleTransactionId: purchase.purchaseID ?? '',
+        appleOriginalTransactionId: purchase.purchaseID ?? '',
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      await saveSubscription(subscription);
+
+      // Also update the business plan field for backward compatibility
+      await _firestore.collection('businesses').doc(businessId).update({
+        'plan': planType.name,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      debugPrint('Subscription saved successfully for business: $businessId');
       return true;
     } catch (e) {
       debugPrint('Error delivering purchase: $e');
@@ -167,6 +200,8 @@ class SubscriptionService {
       debugPrint('IAP not available');
       return false;
     }
+
+    _currentBusinessId = businessId;
 
     final product = getProduct(productId);
     if (product == null) {

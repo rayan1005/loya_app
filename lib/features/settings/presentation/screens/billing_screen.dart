@@ -11,6 +11,7 @@ import '../../../../core/subscription/providers/subscription_provider.dart';
 import '../../../../core/subscription/models/plan_type.dart';
 import '../../../../core/subscription/models/plan_limits.dart';
 import '../../../../core/subscription/services/subscription_service.dart';
+import '../../../../core/data/providers/data_providers.dart';
 import '../../../shared/widgets/loya_button.dart';
 
 class BillingScreen extends ConsumerStatefulWidget {
@@ -586,15 +587,16 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
     
     try {
       final subscriptionService = ref.read(subscriptionServiceProvider);
+      final business = ref.read(currentBusinessProvider).valueOrNull;
       final productId = _isYearly 
           ? planType.yearlyProductId 
           : planType.monthlyProductId;
       
-      if (productId == null) {
-        throw Exception('Invalid product');
+      if (productId == null || business == null) {
+        throw Exception('Invalid product or business');
       }
       
-      final success = await subscriptionService.purchaseSubscription(productId);
+      final success = await subscriptionService.purchaseSubscription(productId, business.id);
       
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

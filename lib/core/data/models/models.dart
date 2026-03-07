@@ -92,11 +92,11 @@ class Business {
   int get maxPrograms {
     switch (plan) {
       case 'business':
-        return 999; // Unlimited
+        return 10;
       case 'pro':
-        return 2;
+        return 4;
       default:
-        return 1;
+        return 1; // free
     }
   }
 
@@ -106,7 +106,7 @@ class Business {
       case 'pro':
         return 999999; // Unlimited
       default:
-        return 2;
+        return 50; // free
     }
   }
 }

@@ -1,7 +1,7 @@
 name: loya
 description: Loya - Premium Business Loyalty Platform
 publish_to: 'none'
-version: 1.0.41+41
+version: 1.1.0+42
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
@@ -45,8 +45,9 @@ dependencies:
   intl_phone_field: ^3.2.0
   pinput: ^5.0.1
   
-  # Payments (Tap)
-  # tap_pay_sdk will be added when ready
+  # Payments
+  in_app_purchase: ^3.2.0
+  in_app_purchase_storekit: ^0.3.18
   
   # Icons
   lucide_icons: ^0.257.0
@@ -60,10 +61,6 @@ dependencies:
   
   # Deep Links / Universal Links
   app_links: ^6.3.3
-  
-  # In-App Purchases
-  in_app_purchase: ^3.2.0
-  in_app_purchase_storekit: ^0.3.18
 
 dev_dependencies:
   flutter_test:
