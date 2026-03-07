@@ -37,9 +37,27 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
     try {
       final subscriptionService = ref.read(subscriptionServiceProvider);
       await subscriptionService.initialize();
-      debugPrint('IAP initialized, available: ${subscriptionService.isAvailable}, products: ${subscriptionService.products.length}');
+      final msg = 'IAP: available=${subscriptionService.isAvailable}, products=${subscriptionService.products.map((p) => p.id).toList()}';
+      debugPrint(msg);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(msg),
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
     } catch (e) {
       debugPrint('IAP init error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('IAP init error: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
     }
   }
 
@@ -643,13 +661,13 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
         );
       }
     } catch (e) {
+      debugPrint('Subscribe error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.isRtl
-                ? 'فشل الاشتراك. حاول مرة أخرى.'
-                : 'Subscription failed. Please try again.'),
+            content: Text('Error: $e'),
             backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 8),
           ),
         );
       }
