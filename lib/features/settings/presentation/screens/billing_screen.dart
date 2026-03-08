@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,24 +38,7 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
     try {
       final subscriptionService = ref.read(subscriptionServiceProvider);
       await subscriptionService.initialize();
-      final products = subscriptionService.products.map((p) => p.id).toList();
-      final notFound = subscriptionService.notFoundIds;
-      final error = subscriptionService.lastLoadError;
-      final msg = 'IAP: available=${subscriptionService.isAvailable}\n'
-          'Products found: $products\n'
-          'Not found: $notFound\n'
-          'Error: $error';
-      debugPrint(msg);
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('IAP Debug'),
-            content: Text(msg),
-            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))],
-          ),
-        );
-      }
+      _showIAPDebug(subscriptionService);
     } catch (e) {
       debugPrint('IAP init error: $e');
       if (mounted) {
@@ -66,6 +50,41 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
           ),
         );
       }
+    }
+  }
+
+  void _showIAPDebug(dynamic subscriptionService) {
+    final products = subscriptionService.products.map((p) => p.id).toList();
+    final notFound = subscriptionService.notFoundIds;
+    final error = subscriptionService.lastLoadError;
+    final attempts = subscriptionService.loadAttempts;
+    final bundleId = !kIsWeb ? Platform.resolvedExecutable : 'web';
+    final msg = 'IAP: available=${subscriptionService.isAvailable}\n'
+        'Attempts: $attempts\n'
+        'Products found: $products\n'
+        'Not found: $notFound\n'
+        'Error: $error';
+    debugPrint(msg);
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('IAP Debug'),
+          content: Text(msg),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                // Manual retry
+                await subscriptionService.reloadProducts();
+                if (mounted) _showIAPDebug(subscriptionService);
+              },
+              child: const Text('RETRY'),
+            ),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK')),
+          ],
+        ),
+      );
     }
   }
 

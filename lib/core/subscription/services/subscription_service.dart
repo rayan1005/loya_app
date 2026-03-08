@@ -93,24 +93,44 @@ class SubscriptionService {
   /// Load products from store
   String? lastLoadError;
   List<String> notFoundIds = [];
+  int loadAttempts = 0;
 
   Future<void> _loadProducts() async {
-    final ProductDetailsResponse response =
-        await _iap.queryProductDetails(_productIds);
+    // Retry up to 3 times with delays for propagation
+    for (int attempt = 1; attempt <= 3; attempt++) {
+      loadAttempts = attempt;
+      debugPrint('SubscriptionService: Loading products (attempt $attempt/3)');
 
-    notFoundIds = response.notFoundIDs.toList();
-    if (response.notFoundIDs.isNotEmpty) {
-      debugPrint('Products not found: ${response.notFoundIDs}');
+      final ProductDetailsResponse response =
+          await _iap.queryProductDetails(_productIds);
+
+      notFoundIds = response.notFoundIDs.toList();
+      if (response.notFoundIDs.isNotEmpty) {
+        debugPrint('Products not found: ${response.notFoundIDs}');
+      }
+
+      if (response.error != null) {
+        lastLoadError = response.error.toString();
+        debugPrint('Error loading products: ${response.error}');
+      }
+
+      _products = response.productDetails;
+      debugPrint('Loaded ${_products.length} products on attempt $attempt');
+
+      // If we found products, stop retrying
+      if (_products.isNotEmpty) break;
+
+      // Wait before retrying (except on last attempt)
+      if (attempt < 3) {
+        debugPrint('No products found, retrying in 3 seconds...');
+        await Future.delayed(const Duration(seconds: 3));
+      }
     }
+  }
 
-    if (response.error != null) {
-      lastLoadError = response.error.toString();
-      debugPrint('Error loading products: ${response.error}');
-      return;
-    }
-
-    _products = response.productDetails;
-    debugPrint('Loaded ${_products.length} products');
+  /// Reload products (for manual retry)
+  Future<void> reloadProducts() async {
+    await _loadProducts();
   }
 
   /// Handle purchase updates
