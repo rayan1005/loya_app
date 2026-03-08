@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 
 import '../../../../core/utils/platform_utils.dart' as platform_utils;
@@ -557,24 +559,90 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
 
   Future<Map<String, double>?> _getCurrentLocation() async {
     try {
-      final location = await platform_utils.getCurrentLocationWeb();
-      if (location == null) {
+      // Web platform uses browser geolocation API
+      if (kIsWeb) {
+        final location = await platform_utils.getCurrentLocationWeb();
+        if (location == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('يرجى السماح بالوصول للموقع في المتصفح ثم حاول مرة أخرى'),
+                backgroundColor: Colors.orange,
+                duration: Duration(seconds: 4),
+              ),
+            );
+          }
+        }
+        return location;
+      }
+
+      // Native platform (iOS/Android) uses geolocator
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('خدمة الموقع غير مفعلة. يرجى تفعيلها من الإعدادات'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+        return null;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('تم رفض صلاحية الموقع'),
+                backgroundColor: Colors.orange,
+                duration: Duration(seconds: 4),
+              ),
+            );
+          }
+          return null;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('صلاحية الموقع مرفوضة نهائياً. يرجى تفعيلها من إعدادات الجهاز'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 5),
+            ),
+          );
+        }
+        // Open app settings so user can enable it
+        await Geolocator.openAppSettings();
+        return null;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+      return {
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+      };
+    } catch (e) {
+      debugPrint('Location error: $e');
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content:
-                Text('يرجى السماح بالوصول للموقع في المتصفح ثم حاول مرة أخرى'),
-            backgroundColor: Colors.orange,
-            duration: Duration(seconds: 4),
+          SnackBar(
+            content: Text('خطأ في تحديد الموقع: $e'),
+            backgroundColor: Colors.red,
           ),
         );
       }
-      return location;
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('خطأ في تحديد الموقع: $e'),
-            backgroundColor: Colors.red),
-      );
       return null;
     }
   }
@@ -756,7 +824,30 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Coordinate inputs FIRST
+                  // Use current location button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final pos = await _getCurrentLocation();
+                        if (pos != null) {
+                          latController.text = pos['latitude']!.toStringAsFixed(6);
+                          lngController.text = pos['longitude']!.toStringAsFixed(6);
+                          mapKey = DateTime.now().millisecondsSinceEpoch.toString();
+                          setDialogState(() {});
+                        }
+                      },
+                      icon: const Icon(LucideIcons.locateFixed, size: 18),
+                      label: const Text('استخدم موقعي الحالي'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Coordinate inputs
                   Row(
                     children: [
                       Expanded(
@@ -807,7 +898,7 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Map Preview using static image
+                  // Map Preview - coordinate display with map link
                   Container(
                     height: 220,
                     decoration: BoxDecoration(
@@ -819,7 +910,7 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                       child: Stack(
                         children: [
                           Image.network(
-                            'https://staticmap.openstreetmap.de/staticmap.php?center=${latController.text},${lngController.text}&zoom=15&size=500x220&markers=${latController.text},${lngController.text},red-pushpin&key=$mapKey',
+                            'https://staticmap.openstreetmap.de/staticmap.php?center=${latController.text},${lngController.text}&zoom=15&size=600x300&markers=${latController.text},${lngController.text},red-pushpin&_=$mapKey',
                             fit: BoxFit.cover,
                             width: double.infinity,
                             height: double.infinity,
