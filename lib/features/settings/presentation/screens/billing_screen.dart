@@ -37,6 +37,39 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
   Future<void> _initIAP() async {
     try {
       final subscriptionService = ref.read(subscriptionServiceProvider);
+
+      // Set up purchase status callback for UI feedback
+      subscriptionService.onPurchaseUpdate = (status, message) {
+        debugPrint('UI Purchase callback: status=$status, message=$message');
+        if (!mounted) return;
+        if (status == 'success') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.isRtl ? 'تم تفعيل الاشتراك بنجاح! 🎉' : 'Subscription activated! 🎉'),
+              backgroundColor: AppColors.success,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+          // Refresh the screen
+          setState(() {});
+        } else if (status == 'error') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: $message'),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 8),
+            ),
+          );
+        } else if (status == 'delivering') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.isRtl ? 'جاري تفعيل الاشتراك...' : 'Activating subscription...'),
+              backgroundColor: Colors.blue,
+            ),
+          );
+        }
+      };
+
       await subscriptionService.initialize();
       _showIAPDebug(subscriptionService);
     } catch (e) {
@@ -370,24 +403,41 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
     String period;
     String? originalPrice;
 
+    // Try to get dynamic pricing from Apple
+    final iapService = ref.read(subscriptionServiceProvider);
+    final String productId;
     if (_isYearly) {
-      if (planType == PlanType.pro) {
-        price = '\$189.99';
-        originalPrice = '\$239.88';
-        period = l10n.isRtl ? '/سنة' : '/year';
-      } else {
-        price = '\$389.99';
-        originalPrice = '\$479.88';
-        period = l10n.isRtl ? '/سنة' : '/year';
-      }
+      productId = planType == PlanType.pro ? 'loya_pro_yearly' : 'loya_business_yearly';
     } else {
-      if (planType == PlanType.pro) {
-        price = '\$19.99';
-        period = l10n.isRtl ? '/شهر' : '/month';
+      productId = planType == PlanType.pro ? 'loya_pro_monthly' : 'loya_business_monthly';
+    }
+    final iapProduct = iapService.getProduct(productId);
+
+    if (_isYearly) {
+      if (iapProduct != null) {
+        price = iapProduct.price;
       } else {
-        price = '\$39.99';
-        period = l10n.isRtl ? '/شهر' : '/month';
+        price = planType == PlanType.pro ? '\$189.99' : '\$389.99';
       }
+      // Calculate original price from monthly for "save" display
+      final monthlyId = planType == PlanType.pro ? 'loya_pro_monthly' : 'loya_business_monthly';
+      final monthlyProduct = iapService.getProduct(monthlyId);
+      if (monthlyProduct != null) {
+        final monthlyRaw = double.tryParse(monthlyProduct.rawPrice.toString());
+        if (monthlyRaw != null) {
+          originalPrice = '${monthlyProduct.currencySymbol}${(monthlyRaw * 12).toStringAsFixed(2)}';
+        }
+      } else {
+        originalPrice = planType == PlanType.pro ? '\$239.88' : '\$479.88';
+      }
+      period = l10n.isRtl ? '/سنة' : '/year';
+    } else {
+      if (iapProduct != null) {
+        price = iapProduct.price;
+      } else {
+        price = planType == PlanType.pro ? '\$19.99' : '\$39.99';
+      }
+      period = l10n.isRtl ? '/شهر' : '/month';
     }
 
     List<String> features;

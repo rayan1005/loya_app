@@ -21,7 +21,11 @@ class SubscriptionService {
   StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
   List<ProductDetails> _products = [];
   bool _isAvailable = false;
+  bool _isInitialized = false;
   String? _currentBusinessId;
+
+  /// Callback for purchase status updates (for UI feedback)
+  void Function(String status, String message)? onPurchaseUpdate;
 
   /// All product IDs
   static const Set<String> _productIds = {
@@ -38,6 +42,13 @@ class SubscriptionService {
       return;
     }
 
+    // Prevent double-initialization (listener would be duplicated)
+    if (_isInitialized) {
+      debugPrint('SubscriptionService: Already initialized, reloading products only');
+      await _loadProducts();
+      return;
+    }
+
     _isAvailable = await _iap.isAvailable();
     if (!_isAvailable) {
       debugPrint('SubscriptionService: IAP not available');
@@ -51,7 +62,10 @@ class SubscriptionService {
     _purchaseSubscription = _iap.purchaseStream.listen(
       _handlePurchaseUpdates,
       onDone: () => _purchaseSubscription?.cancel(),
-      onError: (error) => debugPrint('Purchase stream error: $error'),
+      onError: (error) {
+        debugPrint('Purchase stream error: $error');
+        onPurchaseUpdate?.call('error', 'Stream error: $error');
+      },
     );
 
     // For iOS, set delegate for subscription offer
@@ -61,6 +75,7 @@ class SubscriptionService {
       await iosPlatformAddition.setDelegate(PaymentQueueDelegate());
     }
 
+    _isInitialized = true;
     debugPrint(
         'SubscriptionService: Initialized, ${_products.length} products loaded');
   }
@@ -135,32 +150,48 @@ class SubscriptionService {
 
   /// Handle purchase updates
   Future<void> _handlePurchaseUpdates(List<PurchaseDetails> purchases) async {
+    debugPrint('=== PURCHASE STREAM: ${purchases.length} updates ===');
     for (final purchase in purchases) {
-      debugPrint('Purchase update: ${purchase.productID} - ${purchase.status}');
+      debugPrint('Purchase update: productID=${purchase.productID}, status=${purchase.status}, purchaseID=${purchase.purchaseID}');
+      debugPrint('  pendingCompletePurchase=${purchase.pendingCompletePurchase}');
+      debugPrint('  businessId=$_currentBusinessId');
 
       switch (purchase.status) {
         case PurchaseStatus.pending:
-          // Show loading indicator
+          debugPrint('  -> PENDING: Payment sheet shown');
+          onPurchaseUpdate?.call('pending', 'Processing purchase...');
           break;
 
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
-          // Verify and deliver the product
-          await _verifyAndDeliverPurchase(purchase);
+          debugPrint('  -> PURCHASED/RESTORED: Delivering...');
+          onPurchaseUpdate?.call('delivering', 'Activating subscription...');
+          final delivered = await _verifyAndDeliverPurchase(purchase);
+          if (delivered) {
+            debugPrint('  -> DELIVERED successfully');
+            onPurchaseUpdate?.call('success', 'Subscription activated!');
+          } else {
+            debugPrint('  -> DELIVERY FAILED');
+            onPurchaseUpdate?.call('error', 'Failed to activate subscription');
+          }
           break;
 
         case PurchaseStatus.error:
-          debugPrint('Purchase error: ${purchase.error}');
+          debugPrint('Purchase error: ${purchase.error?.message} (code: ${purchase.error?.code})');
+          onPurchaseUpdate?.call('error', 'Purchase error: ${purchase.error?.message}');
           break;
 
         case PurchaseStatus.canceled:
-          debugPrint('Purchase canceled');
+          debugPrint('Purchase canceled by user');
+          onPurchaseUpdate?.call('canceled', 'Purchase canceled');
           break;
       }
 
       // Complete the purchase
       if (purchase.pendingCompletePurchase) {
+        debugPrint('  -> Completing purchase...');
         await _iap.completePurchase(purchase);
+        debugPrint('  -> Purchase completed');
       }
     }
   }
@@ -186,7 +217,7 @@ class SubscriptionService {
         isYearly ? const Duration(days: 365) : const Duration(days: 30),
       );
 
-      debugPrint('Delivering purchase: $planType, ends: $endDate');
+      debugPrint('Delivering purchase: planType=$planType, isYearly=$isYearly, businessId=$businessId, ends: $endDate');
 
       // Save subscription to Firestore
       final subscription = Subscription(
