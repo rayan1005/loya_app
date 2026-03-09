@@ -2099,7 +2099,7 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
                   children: [
                     Text('تفعيل التنبيه بالموقع', style: AppTypography.body),
                     Text(
-                      'إشعار العميل عند اقترابه من متجرك',
+                      'إشعار العميل عند اقترابه من أحد فروعك',
                       style: AppTypography.caption
                           .copyWith(color: AppColors.textTertiary),
                     ),
@@ -2116,173 +2116,28 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
           if (_locationEnabled) ...[
             const SizedBox(height: 16),
             const Divider(),
-            const SizedBox(height: 16),
-
-            // === GPS Coordinates ===
+            const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: _latitude != null
-                    ? Colors.green.withOpacity(0.05)
-                    : AppColors.surface,
+                color: Colors.blue.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: _latitude != null
-                      ? Colors.green.withOpacity(0.3)
-                      : AppColors.border,
-                ),
+                border: Border.all(color: Colors.blue.withOpacity(0.2)),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      Icon(LucideIcons.mapPin,
-                          size: 18,
-                          color: _latitude != null
-                              ? Colors.green
-                              : AppColors.textSecondary),
-                      const SizedBox(width: 8),
-                      Text('إحداثيات الموقع',
-                          style: AppTypography.label.copyWith(
-                            color: _latitude != null
-                                ? Colors.green.shade700
-                                : AppColors.textPrimary,
-                          )),
-                      const Spacer(),
-                      if (_latitude != null)
-                        IconButton(
-                          icon: Icon(LucideIcons.x,
-                              size: 16, color: Colors.red.shade400),
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.zero,
-                          onPressed: () => setState(() {
-                            _latitude = null;
-                            _longitude = null;
-                          }),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  if (_latitude != null && _longitude != null)
-                    Text(
-                      '${_latitude!.toStringAsFixed(6)}, ${_longitude!.toStringAsFixed(6)}',
-                      style: AppTypography.caption
-                          .copyWith(color: Colors.green.shade700),
-                    )
-                  else
-                    Text(
-                      'لم يتم تحديد الموقع بعد',
-                      style: AppTypography.caption
-                          .copyWith(color: AppColors.textTertiary),
-                    ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _getCurrentLocation,
-                      icon: Icon(
-                        _latitude != null
-                            ? LucideIcons.refreshCw
-                            : LucideIcons.locateFixed,
-                        size: 16,
-                      ),
-                      label: Text(_latitude != null
-                          ? 'تحديث الموقع'
-                          : 'تحديد موقعي الحالي'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                        side: BorderSide(color: AppColors.primary),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
+                  Icon(LucideIcons.info, size: 20, color: Colors.blue),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'يتم تحديد المواقع ورسائل الاقتراب من الإعدادات ← الفروع.\n'
+                      'أضف فروعك مع إحداثيات GPS ورسالة الاقتراب من هناك.',
+                      style: AppTypography.caption.copyWith(color: Colors.blue.shade700),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-
-            // Radius selector
-            Row(
-              children: [
-                Icon(LucideIcons.radar,
-                    size: 20, color: AppColors.textSecondary),
-                const SizedBox(width: 12),
-                Text('نطاق التنبيه:', style: AppTypography.body),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Wrap(
-                    spacing: 8,
-                    children: [50, 100, 200, 500].map((radius) {
-                      final isSelected = _locationRadius == radius;
-                      return ChoiceChip(
-                        label: Text('$radius م'),
-                        selected: isSelected,
-                        onSelected: (_) =>
-                            setState(() => _locationRadius = radius),
-                        selectedColor: AppColors.primary,
-                        labelStyle: TextStyle(
-                          color:
-                              isSelected ? Colors.white : AppColors.textPrimary,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Location name input
-            _buildTextField(
-              controller: _locationNameController,
-              label: 'اسم الموقع',
-              hint: 'مثال: الفرع الرئيسي',
-              icon: LucideIcons.building,
-            ),
-            const SizedBox(height: 16),
-
-            // === Location Message (relevantText) ===
-            _buildTextField(
-              controller: _locationMessageController,
-              label: 'رسالة الإشعار عند الاقتراب',
-              hint: 'مثال: مرحباً! لديك طوابع بانتظارك 🎁',
-              icon: LucideIcons.messageSquare,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'هذه الرسالة تظهر على شاشة القفل عند اقتراب العميل من موقعك',
-              style:
-                  AppTypography.caption.copyWith(color: AppColors.textTertiary),
-            ),
-            const SizedBox(height: 16),
-
-            // === Test Button ===
-            if (widget.programId != null) ...[
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: _testLocationNotification,
-                  icon: const Icon(LucideIcons.bellRing, size: 18),
-                  label: const Text('اختبار الإشعار'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.orange.shade700,
-                    side: BorderSide(color: Colors.orange.shade300),
-                    backgroundColor: Colors.orange.withOpacity(0.05),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'يقوم بتحديث البطاقات لجميع العملاء لتفعيل إشعار الموقع',
-                style:
-                    AppTypography.caption.copyWith(color: AppColors.textTertiary),
-              ),
-            ],
           ],
         ],
       ),

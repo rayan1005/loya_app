@@ -181,7 +181,16 @@ class AppConfig {
     if (isAdminPhone(businessPhone)) {
       return 'advanced'; // Full access for admin phones
     }
-    return businessPlan ?? 'free';
+    // Map IAP plan names to config plan names
+    final plan = businessPlan ?? 'free';
+    switch (plan) {
+      case 'pro':
+        return 'growth';
+      case 'business':
+        return 'advanced';
+      default:
+        return plan;
+    }
   }
 
   /// Get minimum plan required for a feature

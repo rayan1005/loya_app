@@ -141,35 +141,90 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
     return Card(
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(LucideIcons.mapPin, color: AppColors.primary),
-        ),
-        title: Text(location.name, style: AppTypography.titleMedium),
-        subtitle: Text(
-          location.isActive ? 'نشط' : 'غير نشط',
-          style: TextStyle(
-            color: location.isActive ? Colors.green : Colors.red,
-            fontSize: 12,
-          ),
-        ),
-        trailing: PopupMenuButton<String>(
-          icon: const Icon(LucideIcons.moreVertical),
-          onSelected: (value) => _handleLocationAction(value, location),
-          itemBuilder: (context) => [
-            const PopupMenuItem(value: 'edit', child: Text('تعديل')),
-            PopupMenuItem(
-              value: location.isActive ? 'disable' : 'enable',
-              child: Text(location.isActive ? 'إيقاف' : 'تفعيل'),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(LucideIcons.mapPin, color: AppColors.primary),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(location.name, style: AppTypography.titleMedium),
+                      const SizedBox(height: 2),
+                      Text(
+                        location.isActive ? 'نشط' : 'غير نشط',
+                        style: TextStyle(
+                          color: location.isActive ? Colors.green : Colors.red,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(LucideIcons.moreVertical),
+                  onSelected: (value) => _handleLocationAction(value, location),
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(value: 'edit', child: Text('تعديل')),
+                    PopupMenuItem(
+                      value: location.isActive ? 'disable' : 'enable',
+                      child: Text(location.isActive ? 'إيقاف' : 'تفعيل'),
+                    ),
+                    const PopupMenuItem(value: 'delete', child: Text('حذف')),
+                  ],
+                ),
+              ],
             ),
-            const PopupMenuItem(value: 'delete', child: Text('حذف')),
+            if (location.notificationMessage != null && location.notificationMessage!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.withOpacity(0.2)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(LucideIcons.messageSquare, size: 16, color: Colors.blue),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        location.notificationMessage!,
+                        style: AppTypography.caption.copyWith(color: Colors.blue.shade700),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            if (location.latitude != null && location.longitude != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(LucideIcons.locateFixed, size: 14, color: AppColors.textTertiary),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${location.latitude!.toStringAsFixed(4)}, ${location.longitude!.toStringAsFixed(4)} • ${location.geofenceRadius}م',
+                    style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -231,6 +286,7 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
     final nameController = TextEditingController();
     final addressController = TextEditingController();
     final phoneController = TextEditingController();
+    final notificationMsgController = TextEditingController();
     int radius = 100;
     double? latitude;
     double? longitude;
@@ -487,6 +543,19 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                       Text('$radiusم'),
                     ],
                   ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: notificationMsgController,
+                    decoration: InputDecoration(
+                      labelText: 'رسالة الاقتراب (اختياري)',
+                      hintText: 'مثال: مرحباً! اجمع نقاطك عند زيارتنا',
+                      prefixIcon: const Icon(LucideIcons.messageSquare),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      helperText: 'تظهر على شاشة القفل عند اقتراب العميل',
+                    ),
+                    maxLines: 2,
+                  ),
                 ],
               ),
             ),
@@ -520,6 +589,9 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                     'latitude': latitude,
                     'longitude': longitude,
                     'geofenceRadius': radius,
+                    'notificationMessage': notificationMsgController.text.trim().isEmpty
+                        ? null
+                        : notificationMsgController.text.trim(),
                     'isActive': true,
                     'createdAt': FieldValue.serverTimestamp(),
                   });
@@ -1084,6 +1156,7 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
     final nameController = TextEditingController(text: location.name);
     final addressController = TextEditingController(text: location.address);
     final phoneController = TextEditingController(text: location.phone);
+    final notificationMsgController = TextEditingController(text: location.notificationMessage);
     int radius = location.geofenceRadius;
 
     showDialog(
@@ -1150,6 +1223,19 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                     Text('$radiusم'),
                   ],
                 ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: notificationMsgController,
+                  decoration: InputDecoration(
+                    labelText: 'رسالة الاقتراب (اختياري)',
+                    hintText: 'مثال: مرحباً! اجمع نقاطك عند زيارتنا',
+                    prefixIcon: const Icon(LucideIcons.messageSquare),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    helperText: 'تظهر على شاشة القفل عند اقتراب العميل',
+                  ),
+                  maxLines: 2,
+                ),
               ],
             ),
           ),
@@ -1172,6 +1258,9 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                       ? null
                       : phoneController.text.trim(),
                   'geofenceRadius': radius,
+                  'notificationMessage': notificationMsgController.text.trim().isEmpty
+                      ? null
+                      : notificationMsgController.text.trim(),
                 });
 
                 if (context.mounted) Navigator.pop(context);

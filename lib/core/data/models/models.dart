@@ -587,6 +587,7 @@ class LoyaltyProgram {
       // Location engagement
       'locationEnabled': locationEnabled,
       'locationRadius': locationRadius,
+      'locationMessage': locationMessage,
       // Stamp display
       'useStampOpacity': useStampOpacity,
       // Pass field config
@@ -640,6 +641,7 @@ class LoyaltyProgram {
       // Location engagement
       'locationEnabled': locationEnabled,
       'locationRadius': locationRadius,
+      if (locationMessage != null) 'locationMessage': locationMessage,
       // Stamp display
       'useStampOpacity': useStampOpacity,
       // Pass field config
@@ -1248,6 +1250,7 @@ class BusinessLocation {
   final int geofenceRadius; // بالمتر للرسائل الموقعية
   final String? phone;
   final String? email;
+  final String? notificationMessage; // رسالة الاقتراب من الموقع
   final bool isActive;
   final DateTime createdAt;
 
@@ -1262,6 +1265,7 @@ class BusinessLocation {
     this.geofenceRadius = 100,
     this.phone,
     this.email,
+    this.notificationMessage,
     this.isActive = true,
     required this.createdAt,
   });
@@ -1279,6 +1283,7 @@ class BusinessLocation {
       geofenceRadius: data['geofenceRadius'] ?? 100,
       phone: data['phone'],
       email: data['email'],
+      notificationMessage: data['notificationMessage'],
       isActive: data['isActive'] ?? true,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -1295,6 +1300,7 @@ class BusinessLocation {
       'geofenceRadius': geofenceRadius,
       if (phone != null) 'phone': phone,
       if (email != null) 'email': email,
+      if (notificationMessage != null) 'notificationMessage': notificationMessage,
       'isActive': isActive,
       'createdAt': Timestamp.fromDate(createdAt),
     };
