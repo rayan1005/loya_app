@@ -448,23 +448,25 @@ class PassPreviewWidget extends StatelessWidget {
                 .where((f) => f.key != 'stamps')
                 .map((field) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            field.label,
-                            style: TextStyle(
-                              color: labelColor.withValues(alpha: 0.7),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
+                          if (field.label.isNotEmpty)
+                            Text(
+                              field.label,
+                              style: TextStyle(
+                                color: labelColor.withValues(alpha: 0.7),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
                           Text(
                             field.value,
                             style: TextStyle(
                               color: foregroundColor,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],

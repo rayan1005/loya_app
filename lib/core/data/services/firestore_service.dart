@@ -15,7 +15,7 @@ class FirestoreService {
       _db.collection('customers');
 
   CollectionReference<Map<String, dynamic>> get _progressRef =>
-      _db.collection('customerProgress');
+      _db.collection('customer_progress');
 
   CollectionReference<Map<String, dynamic>> get _activityRef =>
       _db.collection('activity_log');
@@ -535,8 +535,6 @@ class FirestoreService {
         'newCustomers': newCustomers,
       };
     } catch (e) {
-      // Log error and return zeros to prevent crash
-      print('getAnalytics error: $e');
       return {
         'totalStamps': 0,
         'totalRewards': 0,
@@ -547,6 +545,22 @@ class FirestoreService {
 
   // ==================== Program Stats ====================
 
+  /// Get count of unique customers across all programs for a business
+  Future<int> getUniqueCustomerCount(String businessId) async {
+    try {
+      final query = await _progressRef
+          .where('businessId', isEqualTo: businessId)
+          .get();
+      final uniqueCustomerIds = query.docs
+          .map((doc) => doc.data()['customerId'] as String?)
+          .where((id) => id != null)
+          .toSet();
+      return uniqueCustomerIds.length;
+    } catch (e) {
+      return 0;
+    }
+  }
+
   /// Get count of unique customers enrolled in a specific program
   Future<int> getProgramCustomersCount(String businessId, String programId) async {
     try {
@@ -556,7 +570,6 @@ class FirestoreService {
           .get();
       return query.docs.length;
     } catch (e) {
-      print('getProgramCustomersCount error: $e');
       return 0;
     }
   }
@@ -599,7 +612,6 @@ class FirestoreService {
         }
         return count;
       } catch (e2) {
-        print('getProgramTodayStamps fallback error: $e2');
         return 0;
       }
     }

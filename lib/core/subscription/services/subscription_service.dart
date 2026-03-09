@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
@@ -208,6 +209,12 @@ class SubscriptionService {
         return false;
       }
 
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        debugPrint('Error: No authenticated user for purchase delivery');
+        return false;
+      }
+
       final planType = PlanType.fromProductId(purchase.productID);
       final isYearly = purchase.productID.contains('yearly');
 
@@ -219,23 +226,35 @@ class SubscriptionService {
 
       debugPrint('Delivering purchase: planType=$planType, isYearly=$isYearly, businessId=$businessId, ends: $endDate');
 
-      // Save subscription to Firestore
-      final subscription = Subscription(
-        id: '',
-        businessId: businessId,
-        planType: planType,
-        isActive: true,
-        startDate: now,
-        endDate: endDate,
-        isTrial: false,
-        appleProductId: purchase.productID,
-        appleTransactionId: purchase.purchaseID ?? '',
-        appleOriginalTransactionId: purchase.purchaseID ?? '',
-        createdAt: now,
-        updatedAt: now,
-      );
+      // Deactivate any existing active subscriptions for this business
+      final existingSubs = await _firestore
+          .collection('subscriptions')
+          .where('businessId', isEqualTo: businessId)
+          .where('isActive', isEqualTo: true)
+          .get();
+      for (final doc in existingSubs.docs) {
+        await doc.reference.update({'isActive': false, 'updatedAt': FieldValue.serverTimestamp()});
+      }
 
-      await saveSubscription(subscription);
+      // Save new subscription to Firestore
+      final data = {
+        'businessId': businessId,
+        'ownerId': userId,
+        'planType': planType.name,
+        'isActive': true,
+        'startDate': Timestamp.fromDate(now),
+        'endDate': Timestamp.fromDate(endDate),
+        'isTrial': false,
+        'appleProductId': purchase.productID,
+        'appleTransactionId': purchase.purchaseID ?? '',
+        'appleOriginalTransactionId': purchase.purchaseID ?? '',
+        'createdAt': Timestamp.fromDate(now),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'stampsUsedThisMonth': 0,
+        'pushNotificationsSentThisMonth': 0,
+      };
+
+      await _firestore.collection('subscriptions').add(data);
 
       // Also update the business plan field for backward compatibility
       await _firestore.collection('businesses').doc(businessId).update({

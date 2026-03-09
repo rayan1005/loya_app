@@ -292,12 +292,14 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
       String? customerId;
       String? phone;
       String? programId;
+      String? serialNumber;
 
       if (qrData != null) {
         // JSON format from pass
         customerId = qrData['customerId'] as String?;
         phone = qrData['phone'] as String?;
         programId = qrData['programId'] as String?;
+        serialNumber = qrData['serial'] as String?;
       } else if (code.startsWith('http://') || code.startsWith('https://')) {
         // URL format - extract parameters
         // QR format: https://loya.live/add-stamp?uid=XXX&program=YYY&serial=ZZZ
@@ -309,6 +311,7 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
               uri.queryParameters['pid'] ??
               uri.queryParameters['programId'];
           phone = uri.queryParameters['phone'];
+          serialNumber = uri.queryParameters['serial'];
 
           // Also check path segments for short URL format: /s/CUSTOMER_ID
           if (customerId == null &&
@@ -329,27 +332,129 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
       // SCAN → IDENTIFY → SHOW DATA → ENABLE ACTIONS
 
       if (customerId != null) {
-        // Verify customer belongs to this business
-        final customerDoc = await FirebaseFirestore.instance
+        // customerId from QR could be Firebase Auth UID (not Firestore doc ID)
+        // Try direct lookup first, then fall back to wallet_passes resolution
+        var customerDoc = await FirebaseFirestore.instance
             .collection('customers')
             .doc(customerId)
             .get();
 
+        String? resolvedCustomerId = customerId;
+
         if (!customerDoc.exists) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('العميل غير موجود'),
-                backgroundColor: Colors.red,
-              ),
-            );
+          // customerId is likely a Firebase Auth UID, not a Firestore doc ID
+          // Look up via wallet_passes to find the customer phone
+          QuerySnapshot? walletQuery;
+          
+          if (serialNumber != null) {
+            // Try direct serial lookup (doc ID = serial number)
+            final serialDoc = await FirebaseFirestore.instance
+                .collection('wallet_passes')
+                .doc(serialNumber)
+                .get();
+            if (serialDoc.exists) {
+              phone = (serialDoc.data() as Map<String, dynamic>?)?['phone'] as String?;
+            }
           }
-          setState(() => _isProcessing = false);
-          return;
+          
+          if (phone == null) {
+            // Fall back to querying by user_id
+            walletQuery = await FirebaseFirestore.instance
+                .collection('wallet_passes')
+                .where('user_id', isEqualTo: customerId)
+                .limit(1)
+                .get();
+            if (walletQuery.docs.isNotEmpty) {
+              phone = (walletQuery.docs.first.data() as Map<String, dynamic>)['phone'] as String?;
+            }
+          }
+
+          if (phone != null) {
+            // Find customer by phone + businessId
+            final customerByPhone = await FirebaseFirestore.instance
+                .collection('customers')
+                .where('businessId', isEqualTo: businessId)
+                .where('phone', isEqualTo: phone)
+                .limit(1)
+                .get();
+            
+            if (customerByPhone.docs.isNotEmpty) {
+              customerDoc = customerByPhone.docs.first;
+              resolvedCustomerId = customerDoc.id;
+            }
+          }
+          
+          if (!customerDoc.exists) {
+            // Still not found - try looking up customer by firebaseUid field
+            final byUidQuery = await FirebaseFirestore.instance
+                .collection('customers')
+                .where('firebaseUid', isEqualTo: customerId)
+                .limit(1)
+                .get();
+            
+            if (byUidQuery.docs.isNotEmpty) {
+              customerDoc = byUidQuery.docs.first;
+              resolvedCustomerId = customerDoc.id;
+            } else {
+              // Last resort: try customer_progress
+              final progressQuery = await FirebaseFirestore.instance
+                  .collection('customer_progress')
+                  .where('customerId', isEqualTo: customerId)
+                  .limit(1)
+                  .get();
+              
+              if (progressQuery.docs.isNotEmpty) {
+                resolvedCustomerId = customerId;
+                final targetProgramId = programId ?? 
+                    (progressQuery.docs.first.data()['programId'] as String?) ?? 
+                    _selectedProgramId;
+                if (mounted) {
+                  String route = '/customer-action/$resolvedCustomerId';
+                  if (targetProgramId != null) {
+                    route += '?programId=$targetProgramId';
+                  }
+                  context.push(route);
+                }
+                setState(() => _isProcessing = false);
+                return;
+              }
+              
+              // If program is valid for this business, prompt to use phone instead
+              if (programId != null) {
+                final programDoc = await FirebaseFirestore.instance
+                    .collection('programs')
+                    .doc(programId)
+                    .get();
+                if (programDoc.exists && programDoc.data()?['businessId'] == businessId) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('لم يتم العثور على العميل - استخدم رقم الهاتف'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                  }
+                  setState(() => _isProcessing = false);
+                  return;
+                }
+              }
+              
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('العميل غير موجود'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+              setState(() => _isProcessing = false);
+              return;
+            }
+          }
         }
 
-        final customerData = customerDoc.data()!;
-        final customerBusinessId = customerData['businessId'] as String?;
+        final customerData = customerDoc.data() as Map<String, dynamic>?;
+        final customerBusinessId = customerData?['businessId'] as String?;
 
         // Verify customer belongs to THIS business
         if (customerBusinessId != null && customerBusinessId != businessId) {
@@ -370,7 +475,7 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
 
         // Navigate to Customer Action Screen
         if (mounted) {
-          String route = '/customer-action/$customerId';
+          String route = '/customer-action/$resolvedCustomerId';
           if (targetProgramId != null) {
             route += '?programId=$targetProgramId';
           }

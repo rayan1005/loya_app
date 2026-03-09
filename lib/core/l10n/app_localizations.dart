@@ -187,6 +187,7 @@ class AppLocalizations {
       'analytics_subtitle': 'تحليلات أداء متجرك',
       'total_stamps': 'إجمالي الطوابع',
       'rewards_given': 'المكافآت الممنوحة',
+      'active_customers': 'العملاء النشطين',
       'return_rate': 'معدل العودة',
       'stamps_over_time': 'الطوابع عبر الزمن',
       'customer_distribution': 'توزيع العملاء',
@@ -358,6 +359,8 @@ class AppLocalizations {
       'pending_invites': 'الدعوات المعلقة',
 
       // Referral Program
+      'referral_program': 'برنامج الإحالات',
+      'referral_program_desc': 'كافئ العملاء على دعوة أصدقائهم',
       'referral_reward': 'مكافأة الإحالة',
       'referrer_bonus': 'مكافأة المُحيل',
       'referee_bonus': 'مكافأة المُحال',
@@ -566,6 +569,7 @@ class AppLocalizations {
       'analytics_subtitle': 'Track your store performance',
       'total_stamps': 'Total Stamps',
       'rewards_given': 'Rewards Given',
+      'active_customers': 'Active Customers',
       'return_rate': 'Return Rate',
       'stamps_over_time': 'Stamps Over Time',
       'customer_distribution': 'Customer Distribution',

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -110,6 +111,7 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
   // === LOCATION ENGAGEMENT ===
   bool _locationEnabled = false;
   int _locationRadius = 100; // Default 100m
+  final _locationMessageController = TextEditingController();
 
   // === STAMP DISPLAY ===
   bool _useStampOpacity = true; // Default: opacity mode
@@ -237,6 +239,7 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
           // Location engagement
           _locationEnabled = program.locationEnabled;
           _locationRadius = program.locationRadius;
+          _locationMessageController.text = program.locationMessage ?? '';
 
           // Stamp display
           _useStampOpacity = program.useStampOpacity;
@@ -273,6 +276,7 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
     _emailController.dispose();
     _addressController.dispose();
     _locationNameController.dispose();
+    _locationMessageController.dispose();
     _stampsLabelController.dispose();
     _customerNameLabelController.dispose();
     _rewardsLabelController.dispose();
@@ -345,12 +349,12 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
       children: [
         // Editor Panel
         Expanded(
-          flex: 3,
+          flex: 1,
           child: _buildEditorPanel(),
         ),
         // Preview Panel
         Expanded(
-          flex: 2,
+          flex: 1,
           child: _buildPreviewPanel(),
         ),
       ],
@@ -360,14 +364,16 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
   Widget _buildMobileLayout() {
     return Column(
       children: [
-        // Compact Preview
-        Container(
-          height: 200,
-          color: Colors.grey[100],
+        // Preview - takes enough space to show the pass
+        Expanded(
+          flex: 2,
           child: _buildPreviewPanel(),
         ),
         // Editor
-        Expanded(child: _buildEditorPanel()),
+        Expanded(
+          flex: 3,
+          child: _buildEditorPanel(),
+        ),
       ],
     );
   }
@@ -1624,6 +1630,7 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
             const SizedBox(height: 12),
             TextFormField(
               controller: config.labelController,
+              onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 labelText: 'اسم الحقل (بالإنجليزية)',
                 hintText: config.labelHint,
@@ -1711,6 +1718,7 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
             const SizedBox(height: 12),
             TextFormField(
               controller: config.labelController,
+              onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 labelText: 'اسم الحقل (بالإنجليزية)',
                 hintText: config.labelHint,
@@ -1822,6 +1830,7 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
             const SizedBox(height: 12),
             TextFormField(
               controller: labelController,
+              onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 labelText: 'اسم الحقل (بالإنجليزية)',
                 hintText: labelHint,
@@ -2079,6 +2088,7 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
         border: Border.all(color: AppColors.divider),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Enable toggle
           Row(
@@ -2107,6 +2117,92 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 16),
+
+            // === GPS Coordinates ===
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _latitude != null
+                    ? Colors.green.withOpacity(0.05)
+                    : AppColors.surface,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: _latitude != null
+                      ? Colors.green.withOpacity(0.3)
+                      : AppColors.border,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(LucideIcons.mapPin,
+                          size: 18,
+                          color: _latitude != null
+                              ? Colors.green
+                              : AppColors.textSecondary),
+                      const SizedBox(width: 8),
+                      Text('إحداثيات الموقع',
+                          style: AppTypography.label.copyWith(
+                            color: _latitude != null
+                                ? Colors.green.shade700
+                                : AppColors.textPrimary,
+                          )),
+                      const Spacer(),
+                      if (_latitude != null)
+                        IconButton(
+                          icon: Icon(LucideIcons.x,
+                              size: 16, color: Colors.red.shade400),
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.zero,
+                          onPressed: () => setState(() {
+                            _latitude = null;
+                            _longitude = null;
+                          }),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  if (_latitude != null && _longitude != null)
+                    Text(
+                      '${_latitude!.toStringAsFixed(6)}, ${_longitude!.toStringAsFixed(6)}',
+                      style: AppTypography.caption
+                          .copyWith(color: Colors.green.shade700),
+                    )
+                  else
+                    Text(
+                      'لم يتم تحديد الموقع بعد',
+                      style: AppTypography.caption
+                          .copyWith(color: AppColors.textTertiary),
+                    ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _getCurrentLocation,
+                      icon: Icon(
+                        _latitude != null
+                            ? LucideIcons.refreshCw
+                            : LucideIcons.locateFixed,
+                        size: 16,
+                      ),
+                      label: Text(_latitude != null
+                          ? 'تحديث الموقع'
+                          : 'تحديد موقعي الحالي'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: BorderSide(color: AppColors.primary),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
             // Radius selector
             Row(
               children: [
@@ -2137,23 +2233,159 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
               ],
             ),
             const SizedBox(height: 16),
-            // Location name input (use existing controller)
+
+            // Location name input
             _buildTextField(
               controller: _locationNameController,
               label: 'اسم الموقع',
               hint: 'مثال: الفرع الرئيسي',
               icon: LucideIcons.building,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
+
+            // === Location Message (relevantText) ===
+            _buildTextField(
+              controller: _locationMessageController,
+              label: 'رسالة الإشعار عند الاقتراب',
+              hint: 'مثال: مرحباً! لديك طوابع بانتظارك 🎁',
+              icon: LucideIcons.messageSquare,
+            ),
+            const SizedBox(height: 6),
             Text(
-              'ملاحظة: يجب تحديد إحداثيات الموقع في إعدادات البرنامج',
+              'هذه الرسالة تظهر على شاشة القفل عند اقتراب العميل من موقعك',
               style:
                   AppTypography.caption.copyWith(color: AppColors.textTertiary),
             ),
+            const SizedBox(height: 16),
+
+            // === Test Button ===
+            if (widget.programId != null) ...[
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _testLocationNotification,
+                  icon: const Icon(LucideIcons.bellRing, size: 18),
+                  label: const Text('اختبار الإشعار'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.orange.shade700,
+                    side: BorderSide(color: Colors.orange.shade300),
+                    backgroundColor: Colors.orange.withOpacity(0.05),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'يقوم بتحديث البطاقات لجميع العملاء لتفعيل إشعار الموقع',
+                style:
+                    AppTypography.caption.copyWith(color: AppColors.textTertiary),
+              ),
+            ],
           ],
         ],
       ),
     );
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      // Check permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('يجب السماح بالوصول للموقع'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          return;
+        }
+      }
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('تم رفض الوصول للموقع نهائياً - يرجى تفعيله من الإعدادات'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      setState(() {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('تم تحديد الموقع: ${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطأ في تحديد الموقع: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _testLocationNotification() async {
+    if (widget.programId == null) return;
+
+    // First save the program to ensure location data is persisted
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('جاري تحديث البطاقات وإرسال الإشعار...'),
+          backgroundColor: Colors.blue,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      final apiService = ApiService();
+      final result = await apiService.testLocationPush(
+        programId: widget.programId!,
+      );
+
+      if (mounted) {
+        final updated = result['updated'] ?? 0;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('تم تحديث $updated بطاقة - سيظهر الإشعار عند الاقتراب من الموقع'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطأ: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   // === STAMP DISPLAY ===
@@ -2428,6 +2660,9 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
         // Location engagement
         locationEnabled: _locationEnabled,
         locationRadius: _locationRadius,
+        locationMessage: _locationMessageController.text.trim().isEmpty
+            ? null
+            : _locationMessageController.text.trim(),
         // Stamp display
         useStampOpacity: _useStampOpacity,
       );

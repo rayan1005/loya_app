@@ -407,6 +407,7 @@ class LoyaltyProgram {
   // === LOCATION ENGAGEMENT ===
   final bool locationEnabled; // Enable geofence notifications
   final int locationRadius; // Radius in meters (50, 100, 200, 500)
+  final String? locationMessage; // Lock screen notification text (relevantText)
 
   // === STAMP DISPLAY OPTIONS ===
   final bool
@@ -461,6 +462,7 @@ class LoyaltyProgram {
     // Location engagement
     this.locationEnabled = false,
     this.locationRadius = 100,
+    this.locationMessage,
     // Stamp display
     this.useStampOpacity = true,
     // Pass field config
@@ -527,6 +529,7 @@ class LoyaltyProgram {
       // Location engagement
       locationEnabled: data['locationEnabled'] ?? false,
       locationRadius: data['locationRadius'] ?? 100,
+      locationMessage: data['locationMessage'],
       // Stamp display
       useStampOpacity: data['useStampOpacity'] ?? true,
       // Pass field config
@@ -682,6 +685,7 @@ class LoyaltyProgram {
     List<CustomFieldDefinition>? customFields,
     bool? locationEnabled,
     int? locationRadius,
+    String? locationMessage,
     bool? useStampOpacity,
     PassFieldConfig? passFieldConfig,
   }) {
@@ -723,6 +727,7 @@ class LoyaltyProgram {
       customFields: customFields ?? this.customFields,
       locationEnabled: locationEnabled ?? this.locationEnabled,
       locationRadius: locationRadius ?? this.locationRadius,
+      locationMessage: locationMessage ?? this.locationMessage,
       useStampOpacity: useStampOpacity ?? this.useStampOpacity,
       passFieldConfig: passFieldConfig ?? this.passFieldConfig,
     );

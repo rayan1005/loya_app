@@ -68,6 +68,13 @@ final dashboardStatsProvider = FutureProvider<Map<String, int>>((ref) async {
   final programs = await service.getPrograms(businessId);
   final customers = await service.getCustomers(businessId);
 
+  // Also count unique customers from customerProgress (join page customers)
+  final progressCustomers = await service.getUniqueCustomerCount(businessId);
+  // Use the higher of the two counts
+  final totalCustomers = progressCustomers > customers.length 
+      ? progressCustomers 
+      : customers.length;
+
   // Get today's activity
   final now = DateTime.now();
   final startOfDay = DateTime(now.year, now.month, now.day);
@@ -78,7 +85,7 @@ final dashboardStatsProvider = FutureProvider<Map<String, int>>((ref) async {
   );
 
   return {
-    'totalCustomers': customers.length,
+    'totalCustomers': totalCustomers,
     'activePrograms': programs.where((p) => p.isActive).length,
     'stampsToday': analytics['totalStamps'] ?? 0,
     'rewardsIssued': analytics['totalRewards'] ?? 0,

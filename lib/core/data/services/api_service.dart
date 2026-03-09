@@ -316,4 +316,11 @@ class ApiService {
       'failed': totalFailed,
     };
   }
+
+  /// Test location notification by pushing wallet update to all passes of a program
+  Future<Map<String, dynamic>> testLocationPush({
+    required String programId,
+  }) async {
+    return refreshProgramPasses(programId: programId);
+  }
 }

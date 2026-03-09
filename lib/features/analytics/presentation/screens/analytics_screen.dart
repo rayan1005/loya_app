@@ -177,10 +177,30 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               .where('businessId', isEqualTo: businessId)
               .snapshots(),
           builder: (context, customersSnapshot) {
+            // Also count from customerProgress collection
+            return StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('customer_progress')
+                  .where('businessId', isEqualTo: businessId)
+                  .snapshots(),
+              builder: (context, progressSnapshot) {
             // Calculate stats from real data
             int totalStamps = 0;
             int totalRewards = 0;
-            int totalCustomers = customersSnapshot.data?.docs.length ?? 0;
+            
+            // Count customers from both collections
+            final customersCount = customersSnapshot.data?.docs.length ?? 0;
+            final progressCustomerIds = <String>{};
+            if (progressSnapshot.hasData) {
+              for (var doc in progressSnapshot.data!.docs) {
+                final data = doc.data() as Map<String, dynamic>;
+                final customerId = data['customerId'] as String?;
+                if (customerId != null) progressCustomerIds.add(customerId);
+              }
+            }
+            int totalCustomers = progressCustomerIds.length > customersCount
+                ? progressCustomerIds.length
+                : customersCount;
 
             if (activitySnapshot.hasData) {
               for (var doc in activitySnapshot.data!.docs) {
@@ -200,9 +220,16 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               }
             }
 
-            // Calculate return rate (customers with more than 1 visit)
+            // Calculate return rate from customerProgress stamps > stampsRequired threshold
             int returningCustomers = 0;
-            if (customersSnapshot.hasData) {
+            if (progressSnapshot.hasData) {
+              for (var doc in progressSnapshot.data!.docs) {
+                final data = doc.data() as Map<String, dynamic>;
+                if ((data['stamps'] ?? 0) > 1) {
+                  returningCustomers++;
+                }
+              }
+            } else if (customersSnapshot.hasData) {
               for (var doc in customersSnapshot.data!.docs) {
                 final data = doc.data() as Map<String, dynamic>;
                 if ((data['totalVisits'] ?? 0) > 1) {
@@ -280,6 +307,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                         ),
                       ))
                   .toList(),
+            );
+              },
             );
           },
         );

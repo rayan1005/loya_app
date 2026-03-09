@@ -203,18 +203,15 @@ service cloud.firestore {
     }
     
     // Subscriptions collection (for billing/plans)
-    match /subscriptions/{businessId} {
-      // Allow read for authenticated users who own this subscription
-      allow read: if isAuthenticated() 
-        && resource.data.userId == request.auth.uid;
+    match /subscriptions/{subscriptionId} {
+      // Allow read/list for authenticated users (filtered by businessId in query)
+      allow read, list: if isAuthenticated();
       
-      // Allow create for authenticated users (initial subscription)
-      allow create: if isAuthenticated() 
-        && request.resource.data.userId == request.auth.uid;
+      // Allow create for authenticated users (from IAP purchase)
+      allow create: if isAuthenticated();
       
-      // Allow update for owner (to update usage, etc.)
-      allow update: if isAuthenticated() 
-        && resource.data.userId == request.auth.uid;
+      // Allow update for authenticated users (usage tracking, etc.)
+      allow update: if isAuthenticated();
       
       // No delete allowed
       allow delete: if false;
