@@ -21,12 +21,23 @@ final subscriptionProvider = StreamProvider<Subscription?>((ref) {
       .collection('subscriptions')
       .where('businessId', isEqualTo: business.id)
       .where('isActive', isEqualTo: true)
-      .orderBy('createdAt', descending: true)
       .limit(1)
       .snapshots()
       .map((snapshot) {
     if (snapshot.docs.isEmpty) {
-      // Return a default free subscription
+      // Fallback: check business doc plan field
+      final businessPlan = business.plan;
+      if (businessPlan != null && businessPlan != 'free') {
+        final planType = PlanType.fromString(businessPlan);
+        return Subscription(
+          id: '',
+          businessId: business.id,
+          planType: planType,
+          isActive: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+      }
       return Subscription.free(business.id);
     }
     return Subscription.fromFirestore(snapshot.docs.first);

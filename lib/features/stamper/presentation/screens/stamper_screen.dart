@@ -370,17 +370,29 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
           }
 
           if (phone != null) {
-            // Find customer by phone + businessId
-            final customerByPhone = await FirebaseFirestore.instance
-                .collection('customers')
-                .where('businessId', isEqualTo: businessId)
-                .where('phone', isEqualTo: phone)
-                .limit(1)
-                .get();
+            // Find customer by phone + businessId (try multiple formats)
+            final phoneDigits = phone.replaceAll(RegExp(r'\D'), '');
+            final last9 = phoneDigits.length >= 9 ? phoneDigits.substring(phoneDigits.length - 9) : phoneDigits;
+            final phoneVariants = <String>{
+              phone,
+              '+966$last9',
+              '0$last9',
+              last9,
+            };
             
-            if (customerByPhone.docs.isNotEmpty) {
-              customerDoc = customerByPhone.docs.first;
-              resolvedCustomerId = customerDoc.id;
+            for (final variant in phoneVariants) {
+              final customerByPhone = await FirebaseFirestore.instance
+                  .collection('customers')
+                  .where('businessId', isEqualTo: businessId)
+                  .where('phone', isEqualTo: variant)
+                  .limit(1)
+                  .get();
+              
+              if (customerByPhone.docs.isNotEmpty) {
+                customerDoc = customerByPhone.docs.first;
+                resolvedCustomerId = customerDoc.id;
+                break;
+              }
             }
           }
           
