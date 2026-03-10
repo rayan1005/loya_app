@@ -294,6 +294,12 @@ class PassPreviewWidget extends StatelessWidget {
       // Use the new pass field config system with priority order
       final config = passFieldConfig!;
       final priorityOrder = fieldPriorityOrder ?? config.fieldPriorityOrder;
+      
+      // Debug: trace label values
+      debugPrint('[PREVIEW] showCustomerName=${config.showCustomerName}, customerNameLabel="${config.customerNameLabel}"');
+      debugPrint('[PREVIEW] showStamps=${config.showStampsRemaining}, stampsLabel="${config.stampsLabel}"');
+      debugPrint('[PREVIEW] showBroadcast=${config.showBroadcastMessage}, broadcastLabel="${config.broadcastLabel}"');
+      debugPrint('[PREVIEW] priorityOrder=$priorityOrder');
 
       // Build field map
       final fieldMap = <String, _PreviewField>{};
@@ -378,6 +384,13 @@ class PassPreviewWidget extends StatelessWidget {
 
     // First 4 fields go on front, rest on back
     final frontFields = previewFields.take(4).toList();
+    
+    // Debug: trace what fields will be shown
+    debugPrint('[PREVIEW] previewFields count=${previewFields.length}');
+    for (final f in previewFields) {
+      debugPrint('[PREVIEW] field: key=${f.key}, label="${f.label}", value="${f.value}"');
+    }
+    debugPrint('[PREVIEW] frontFields (non-stamps): ${frontFields.where((f) => f.key != "stamps").map((f) => "${f.key}:label=${f.label}").toList()}');
 
     return Container(
       padding: const EdgeInsets.all(16),
