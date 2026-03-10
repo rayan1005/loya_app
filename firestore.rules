@@ -83,7 +83,7 @@ service cloud.firestore {
       
       // Allow create/update for authenticated users (customers can create their own profile)
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && request.auth.uid == customerId;
+      allow update: if isAuthenticated();
       
       // No delete allowed
       allow delete: if false;

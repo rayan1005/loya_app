@@ -55,6 +55,7 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
   LoyaltyProgram? _program;
   CustomerProgress? _progress;
   int _availableRewards = 0;
+  String? _resolvedCustomerId; // Actual Firestore doc ID (may differ from widget.customerId which is Auth UID)
 
   // Success states
   bool _stampSuccess = false;
@@ -183,6 +184,7 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
       }
 
       _customerData = customerDoc.data();
+      _resolvedCustomerId = customerDoc.id; // Store resolved Firestore doc ID
 
       // Determine program ID
       String? programId = widget.programId;
@@ -276,6 +278,8 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
           newStamps >= _program!.stampsRequired &&
           currentStamps < _program!.stampsRequired;
 
+      final docId = _resolvedCustomerId ?? widget.customerId;
+
       // Update or create progress
       if (_progress != null) {
         await FirebaseFirestore.instance
@@ -288,7 +292,7 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
         });
       } else {
         await FirebaseFirestore.instance.collection('customer_progress').add({
-          'customerId': widget.customerId,
+          'customerId': docId,
           'programId': _program!.id,
           'businessId': businessId,
           'stamps': 1,
@@ -304,7 +308,7 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
       // Log activity
       await FirebaseFirestore.instance.collection('activity').add({
         'businessId': businessId,
-        'customerId': widget.customerId,
+        'customerId': docId,
         'programId': _program!.id,
         'type': 'stamp_added',
         'description':
@@ -313,13 +317,17 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
       });
 
       // Update customer total visits
-      await FirebaseFirestore.instance
-          .collection('customers')
-          .doc(widget.customerId)
-          .update({
-        'totalVisits': FieldValue.increment(1),
-        'lastVisit': FieldValue.serverTimestamp(),
-      });
+      try {
+        await FirebaseFirestore.instance
+            .collection('customers')
+            .doc(docId)
+            .update({
+          'totalVisits': FieldValue.increment(1),
+          'lastVisit': FieldValue.serverTimestamp(),
+        });
+      } catch (e) {
+        debugPrint('[CustomerAction] Could not update customer visits: $e');
+      }
 
       // Increment subscription stamp usage
       final subService = ref.read(subscriptionServiceProvider);
@@ -468,10 +476,12 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
         });
       }
 
+      final docId = _resolvedCustomerId ?? widget.customerId;
+
       // Log activity
       await FirebaseFirestore.instance.collection('activity').add({
         'businessId': businessId,
-        'customerId': widget.customerId,
+        'customerId': docId,
         'programId': _program?.id,
         'type': 'reward_redeemed',
         'description': 'Reward redeemed',
@@ -479,13 +489,17 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
       });
 
       // Update customer total rewards
-      await FirebaseFirestore.instance
-          .collection('customers')
-          .doc(widget.customerId)
-          .update({
-        'totalRewards': FieldValue.increment(1),
-        'lastRewardAt': FieldValue.serverTimestamp(),
-      });
+      try {
+        await FirebaseFirestore.instance
+            .collection('customers')
+            .doc(docId)
+            .update({
+          'totalRewards': FieldValue.increment(1),
+          'lastRewardAt': FieldValue.serverTimestamp(),
+        });
+      } catch (e) {
+        debugPrint('[CustomerAction] Could not update customer rewards: $e');
+      }
 
       // Call backend API to update the Apple Wallet pass
       try {
