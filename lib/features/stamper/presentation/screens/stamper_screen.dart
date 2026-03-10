@@ -429,7 +429,7 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
           }
         }
 
-        // Determine if program belongs to this business (for error messaging)
+        // Strategy 5: Call backend to resolve via Firebase Auth phone lookup
         if (resolvedCustomerId == null) {
           if (programId != null) {
             final programDoc = await FirebaseFirestore.instance
@@ -437,14 +437,43 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
                 .doc(programId)
                 .get();
             if (programDoc.exists && programDoc.data()?['businessId'] == businessId) {
-              // Program is ours but customer not found - prompt for phone
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('لم يتم العثور على العميل - استخدم رقم الهاتف'),
-                    backgroundColor: Colors.orange,
-                  ),
-                );
+              // Program is ours - ask backend to resolve using admin.auth().getUser()
+              try {
+                final user = FirebaseAuth.instance.currentUser;
+                final idToken = await user?.getIdToken();
+                if (idToken != null) {
+                  final response = await http.post(
+                    Uri.parse('https://api-v4xex7aj3a-uc.a.run.app/api/resolveCustomer'),
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': 'Bearer $idToken',
+                    },
+                    body: jsonEncode({
+                      'uid': customerId,
+                      'businessId': businessId,
+                    }),
+                  );
+                  if (response.statusCode == 200) {
+                    final data = jsonDecode(response.body) as Map<String, dynamic>;
+                    if (data['success'] == true && data['customerId'] != null) {
+                      resolvedCustomerId = data['customerId'] as String;
+                    }
+                  }
+                }
+              } catch (e) {
+                debugPrint('[Stamper] resolveCustomer API error: $e');
+              }
+            
+              // If still not found after backend call, show error
+              if (resolvedCustomerId == null) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('لم يتم العثور على العميل - استخدم رقم الهاتف'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                }
               }
             } else {
               if (mounted) {
@@ -466,8 +495,11 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
               );
             }
           }
-          setState(() => _isProcessing = false);
-          return;
+          
+          if (resolvedCustomerId == null) {
+            setState(() => _isProcessing = false);
+            return;
+          }
         }
 
         // Navigate to Customer Action Screen

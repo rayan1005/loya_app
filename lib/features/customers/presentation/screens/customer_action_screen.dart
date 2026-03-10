@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -134,6 +137,43 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
         }
       }
 
+      // Fallback 3: Call backend resolveCustomer (uses admin.auth to get phone)
+      if (!resolved) {
+        try {
+          final user = FirebaseAuth.instance.currentUser;
+          final idToken = await user?.getIdToken();
+          if (idToken != null) {
+            final response = await http.post(
+              Uri.parse('https://api-v4xex7aj3a-uc.a.run.app/api/resolveCustomer'),
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer $idToken',
+              },
+              body: jsonEncode({
+                'uid': widget.customerId,
+                'businessId': businessId,
+              }),
+            );
+            if (response.statusCode == 200) {
+              final data = jsonDecode(response.body) as Map<String, dynamic>;
+              if (data['success'] == true && data['customerId'] != null) {
+                final resolvedId = data['customerId'] as String;
+                final resolvedDoc = await FirebaseFirestore.instance
+                    .collection('customers')
+                    .doc(resolvedId)
+                    .get();
+                if (resolvedDoc.exists) {
+                  customerDoc = resolvedDoc;
+                  resolved = true;
+                }
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('[CustomerAction] resolveCustomer API error: $e');
+        }
+      }
+
       if (!resolved) {
         setState(() {
           _error = 'هذا العميل تابع لنشاط تجاري آخر';
@@ -173,14 +213,25 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
         }
       }
 
-      // Fetch customer progress
+      // Fetch customer progress - use resolved doc ID (may differ from widget.customerId)
+      final resolvedCustomerId = customerDoc.id;
       if (programId != null) {
-        final progressQuery = await FirebaseFirestore.instance
+        var progressQuery = await FirebaseFirestore.instance
             .collection('customer_progress')
-            .where('customerId', isEqualTo: widget.customerId)
+            .where('customerId', isEqualTo: resolvedCustomerId)
             .where('programId', isEqualTo: programId)
             .limit(1)
             .get();
+
+        // Fallback: try with original customerId (Auth UID) in case progress was stored with it
+        if (progressQuery.docs.isEmpty && resolvedCustomerId != widget.customerId) {
+          progressQuery = await FirebaseFirestore.instance
+              .collection('customer_progress')
+              .where('customerId', isEqualTo: widget.customerId)
+              .where('programId', isEqualTo: programId)
+              .limit(1)
+              .get();
+        }
 
         if (progressQuery.docs.isNotEmpty) {
           _progress = CustomerProgress.fromFirestore(progressQuery.docs.first);
