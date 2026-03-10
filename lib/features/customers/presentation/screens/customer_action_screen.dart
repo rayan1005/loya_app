@@ -79,52 +79,70 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
         return;
       }
 
-      // Fetch customer
+      // Fetch customer - customerId could be Auth UID or Firestore doc ID
       var customerDoc = await FirebaseFirestore.instance
           .collection('customers')
           .doc(widget.customerId)
           .get();
 
-      // If doc doesn't exist or belongs to another business, try fallbacks
-      bool needsFallback = !customerDoc.exists;
-      if (customerDoc.exists) {
-        final directBizId = (customerDoc.data())?['businessId'] as String?;
-        if (directBizId != null && directBizId != businessId) {
-          needsFallback = true;
-        }
-      }
+      // Check if this doc belongs to THIS business
+      bool resolved = customerDoc.exists &&
+          (customerDoc.data()?['businessId'] as String?) == businessId;
 
-      if (needsFallback) {
-        // Try finding customer by firebaseUid for THIS business
+      // Fallback 1: Search by firebaseUid for THIS business
+      if (!resolved) {
         final byUidQuery = await FirebaseFirestore.instance
             .collection('customers')
             .where('firebaseUid', isEqualTo: widget.customerId)
             .where('businessId', isEqualTo: businessId)
             .limit(1)
             .get();
-
         if (byUidQuery.docs.isNotEmpty) {
           customerDoc = byUidQuery.docs.first;
-        } else if (!customerDoc.exists) {
-          setState(() {
-            _error = 'Customer not found';
-            _isLoading = false;
-          });
-          return;
+          resolved = true;
         }
       }
 
-      _customerData = customerDoc.data();
+      // Fallback 2: Search via wallet_passes → phone → customer
+      if (!resolved) {
+        // Find wallet_pass by user_id to get phone
+        final wpQuery = await FirebaseFirestore.instance
+            .collection('wallet_passes')
+            .where('user_id', isEqualTo: widget.customerId)
+            .limit(1)
+            .get();
+        String? wpPhone;
+        if (wpQuery.docs.isNotEmpty) {
+          wpPhone = (wpQuery.docs.first.data())['phone'] as String?;
+        }
+        if (wpPhone != null) {
+          final phoneDigits = wpPhone.replaceAll(RegExp(r'\D'), '');
+          final last9 = phoneDigits.length >= 9 ? phoneDigits.substring(phoneDigits.length - 9) : phoneDigits;
+          for (final variant in [wpPhone, '+966$last9', '0$last9', last9]) {
+            final phoneQuery = await FirebaseFirestore.instance
+                .collection('customers')
+                .where('businessId', isEqualTo: businessId)
+                .where('phone', isEqualTo: variant)
+                .limit(1)
+                .get();
+            if (phoneQuery.docs.isNotEmpty) {
+              customerDoc = phoneQuery.docs.first;
+              resolved = true;
+              break;
+            }
+          }
+        }
+      }
 
-      // Verify customer belongs to this business
-      final customerBusinessId = _customerData?['businessId'] as String?;
-      if (customerBusinessId != null && customerBusinessId != businessId) {
+      if (!resolved) {
         setState(() {
           _error = 'هذا العميل تابع لنشاط تجاري آخر';
           _isLoading = false;
         });
         return;
       }
+
+      _customerData = customerDoc.data();
 
       // Determine program ID
       String? programId = widget.programId;
