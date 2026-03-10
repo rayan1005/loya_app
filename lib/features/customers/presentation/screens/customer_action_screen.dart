@@ -325,6 +325,30 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
       final subService = ref.read(subscriptionServiceProvider);
       await subService.incrementStampUsage(businessId);
 
+      // Call backend API to update the Apple Wallet pass
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        final idToken = await user?.getIdToken();
+        if (idToken != null) {
+          final customerPhone = _customerData?['phone'] as String?;
+          await http.post(
+            Uri.parse('https://api-v4xex7aj3a-uc.a.run.app/api/updateStamps'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $idToken',
+            },
+            body: jsonEncode({
+              'user_id': widget.customerId,
+              'program_id': _program!.id,
+              'stamps_to_add': 1,
+              if (customerPhone != null) 'phone': customerPhone,
+            }),
+          );
+        }
+      } catch (e) {
+        debugPrint('[CustomerAction] updateStamps API error: $e');
+      }
+
       setState(() {
         _stampSuccess = true;
         _isProcessing = false;
@@ -360,14 +384,48 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
   Future<void> _redeemReward() async {
     if (_isProcessing || _availableRewards <= 0) return;
 
-    // Show confirmation dialog
+    // Show confirmation dialog with reward description
+    final rewardDesc = _program?.rewardDescription ?? '';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('استبدال المكافأة'),
-        content: Text(
-          'هل تريد استبدال مكافأة واحدة لهذا العميل؟\n\n'
-          'المكافآت المتاحة: $_availableRewards',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (rewardDesc.isNotEmpty) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.success.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(LucideIcons.gift, color: AppColors.success, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        rewardDesc,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+            Text(
+              'هل تريد استبدال مكافأة واحدة لهذا العميل؟\n\n'
+              'المكافآت المتاحة: $_availableRewards',
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -428,6 +486,29 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
         'totalRewards': FieldValue.increment(1),
         'lastRewardAt': FieldValue.serverTimestamp(),
       });
+
+      // Call backend API to update the Apple Wallet pass
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        final idToken = await user?.getIdToken();
+        if (idToken != null) {
+          final customerPhone = _customerData?['phone'] as String?;
+          await http.post(
+            Uri.parse('https://api-v4xex7aj3a-uc.a.run.app/api/redeemReward'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $idToken',
+            },
+            body: jsonEncode({
+              'user_id': widget.customerId,
+              'program_id': _program?.id,
+              if (customerPhone != null) 'phone': customerPhone,
+            }),
+          );
+        }
+      } catch (e) {
+        debugPrint('[CustomerAction] redeemReward API error: $e');
+      }
 
       setState(() {
         _redeemSuccess = true;
@@ -833,8 +914,8 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
           icon: LucideIcons.gift,
           label: 'استبدال مكافأة',
           subtitle: _availableRewards > 0
-              ? 'Redeem Reward • $_availableRewards available'
-              : 'No rewards available for this customer',
+              ? '${_program?.rewardDescription ?? 'Redeem Reward'} • $_availableRewards'
+              : 'لا يوجد مكافآت متاحة',
           color: AppColors.success,
           enabled: _availableRewards > 0,
           isLoading: _isProcessing && _redeemSuccess,
