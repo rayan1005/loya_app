@@ -80,17 +80,38 @@ class _CustomerActionScreenState extends ConsumerState<CustomerActionScreen> {
       }
 
       // Fetch customer
-      final customerDoc = await FirebaseFirestore.instance
+      var customerDoc = await FirebaseFirestore.instance
           .collection('customers')
           .doc(widget.customerId)
           .get();
 
-      if (!customerDoc.exists) {
-        setState(() {
-          _error = 'Customer not found';
-          _isLoading = false;
-        });
-        return;
+      // If doc doesn't exist or belongs to another business, try fallbacks
+      bool needsFallback = !customerDoc.exists;
+      if (customerDoc.exists) {
+        final directBizId = (customerDoc.data())?['businessId'] as String?;
+        if (directBizId != null && directBizId != businessId) {
+          needsFallback = true;
+        }
+      }
+
+      if (needsFallback) {
+        // Try finding customer by firebaseUid for THIS business
+        final byUidQuery = await FirebaseFirestore.instance
+            .collection('customers')
+            .where('firebaseUid', isEqualTo: widget.customerId)
+            .where('businessId', isEqualTo: businessId)
+            .limit(1)
+            .get();
+
+        if (byUidQuery.docs.isNotEmpty) {
+          customerDoc = byUidQuery.docs.first;
+        } else if (!customerDoc.exists) {
+          setState(() {
+            _error = 'Customer not found';
+            _isLoading = false;
+          });
+          return;
+        }
       }
 
       _customerData = customerDoc.data();
