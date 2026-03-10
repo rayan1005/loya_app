@@ -52,6 +52,24 @@ class PassPreviewWidget extends StatelessWidget {
     this.customerName,
   });
 
+  /// Compute an effective label color that is always visible on the background.
+  /// If labelColor is too close to backgroundColor, derive a contrasting one.
+  Color get _effectiveLabelColor {
+    final bgLuminance = backgroundColor.computeLuminance();
+    final lblLuminance = labelColor.computeLuminance();
+    // Check contrast ratio - if too low, auto-derive
+    final lighter = bgLuminance > lblLuminance ? bgLuminance : lblLuminance;
+    final darker = bgLuminance > lblLuminance ? lblLuminance : bgLuminance;
+    final contrastRatio = (lighter + 0.05) / (darker + 0.05);
+    if (contrastRatio < 1.5) {
+      // Label is too close to background - derive a visible color
+      return bgLuminance > 0.5
+          ? foregroundColor.withValues(alpha: 0.6) // Dark label for light bg
+          : Colors.white.withValues(alpha: 0.7); // Light label for dark bg
+    }
+    return labelColor;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -294,12 +312,6 @@ class PassPreviewWidget extends StatelessWidget {
       // Use the new pass field config system with priority order
       final config = passFieldConfig!;
       final priorityOrder = fieldPriorityOrder ?? config.fieldPriorityOrder;
-      
-      // Debug: trace label values
-      debugPrint('[PREVIEW] showCustomerName=${config.showCustomerName}, customerNameLabel="${config.customerNameLabel}"');
-      debugPrint('[PREVIEW] showStamps=${config.showStampsRemaining}, stampsLabel="${config.stampsLabel}"');
-      debugPrint('[PREVIEW] showBroadcast=${config.showBroadcastMessage}, broadcastLabel="${config.broadcastLabel}"');
-      debugPrint('[PREVIEW] priorityOrder=$priorityOrder');
 
       // Build field map
       final fieldMap = <String, _PreviewField>{};
@@ -385,12 +397,8 @@ class PassPreviewWidget extends StatelessWidget {
     // First 4 fields go on front, rest on back
     final frontFields = previewFields.take(4).toList();
     
-    // Debug: trace what fields will be shown
-    debugPrint('[PREVIEW] previewFields count=${previewFields.length}');
-    for (final f in previewFields) {
-      debugPrint('[PREVIEW] field: key=${f.key}, label="${f.label}", value="${f.value}"');
-    }
-    debugPrint('[PREVIEW] frontFields (non-stamps): ${frontFields.where((f) => f.key != "stamps").map((f) => "${f.key}:label=${f.label}").toList()}');
+    // Use effective label color that's always visible against the background
+    final effectiveLabel = _effectiveLabelColor;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -407,7 +415,7 @@ class PassPreviewWidget extends StatelessWidget {
                   Text(
                     'الأختام',
                     style: TextStyle(
-                      color: labelColor.withValues(alpha: 0.7),
+                      color: effectiveLabel.withValues(alpha: 0.7),
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
@@ -428,7 +436,7 @@ class PassPreviewWidget extends StatelessWidget {
                   Text(
                     'المكافأة',
                     style: TextStyle(
-                      color: labelColor.withValues(alpha: 0.7),
+                      color: effectiveLabel.withValues(alpha: 0.7),
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
@@ -469,7 +477,7 @@ class PassPreviewWidget extends StatelessWidget {
                             Text(
                               field.label,
                               style: TextStyle(
-                                color: labelColor.withValues(alpha: 0.7),
+                                color: effectiveLabel.withValues(alpha: 0.7),
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                               ),

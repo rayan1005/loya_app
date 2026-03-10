@@ -239,10 +239,13 @@ class SettingsScreen extends ConsumerWidget {
     final currentPlan = business?.plan ?? 'free';
     
     // Plan display names and colors
+    // Include both IAP names (pro/business) and config names (growth/advanced)
     final planInfo = {
       'free': {'name': l10n.get('free_plan'), 'color': AppColors.textTertiary},
       'starter': {'name': 'Starter', 'color': AppColors.primary},
+      'pro': {'name': l10n.isRtl ? 'احترافي' : 'Pro', 'color': AppColors.success},
       'growth': {'name': 'Growth', 'color': AppColors.success},
+      'business': {'name': l10n.isRtl ? 'أعمال' : 'Business', 'color': AppColors.programPurple},
       'advanced': {'name': 'Advanced', 'color': AppColors.programPurple},
     };
     
