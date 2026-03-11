@@ -504,6 +504,21 @@ class _StamperScreenState extends ConsumerState<StamperScreen> {
 
         // Navigate to Customer Action Screen
         final targetProgramId = programId ?? _selectedProgramId;
+        
+        // Validate: if QR has a program AND merchant selected a different program, reject
+        if (programId != null && _selectedProgramId != null && programId != _selectedProgramId) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('هذا الرمز تابع لبرنامج آخر - اختر البرنامج الصحيح'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          setState(() => _isProcessing = false);
+          return;
+        }
+        
         if (mounted) {
           String route = '/customer-action/$resolvedCustomerId';
           if (targetProgramId != null) {
