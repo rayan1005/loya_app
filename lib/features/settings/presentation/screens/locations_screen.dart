@@ -12,6 +12,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/data/models/models.dart';
 import '../../../../core/data/providers/data_providers.dart';
+import '../../../../core/data/services/api_service.dart';
 
 class LocationsScreen extends ConsumerStatefulWidget {
   const LocationsScreen({super.key});
@@ -251,6 +252,41 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
         .collection('locations')
         .doc(location.id)
         .update({'isActive': !location.isActive});
+    _refreshAllBusinessPasses();
+  }
+
+  /// Refresh all wallet passes for the business so location changes take effect
+  Future<void> _refreshAllBusinessPasses() async {
+    final businessId = ref.read(currentBusinessIdProvider);
+    if (businessId == null) return;
+
+    try {
+      final programsQuery = await FirebaseFirestore.instance
+          .collection('programs')
+          .where('businessId', isEqualTo: businessId)
+          .where('isActive', isEqualTo: true)
+          .get();
+
+      if (programsQuery.docs.isEmpty) return;
+
+      final apiService = ApiService();
+      final programIds = programsQuery.docs.map((d) => d.id).toList();
+      await apiService.refreshBusinessPasses(
+        businessId: businessId,
+        programIds: programIds,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تم تحديث البطاقات بالموقع الجديد ✓'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[Locations] Failed to refresh passes: $e');
+    }
   }
 
   void _deleteLocation(BusinessLocation location) async {
@@ -277,6 +313,7 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
           .collection('locations')
           .doc(location.id)
           .delete();
+      _refreshAllBusinessPasses();
     }
   }
 
@@ -605,6 +642,7 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                       ),
                     );
                   }
+                  _refreshAllBusinessPasses();
                 } catch (e) {
                   print('Error adding location: $e');
                   if (context.mounted) {
@@ -1126,6 +1164,7 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                             backgroundColor: Colors.green),
                       );
                     }
+                    _refreshAllBusinessPasses();
                   } catch (e) {
                     if (mounted) {
                       ScaffoldMessenger.of(this.context).showSnackBar(
@@ -1264,6 +1303,7 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                 });
 
                 if (context.mounted) Navigator.pop(context);
+                _refreshAllBusinessPasses();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
