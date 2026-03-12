@@ -21,11 +21,9 @@ import '../../features/analytics/presentation/screens/advanced_analytics_screen.
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/settings/presentation/screens/billing_screen.dart';
 import '../../features/settings/presentation/screens/business_profile_screen.dart';
-import '../../features/settings/presentation/screens/subusers_screen.dart';
 import '../../features/settings/presentation/screens/locations_screen.dart';
 import '../../features/settings/presentation/screens/export_screen.dart';
 import '../../features/settings/presentation/screens/team_members_screen.dart';
-import '../../features/settings/presentation/screens/branches_screen.dart';
 import '../../features/settings/presentation/screens/paywall_screen.dart';
 import '../../features/messaging/presentation/screens/messages_screen.dart';
 import '../../features/marketing/presentation/screens/referral_program_screen.dart';
@@ -331,11 +329,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 },
               ),
               GoRoute(
-                path: 'subusers',
-                name: 'subusers',
-                builder: (context, state) => const SubusersScreen(),
-              ),
-              GoRoute(
                 path: 'locations',
                 name: 'locations',
                 builder: (context, state) => const LocationsScreen(),
@@ -349,11 +342,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: 'team',
                 name: 'team-members',
                 builder: (context, state) => const TeamMembersScreen(),
-              ),
-              GoRoute(
-                path: 'branches',
-                name: 'branches',
-                builder: (context, state) => const BranchesScreen(),
               ),
             ],
           ),

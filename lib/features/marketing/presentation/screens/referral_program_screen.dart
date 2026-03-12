@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -22,6 +23,90 @@ class _ReferralProgramScreenState extends ConsumerState<ReferralProgramScreen> {
   bool _isEnabled = false;
   int _referrerBonus = 1;
   int _refereeBonus = 1;
+  bool _isLoading = true;
+  bool _isSaving = false;
+  int _totalReferrals = 0;
+  int _totalStampsGiven = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReferralConfig();
+  }
+
+  Future<void> _loadReferralConfig() async {
+    final businessId = ref.read(currentBusinessIdProvider);
+    if (businessId == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('businesses')
+          .doc(businessId)
+          .collection('referral_config')
+          .doc('settings')
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data()!;
+        setState(() {
+          _isEnabled = data['isEnabled'] ?? false;
+          _referrerBonus = data['referrerBonus'] ?? 1;
+          _refereeBonus = data['refereeBonus'] ?? 1;
+          _totalReferrals = data['totalReferrals'] ?? 0;
+          _totalStampsGiven = data['totalStampsGiven'] ?? 0;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading referral config: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _saveReferralConfig() async {
+    final businessId = ref.read(currentBusinessIdProvider);
+    if (businessId == null) return;
+
+    setState(() => _isSaving = true);
+    try {
+      await FirebaseFirestore.instance
+          .collection('businesses')
+          .doc(businessId)
+          .collection('referral_config')
+          .doc('settings')
+          .set({
+        'isEnabled': _isEnabled,
+        'referrerBonus': _referrerBonus,
+        'refereeBonus': _refereeBonus,
+        'totalReferrals': _totalReferrals,
+        'totalStampsGiven': _totalStampsGiven,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('تم حفظ الإعدادات ✓'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطأ في الحفظ: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isSaving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +120,13 @@ class _ReferralProgramScreenState extends ConsumerState<ReferralProgramScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: hasAccess
-          ? _buildContent(l10n, business?.id ?? '')
-          : Center(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _isSaving
+              ? const Center(child: CircularProgressIndicator())
+              : hasAccess
+              ? _buildContent(l10n, business?.id ?? '')
+              : Center(
               child: UpgradePrompt(
                 feature: PlanFeature.referralProgram,
                 currentPlan: currentPlan,
@@ -123,7 +212,10 @@ class _ReferralProgramScreenState extends ConsumerState<ReferralProgramScreen> {
                 ),
                 Switch.adaptive(
                   value: _isEnabled,
-                  onChanged: (value) => setState(() => _isEnabled = value),
+                  onChanged: (value) {
+                    setState(() => _isEnabled = value);
+                    _saveReferralConfig();
+                  },
                   activeColor: AppColors.success,
                 ),
               ],
@@ -145,7 +237,10 @@ class _ReferralProgramScreenState extends ConsumerState<ReferralProgramScreen> {
               title: l10n.get('referrer_bonus'),
               subtitle: 'Stamps given to the customer who refers',
               value: _referrerBonus,
-              onChanged: (v) => setState(() => _referrerBonus = v),
+              onChanged: (v) {
+                setState(() => _referrerBonus = v);
+                _saveReferralConfig();
+              },
             ),
             const SizedBox(height: 16),
 
@@ -155,7 +250,10 @@ class _ReferralProgramScreenState extends ConsumerState<ReferralProgramScreen> {
               title: l10n.get('referee_bonus'),
               subtitle: 'Stamps given to the new customer',
               value: _refereeBonus,
-              onChanged: (v) => setState(() => _refereeBonus = v),
+              onChanged: (v) {
+                setState(() => _refereeBonus = v);
+                _saveReferralConfig();
+              },
             ),
             const SizedBox(height: 32),
 
@@ -212,7 +310,7 @@ class _ReferralProgramScreenState extends ConsumerState<ReferralProgramScreen> {
                 Expanded(
                   child: _buildStatCard(
                     icon: LucideIcons.users,
-                    value: '0',
+                    value: '$_totalReferrals',
                     label: 'Total Referrals',
                     color: AppColors.primary,
                   ),
@@ -221,7 +319,7 @@ class _ReferralProgramScreenState extends ConsumerState<ReferralProgramScreen> {
                 Expanded(
                   child: _buildStatCard(
                     icon: LucideIcons.stamp,
-                    value: '0',
+                    value: '$_totalStampsGiven',
                     label: 'Stamps Given',
                     color: AppColors.success,
                   ),

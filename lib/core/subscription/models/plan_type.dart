@@ -1,17 +1,20 @@
-/// Subscription plan types
+/// Subscription plan types — aligned with AppConfig 4-tier pricing
 enum PlanType {
   free,
-  pro,
-  business;
+  starter,
+  growth,
+  advanced;
 
   String get displayName {
     switch (this) {
       case PlanType.free:
         return 'Free';
-      case PlanType.pro:
-        return 'Pro';
-      case PlanType.business:
-        return 'Business';
+      case PlanType.starter:
+        return 'Starter';
+      case PlanType.growth:
+        return 'Growth';
+      case PlanType.advanced:
+        return 'Advanced';
     }
   }
 
@@ -19,10 +22,12 @@ enum PlanType {
     switch (this) {
       case PlanType.free:
         return 'مجاني';
-      case PlanType.pro:
-        return 'احترافي';
-      case PlanType.business:
-        return 'أعمال';
+      case PlanType.starter:
+        return 'أساسي';
+      case PlanType.growth:
+        return 'نمو';
+      case PlanType.advanced:
+        return 'متقدم';
     }
   }
 
@@ -30,9 +35,11 @@ enum PlanType {
     switch (this) {
       case PlanType.free:
         return 'Try all features with limits';
-      case PlanType.pro:
+      case PlanType.starter:
+        return 'Essential tools to get started';
+      case PlanType.growth:
         return 'Perfect for growing businesses';
-      case PlanType.business:
+      case PlanType.advanced:
         return 'Unlimited everything for enterprises';
     }
   }
@@ -41,9 +48,11 @@ enum PlanType {
     switch (this) {
       case PlanType.free:
         return 'جرب جميع المميزات بحدود';
-      case PlanType.pro:
+      case PlanType.starter:
+        return 'أدوات أساسية للبداية';
+      case PlanType.growth:
         return 'مثالي للأعمال المتنامية';
-      case PlanType.business:
+      case PlanType.advanced:
         return 'بدون حدود للشركات الكبيرة';
     }
   }
@@ -53,10 +62,12 @@ enum PlanType {
     switch (this) {
       case PlanType.free:
         return null;
-      case PlanType.pro:
-        return 'loya_pro_monthly';
-      case PlanType.business:
-        return 'loya_business_monthly';
+      case PlanType.starter:
+        return 'loya_starter_monthly';
+      case PlanType.growth:
+        return 'loya_growth_monthly';
+      case PlanType.advanced:
+        return 'loya_advanced_monthly';
     }
   }
 
@@ -64,53 +75,66 @@ enum PlanType {
     switch (this) {
       case PlanType.free:
         return null;
-      case PlanType.pro:
-        return 'loya_pro_yearly';
-      case PlanType.business:
-        return 'loya_business_yearly';
+      case PlanType.starter:
+        return 'loya_starter_yearly';
+      case PlanType.growth:
+        return 'loya_growth_yearly';
+      case PlanType.advanced:
+        return 'loya_advanced_yearly';
     }
   }
 
-  /// Prices
+  /// Monthly prices in EUR
   double get monthlyPrice {
     switch (this) {
       case PlanType.free:
         return 0;
-      case PlanType.pro:
-        return 19;
-      case PlanType.business:
-        return 39;
+      case PlanType.starter:
+        return 16;
+      case PlanType.growth:
+        return 33;
+      case PlanType.advanced:
+        return 66;
     }
   }
 
+  /// Yearly prices in EUR (2 months free)
   double get yearlyPrice {
     switch (this) {
       case PlanType.free:
         return 0;
-      case PlanType.pro:
-        return 190; // 2 months free
-      case PlanType.business:
-        return 390; // 2 months free
+      case PlanType.starter:
+        return 160;
+      case PlanType.growth:
+        return 330;
+      case PlanType.advanced:
+        return 660;
     }
   }
 
   /// Get plan from product ID
   static PlanType fromProductId(String productId) {
-    if (productId.contains('business')) {
-      return PlanType.business;
-    } else if (productId.contains('pro')) {
-      return PlanType.pro;
+    if (productId.contains('advanced') || productId.contains('business')) {
+      return PlanType.advanced;
+    } else if (productId.contains('growth') || productId.contains('pro')) {
+      return PlanType.growth;
+    } else if (productId.contains('starter')) {
+      return PlanType.starter;
     }
     return PlanType.free;
   }
 
-  /// Get plan from string (for Firestore)
+  /// Get plan from string (for Firestore) — handles legacy plan names
   static PlanType fromString(String? value) {
     switch (value?.toLowerCase()) {
+      case 'starter':
+        return PlanType.starter;
+      case 'growth':
       case 'pro':
-        return PlanType.pro;
+        return PlanType.growth;
+      case 'advanced':
       case 'business':
-        return PlanType.business;
+        return PlanType.advanced;
       default:
         return PlanType.free;
     }

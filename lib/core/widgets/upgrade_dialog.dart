@@ -17,7 +17,7 @@ class UpgradeDialog extends StatelessWidget {
     super.key,
     required this.title,
     required this.message,
-    this.suggestedPlan = PlanType.pro,
+    this.suggestedPlan = PlanType.starter,
     this.icon,
   });
 
@@ -26,7 +26,7 @@ class UpgradeDialog extends StatelessWidget {
     BuildContext context, {
     required String title,
     required String message,
-    PlanType suggestedPlan = PlanType.pro,
+    PlanType suggestedPlan = PlanType.starter,
     IconData? icon,
   }) {
     return showDialog(
@@ -172,7 +172,7 @@ class UpgradeDialog extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '\$${suggestedPlan.monthlyPrice.toStringAsFixed(0)}/شهر',
+                          '€${suggestedPlan.monthlyPrice.toStringAsFixed(0)}/شهر',
                           style: AppTypography.caption.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -248,7 +248,7 @@ class UpgradeBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (currentPlan == PlanType.business) {
+    if (currentPlan == PlanType.advanced) {
       return const SizedBox.shrink();
     }
 
@@ -279,8 +279,10 @@ class UpgradeBanner extends StatelessWidget {
                 children: [
                   Text(
                     currentPlan == PlanType.free
-                        ? 'ترقية إلى Pro'
-                        : 'ترقية إلى Business',
+                        ? 'ترقية إلى Starter'
+                        : currentPlan == PlanType.starter
+                            ? 'ترقية إلى Growth'
+                            : 'ترقية إلى Advanced',
                     style: AppTypography.titleMedium.copyWith(
                       color: Colors.white,
                     ),

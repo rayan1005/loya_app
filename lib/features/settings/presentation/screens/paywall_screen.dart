@@ -26,7 +26,7 @@ class PaywallScreen extends ConsumerStatefulWidget {
 class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   bool _isYearly = false;
   bool _isLoading = false;
-  PlanType _selectedPlan = PlanType.pro;
+  PlanType _selectedPlan = PlanType.starter;
 
   @override
   void initState() {
@@ -218,9 +218,11 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   Widget _buildPlanCards() {
     return Column(
       children: [
-        _buildPlanCard(PlanType.pro),
+        _buildPlanCard(PlanType.starter),
         const SizedBox(height: 12),
-        _buildPlanCard(PlanType.business),
+        _buildPlanCard(PlanType.growth),
+        const SizedBox(height: 12),
+        _buildPlanCard(PlanType.advanced),
       ],
     );
   }
@@ -292,7 +294,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 const Spacer(),
 
                 // Popular badge for Pro
-                if (plan == PlanType.pro)
+                if (plan == PlanType.growth)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
@@ -316,7 +318,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${price.toStringAsFixed(0)}',
+                  '€${price.toStringAsFixed(0)}',
                   style: AppTypography.displaySmall.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w700,
@@ -337,7 +339,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 6),
                     child: Text(
-                      '(\$$monthlyEquivalent/شهر)',
+                      '(€$monthlyEquivalent/شهر)',
                       style: AppTypography.caption.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -435,7 +437,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                     ),
                     Expanded(
                       child: Text(
-                        feature.proValue ?? '-',
+                        feature.starterValue ?? '-',
                         style: AppTypography.caption.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
@@ -445,7 +447,17 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                     ),
                     Expanded(
                       child: Text(
-                        feature.businessValue ?? '-',
+                        feature.growthValue ?? '-',
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        feature.advancedValue ?? '-',
                         style: AppTypography.caption.copyWith(
                           color: AppColors.success,
                           fontWeight: FontWeight.w600,
@@ -490,7 +502,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 ),
               )
             : Text(
-                'اشترك في ${_selectedPlan.displayNameAr} - \$${price.toStringAsFixed(0)} $period',
+                'اشترك في ${_selectedPlan.displayNameAr} - €${price.toStringAsFixed(0)} $period',
                 style: AppTypography.titleMedium.copyWith(color: Colors.white),
               ),
       ),

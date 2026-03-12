@@ -11,6 +11,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/data/providers/data_providers.dart';
 import '../../../../core/data/providers/business_init_provider.dart';
+import '../../../../core/providers/notifications_provider.dart';
 import '../../../shared/widgets/upgrade_prompt.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -76,8 +77,8 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   _SettingsTile(
                     icon: LucideIcons.mapPin,
-                    title: l10n.get('branches'),
-                    subtitle: 'إدارة فروع ومواقع متجرك',
+                    title: l10n.get('locations'),
+                    subtitle: l10n.get('locations_desc'),
                     onTap: () => context.push('/settings/locations'),
                   ),
                 ],
@@ -119,8 +120,10 @@ class SettingsScreen extends ConsumerWidget {
                     title: l10n.get('notifications'),
                     subtitle: l10n.get('notifications_desc'),
                     trailing: Switch.adaptive(
-                      value: true,
-                      onChanged: (value) {},
+                      value: ref.watch(notificationsEnabledProvider),
+                      onChanged: (value) {
+                        ref.read(notificationsEnabledProvider.notifier).setEnabled(value);
+                      },
                       activeColor: AppColors.primary,
                     ),
                   ),

@@ -1,6 +1,6 @@
 import 'plan_type.dart';
 
-/// Defines the limits for each subscription plan
+/// Defines the limits for each subscription plan — 4-tier system
 class PlanLimits {
   final int maxCustomers;
   final int maxStampsPerMonth;
@@ -26,7 +26,7 @@ class PlanLimits {
     required this.hasPrioritySupport,
   });
 
-  /// Free plan - try everything with tight limits
+  /// Free plan — try everything with tight limits
   static const free = PlanLimits(
     maxCustomers: 50,
     maxStampsPerMonth: 100,
@@ -34,19 +34,33 @@ class PlanLimits {
     maxTeamMembers: 1,
     maxLocations: 1,
     maxPushNotificationsPerMonth: 10,
-    maxAutomationRules: 1,
+    maxAutomationRules: 0,
     canRemoveBranding: false,
     hasApiAccess: false,
     hasPrioritySupport: false,
   );
 
-  /// Pro plan - for growing businesses
-  static const pro = PlanLimits(
-    maxCustomers: 1000,
-    maxStampsPerMonth: 5000,
-    maxPrograms: 3,
-    maxTeamMembers: 3,
-    maxLocations: 3,
+  /// Starter plan — essential tools (€16/mo)
+  static const starter = PlanLimits(
+    maxCustomers: 200,
+    maxStampsPerMonth: 1000,
+    maxPrograms: 1,
+    maxTeamMembers: 2,
+    maxLocations: 1,
+    maxPushNotificationsPerMonth: 50,
+    maxAutomationRules: 0,
+    canRemoveBranding: false,
+    hasApiAccess: false,
+    hasPrioritySupport: false,
+  );
+
+  /// Growth plan — for growing businesses (€33/mo)
+  static const growth = PlanLimits(
+    maxCustomers: 2000,
+    maxStampsPerMonth: 10000,
+    maxPrograms: 4,
+    maxTeamMembers: 5,
+    maxLocations: 4,
     maxPushNotificationsPerMonth: 500,
     maxAutomationRules: 5,
     canRemoveBranding: false,
@@ -54,12 +68,12 @@ class PlanLimits {
     hasPrioritySupport: false,
   );
 
-  /// Business plan - unlimited for enterprises
-  static const business = PlanLimits(
-    maxCustomers: 999999, // Effectively unlimited
+  /// Advanced plan — unlimited for enterprises (€66/mo)
+  static const advanced = PlanLimits(
+    maxCustomers: 999999,
     maxStampsPerMonth: 999999,
     maxPrograms: 999999,
-    maxTeamMembers: 10,
+    maxTeamMembers: 999999,
     maxLocations: 999999,
     maxPushNotificationsPerMonth: 999999,
     maxAutomationRules: 999999,
@@ -73,10 +87,12 @@ class PlanLimits {
     switch (plan) {
       case PlanType.free:
         return free;
-      case PlanType.pro:
-        return pro;
-      case PlanType.business:
-        return business;
+      case PlanType.starter:
+        return starter;
+      case PlanType.growth:
+        return growth;
+      case PlanType.advanced:
+        return advanced;
     }
   }
 
@@ -111,16 +127,18 @@ class FeatureComparison {
   final String nameEn;
   final String nameAr;
   final String? freeValue;
-  final String? proValue;
-  final String? businessValue;
+  final String? starterValue;
+  final String? growthValue;
+  final String? advancedValue;
   final bool isBooleanFeature;
 
   const FeatureComparison({
     required this.nameEn,
     required this.nameAr,
     this.freeValue,
-    this.proValue,
-    this.businessValue,
+    this.starterValue,
+    this.growthValue,
+    this.advancedValue,
     this.isBooleanFeature = false,
   });
 
@@ -130,113 +148,110 @@ class FeatureComparison {
           nameEn: 'Customers',
           nameAr: 'العملاء',
           freeValue: PlanLimits.formatLimit(PlanLimits.free.maxCustomers),
-          proValue: PlanLimits.formatLimit(PlanLimits.pro.maxCustomers),
-          businessValue: PlanLimits.formatLimit(PlanLimits.business.maxCustomers),
+          starterValue: PlanLimits.formatLimit(PlanLimits.starter.maxCustomers),
+          growthValue: PlanLimits.formatLimit(PlanLimits.growth.maxCustomers),
+          advancedValue: PlanLimits.formatLimit(PlanLimits.advanced.maxCustomers),
         ),
         FeatureComparison(
           nameEn: 'Stamps/month',
           nameAr: 'الأختام/شهر',
           freeValue: PlanLimits.formatLimit(PlanLimits.free.maxStampsPerMonth),
-          proValue: PlanLimits.formatLimit(PlanLimits.pro.maxStampsPerMonth),
-          businessValue: PlanLimits.formatLimit(PlanLimits.business.maxStampsPerMonth),
+          starterValue: PlanLimits.formatLimit(PlanLimits.starter.maxStampsPerMonth),
+          growthValue: PlanLimits.formatLimit(PlanLimits.growth.maxStampsPerMonth),
+          advancedValue: PlanLimits.formatLimit(PlanLimits.advanced.maxStampsPerMonth),
         ),
         FeatureComparison(
           nameEn: 'Programs',
           nameAr: 'البرامج',
           freeValue: PlanLimits.formatLimit(PlanLimits.free.maxPrograms),
-          proValue: PlanLimits.formatLimit(PlanLimits.pro.maxPrograms),
-          businessValue: PlanLimits.formatLimit(PlanLimits.business.maxPrograms),
+          starterValue: PlanLimits.formatLimit(PlanLimits.starter.maxPrograms),
+          growthValue: PlanLimits.formatLimit(PlanLimits.growth.maxPrograms),
+          advancedValue: PlanLimits.formatLimit(PlanLimits.advanced.maxPrograms),
         ),
         FeatureComparison(
           nameEn: 'Team Members',
           nameAr: 'أعضاء الفريق',
           freeValue: PlanLimits.formatLimit(PlanLimits.free.maxTeamMembers),
-          proValue: PlanLimits.formatLimit(PlanLimits.pro.maxTeamMembers),
-          businessValue: PlanLimits.formatLimit(PlanLimits.business.maxTeamMembers),
+          starterValue: PlanLimits.formatLimit(PlanLimits.starter.maxTeamMembers),
+          growthValue: PlanLimits.formatLimit(PlanLimits.growth.maxTeamMembers),
+          advancedValue: PlanLimits.formatLimit(PlanLimits.advanced.maxTeamMembers),
         ),
         FeatureComparison(
           nameEn: 'Locations',
           nameAr: 'الفروع',
           freeValue: PlanLimits.formatLimit(PlanLimits.free.maxLocations),
-          proValue: PlanLimits.formatLimit(PlanLimits.pro.maxLocations),
-          businessValue: PlanLimits.formatLimit(PlanLimits.business.maxLocations),
+          starterValue: PlanLimits.formatLimit(PlanLimits.starter.maxLocations),
+          growthValue: PlanLimits.formatLimit(PlanLimits.growth.maxLocations),
+          advancedValue: PlanLimits.formatLimit(PlanLimits.advanced.maxLocations),
         ),
         FeatureComparison(
           nameEn: 'Push Notifications/month',
           nameAr: 'الإشعارات/شهر',
           freeValue: PlanLimits.formatLimit(PlanLimits.free.maxPushNotificationsPerMonth),
-          proValue: PlanLimits.formatLimit(PlanLimits.pro.maxPushNotificationsPerMonth),
-          businessValue: PlanLimits.formatLimit(PlanLimits.business.maxPushNotificationsPerMonth),
+          starterValue: PlanLimits.formatLimit(PlanLimits.starter.maxPushNotificationsPerMonth),
+          growthValue: PlanLimits.formatLimit(PlanLimits.growth.maxPushNotificationsPerMonth),
+          advancedValue: PlanLimits.formatLimit(PlanLimits.advanced.maxPushNotificationsPerMonth),
         ),
         FeatureComparison(
           nameEn: 'Automation Rules',
           nameAr: 'قواعد الأتمتة',
-          freeValue: PlanLimits.formatLimit(PlanLimits.free.maxAutomationRules),
-          proValue: PlanLimits.formatLimit(PlanLimits.pro.maxAutomationRules),
-          businessValue: PlanLimits.formatLimit(PlanLimits.business.maxAutomationRules),
-        ),
-        const FeatureComparison(
-          nameEn: 'Analytics',
-          nameAr: 'التحليلات',
-          freeValue: '✓',
-          proValue: '✓',
-          businessValue: '✓',
-          isBooleanFeature: true,
+          freeValue: '✗',
+          starterValue: '✗',
+          growthValue: PlanLimits.formatLimit(PlanLimits.growth.maxAutomationRules),
+          advancedValue: PlanLimits.formatLimit(PlanLimits.advanced.maxAutomationRules),
         ),
         const FeatureComparison(
           nameEn: 'Apple Wallet',
           nameAr: 'محفظة Apple',
           freeValue: '✓',
-          proValue: '✓',
-          businessValue: '✓',
+          starterValue: '✓',
+          growthValue: '✓',
+          advancedValue: '✓',
           isBooleanFeature: true,
         ),
         const FeatureComparison(
-          nameEn: 'Custom Pass Design',
-          nameAr: 'تصميم البطاقة',
-          freeValue: '✓',
-          proValue: '✓',
-          businessValue: '✓',
+          nameEn: 'Location Push',
+          nameAr: 'إشعارات الموقع',
+          freeValue: '✗',
+          starterValue: '✓',
+          growthValue: '✓',
+          advancedValue: '✓',
           isBooleanFeature: true,
         ),
         const FeatureComparison(
-          nameEn: 'Birthday Rewards',
-          nameAr: 'مكافآت أعياد الميلاد',
-          freeValue: '✓',
-          proValue: '✓',
-          businessValue: '✓',
-          isBooleanFeature: true,
-        ),
-        const FeatureComparison(
-          nameEn: 'Export Data',
-          nameAr: 'تصدير البيانات',
-          freeValue: '✓',
-          proValue: '✓',
-          businessValue: '✓',
+          nameEn: 'Referral Program',
+          nameAr: 'برنامج الإحالة',
+          freeValue: '✗',
+          starterValue: '✗',
+          growthValue: '✓',
+          advancedValue: '✓',
           isBooleanFeature: true,
         ),
         const FeatureComparison(
           nameEn: 'Remove Branding',
           nameAr: 'إزالة العلامة التجارية',
           freeValue: '✗',
-          proValue: '✗',
-          businessValue: '✓',
+          starterValue: '✗',
+          growthValue: '✗',
+          advancedValue: '✓',
           isBooleanFeature: true,
         ),
         const FeatureComparison(
           nameEn: 'API Access',
           nameAr: 'الوصول للـ API',
           freeValue: '✗',
-          proValue: '✗',
-          businessValue: '✓',
+          starterValue: '✗',
+          growthValue: '✗',
+          advancedValue: '✓',
           isBooleanFeature: true,
         ),
         const FeatureComparison(
           nameEn: 'Priority Support',
           nameAr: 'دعم أولوي',
           freeValue: '✗',
-          proValue: 'Email',
-          businessValue: 'Phone + Email',
+          starterValue: 'Email',
+          growthValue: 'Email',
+          advancedValue: 'Phone + Email',
           isBooleanFeature: false,
         ),
       ];

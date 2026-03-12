@@ -23,7 +23,7 @@ class BillingScreen extends ConsumerStatefulWidget {
 }
 
 class _BillingScreenState extends ConsumerState<BillingScreen> {
-  PlanType _selectedPlan = PlanType.pro;
+  PlanType _selectedPlan = PlanType.starter;
   bool _isYearly = false;
   bool _isLoading = false;
 
@@ -136,18 +136,22 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
                 if (isMobile)
                   Column(
                     children: [
-                      _buildPlanCard(PlanType.pro, l10n),
+                      _buildPlanCard(PlanType.starter, l10n),
                       const SizedBox(height: 12),
-                      _buildPlanCard(PlanType.business, l10n),
+                      _buildPlanCard(PlanType.growth, l10n),
+                      const SizedBox(height: 12),
+                      _buildPlanCard(PlanType.advanced, l10n),
                     ],
                   )
                 else
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(child: _buildPlanCard(PlanType.pro, l10n)),
+                      Expanded(child: _buildPlanCard(PlanType.starter, l10n)),
                       const SizedBox(width: 16),
-                      Expanded(child: _buildPlanCard(PlanType.business, l10n)),
+                      Expanded(child: _buildPlanCard(PlanType.growth, l10n)),
+                      const SizedBox(width: 16),
+                      Expanded(child: _buildPlanCard(PlanType.advanced, l10n)),
                     ],
                   ),
 
@@ -179,9 +183,9 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: plan == PlanType.business
+          colors: plan == PlanType.advanced
               ? [AppColors.programOrange, AppColors.programOrange.withRed(230)]
-              : plan == PlanType.pro
+              : plan == PlanType.growth
                   ? [
                       AppColors.programPurple,
                       AppColors.programPurple.withBlue(230)
@@ -358,7 +362,7 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
 
     final isSelected = _selectedPlan == planType;
     final isCurrent = currentPlan == planType;
-    final isPopular = planType == PlanType.pro;
+    final isPopular = planType == PlanType.growth;
     final limits = PlanLimits.forPlan(planType);
 
     String name = l10n.isRtl ? planType.displayNameAr : planType.displayName;
@@ -368,60 +372,75 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
 
     // Try to get dynamic pricing from Apple
     final iapService = ref.read(subscriptionServiceProvider);
-    final String productId;
-    if (_isYearly) {
-      productId = planType == PlanType.pro ? 'loya_pro_yearly' : 'loya_business_yearly';
-    } else {
-      productId = planType == PlanType.pro ? 'loya_pro_monthly' : 'loya_business_monthly';
-    }
-    final iapProduct = iapService.getProduct(productId);
+    final productId = _isYearly ? planType.yearlyProductId : planType.monthlyProductId;
+    final iapProduct = productId != null ? iapService.getProduct(productId) : null;
 
     if (_isYearly) {
       if (iapProduct != null) {
         price = iapProduct.price;
       } else {
-        price = planType == PlanType.pro ? '\$189.99' : '\$389.99';
+        price = '€${planType.yearlyPrice.toStringAsFixed(0)}';
       }
       // Calculate original price from monthly for "save" display
-      final monthlyId = planType == PlanType.pro ? 'loya_pro_monthly' : 'loya_business_monthly';
-      final monthlyProduct = iapService.getProduct(monthlyId);
+      final monthlyId = planType.monthlyProductId;
+      final monthlyProduct = monthlyId != null ? iapService.getProduct(monthlyId) : null;
       if (monthlyProduct != null) {
         final monthlyRaw = double.tryParse(monthlyProduct.rawPrice.toString());
         if (monthlyRaw != null) {
           originalPrice = '${monthlyProduct.currencySymbol}${(monthlyRaw * 12).toStringAsFixed(2)}';
         }
       } else {
-        originalPrice = planType == PlanType.pro ? '\$239.88' : '\$479.88';
+        originalPrice = '€${(planType.monthlyPrice * 12).toStringAsFixed(0)}';
       }
       period = l10n.isRtl ? '/سنة' : '/year';
     } else {
       if (iapProduct != null) {
         price = iapProduct.price;
       } else {
-        price = planType == PlanType.pro ? '\$19.99' : '\$39.99';
+        price = '€${planType.monthlyPrice.toStringAsFixed(0)}';
       }
       period = l10n.isRtl ? '/شهر' : '/month';
     }
 
     List<String> features;
-    if (planType == PlanType.pro) {
+    if (planType == PlanType.starter) {
       features = l10n.isRtl
           ? [
               '${limits.maxCustomers} عميل',
+              '${PlanLimits.formatLimit(limits.maxStampsPerMonth)} ختم/شهر',
+              '${limits.maxPrograms} برنامج',
+              '${limits.maxLocations} فرع',
+              '${limits.maxTeamMembers} أعضاء فريق',
+              'إشعارات الموقع',
+            ]
+          : [
+              '${limits.maxCustomers} customers',
+              '${PlanLimits.formatLimit(limits.maxStampsPerMonth)} stamps/month',
+              '${limits.maxPrograms} program',
+              '${limits.maxLocations} location',
+              '${limits.maxTeamMembers} team members',
+              'Location push',
+            ];
+    } else if (planType == PlanType.growth) {
+      features = l10n.isRtl
+          ? [
+              '${PlanLimits.formatLimit(limits.maxCustomers)} عميل',
               '${PlanLimits.formatLimit(limits.maxStampsPerMonth)} ختم/شهر',
               '${limits.maxPrograms} برامج',
               '${limits.maxLocations} فروع',
               '${limits.maxTeamMembers} أعضاء فريق',
               'تحليلات متقدمة',
+              'قواعد أتمتة',
               'دعم بالأولوية',
             ]
           : [
-              '${limits.maxCustomers} customers',
+              '${PlanLimits.formatLimit(limits.maxCustomers)} customers',
               '${PlanLimits.formatLimit(limits.maxStampsPerMonth)} stamps/month',
               '${limits.maxPrograms} programs',
               '${limits.maxLocations} locations',
               '${limits.maxTeamMembers} team members',
               'Advanced analytics',
+              'Automation rules',
               'Priority support',
             ];
     } else {
@@ -431,9 +450,9 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
               'أختام غير محدودة',
               'برامج غير محدودة',
               'فروع غير محدودة',
-              '${limits.maxTeamMembers} أعضاء فريق',
+              'أعضاء فريق غير محدودين',
               'وصول API',
-              'Webhooks',
+              'إزالة العلامة التجارية',
               'دعم مخصص',
             ]
           : [
@@ -441,16 +460,18 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
               'Unlimited stamps',
               'Unlimited programs',
               'Unlimited locations',
-              '${limits.maxTeamMembers} team members',
+              'Unlimited team members',
               'API access',
-              'Webhooks',
+              'Remove branding',
               'Dedicated support',
             ];
     }
 
-    Color accentColor = planType == PlanType.pro
+    Color accentColor = planType == PlanType.growth
         ? AppColors.programPurple
-        : AppColors.programOrange;
+        : planType == PlanType.advanced
+            ? AppColors.programOrange
+            : AppColors.primary;
 
     return GestureDetector(
       onTap: () => setState(() => _selectedPlan = planType),
