@@ -67,12 +67,17 @@ class _LocationEngagementScreenState
           .doc('config')
           .get();
 
-      // Count active locations
+      // Count locations with GPS coordinates
       final locSnap = await FirebaseFirestore.instance
           .collection('locations')
           .where('businessId', isEqualTo: businessId)
-          .where('isActive', isEqualTo: true)
           .get();
+
+      final locationsWithGps = locSnap.docs.where((doc) {
+        final data = doc.data();
+        final isActive = data['isActive'] ?? true;
+        return isActive && data['latitude'] != null && data['longitude'] != null;
+      }).length;
 
       if (doc.exists) {
         final data = doc.data()!;
@@ -95,7 +100,7 @@ class _LocationEngagementScreenState
       }
 
       setState(() {
-        _locationCount = locSnap.docs.length;
+        _locationCount = locationsWithGps;
         _isLoading = false;
       });
     } catch (e) {
