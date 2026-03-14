@@ -7,7 +7,7 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/l10n/app_localizations.dart';
-import '../../../../core/data/providers/data_providers.dart';
+import '../../../../core/data/services/api_service.dart';
 import '../../../../core/widgets/upgrade_dialog.dart';
 import '../../../shared/widgets/upgrade_prompt.dart';
 
@@ -168,7 +168,7 @@ class _LocationEngagementScreenState
 
       if (programsQuery.docs.isEmpty) return;
 
-      final apiService = ref.read(apiServiceProvider);
+      final apiService = ApiService();
       for (final doc in programsQuery.docs) {
         try {
           await apiService.refreshProgramPasses(programId: doc.id);
@@ -221,7 +221,7 @@ class _LocationEngagementScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('التفاعل بالموقع',
-                        style: AppTypography.heading3),
+                        style: AppTypography.title),
                     Text(
                       'إشعار العملاء عند اقترابهم من فروعك',
                       style: AppTypography.caption
@@ -844,11 +844,11 @@ class _LocationEngagementScreenState
               children: [
                 Text(title,
                     style: AppTypography.body.copyWith(
-                        color: color.shade700,
+                        color: color.withValues(alpha: 0.9),
                         fontWeight: FontWeight.w600)),
                 Text(subtitle,
                     style: AppTypography.caption
-                        .copyWith(color: color.shade600)),
+                        .copyWith(color: color.withValues(alpha: 0.7))),
               ],
             ),
           ),

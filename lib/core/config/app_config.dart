@@ -309,6 +309,8 @@ extension PlanFeatureExtension on PlanFeature {
         return 'star';
       case PlanFeature.locationPush:
         return 'map_pin';
+      case PlanFeature.timeBasedLocationMessages:
+        return 'clock';
       case PlanFeature.customFormFields:
         return 'file_text';
       case PlanFeature.tieredMembership:
