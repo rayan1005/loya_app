@@ -109,6 +109,7 @@ class AppConfig {
         PlanFeature.referralProgram,
         PlanFeature.pushMarketing,
         PlanFeature.automatedPush,
+        PlanFeature.timeBasedLocationMessages,
       ],
     ),
     'advanced': PlanConfig(
@@ -134,6 +135,7 @@ class AppConfig {
         PlanFeature.referralProgram,
         PlanFeature.pushMarketing,
         PlanFeature.automatedPush,
+        PlanFeature.timeBasedLocationMessages,
         PlanFeature.emailMarketing,
         PlanFeature.smsMarketing,
         PlanFeature.thirdPartyIntegrations,
@@ -238,6 +240,7 @@ enum PlanFeature {
   referralProgram,
   pushMarketing,
   automatedPush,
+  timeBasedLocationMessages,
 
   // Advanced
   emailMarketing,
@@ -275,6 +278,8 @@ extension PlanFeatureExtension on PlanFeature {
         return 'feature_push_marketing';
       case PlanFeature.automatedPush:
         return 'feature_automated_push';
+      case PlanFeature.timeBasedLocationMessages:
+        return 'feature_time_based_location';
       case PlanFeature.emailMarketing:
         return 'feature_email_marketing';
       case PlanFeature.smsMarketing:

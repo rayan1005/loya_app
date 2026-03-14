@@ -2130,8 +2130,8 @@ class _ProgramDesignerScreenState extends ConsumerState<ProgramDesignerScreen>
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'يتم تحديد المواقع ورسائل الاقتراب من الإعدادات ← الفروع.\n'
-                      'أضف فروعك مع إحداثيات GPS ورسالة الاقتراب من هناك.',
+                      'تحكم برسائل الاقتراب من القائمة الجانبية ← التفاعل بالموقع.\n'
+                      'أضف فروعك من الإعدادات ← الفروع.',
                       style: AppTypography.caption.copyWith(color: Colors.blue.shade700),
                     ),
                   ),

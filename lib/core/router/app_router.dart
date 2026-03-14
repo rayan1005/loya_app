@@ -28,6 +28,7 @@ import '../../features/settings/presentation/screens/paywall_screen.dart';
 import '../../features/messaging/presentation/screens/messages_screen.dart';
 import '../../features/marketing/presentation/screens/referral_program_screen.dart';
 import '../../features/marketing/presentation/screens/automation_screen.dart';
+import '../../features/marketing/presentation/screens/location_engagement_screen.dart';
 import '../../features/stamper/presentation/screens/stamper_screen.dart';
 import '../theme/app_colors.dart';
 
@@ -287,6 +288,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             name: 'automation',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: AutomationScreen(),
+            ),
+          ),
+
+          // Marketing - Location Engagement
+          GoRoute(
+            path: '/location-engagement',
+            name: 'location-engagement',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: LocationEngagementScreen(),
             ),
           ),
 

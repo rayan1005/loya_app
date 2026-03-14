@@ -580,19 +580,6 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                       Text('$radiusم'),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: notificationMsgController,
-                    decoration: InputDecoration(
-                      labelText: 'رسالة الاقتراب (اختياري)',
-                      hintText: 'مثال: مرحباً! اجمع نقاطك عند زيارتنا',
-                      prefixIcon: const Icon(LucideIcons.messageSquare),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      helperText: 'تظهر على شاشة القفل عند اقتراب العميل',
-                    ),
-                    maxLines: 2,
-                  ),
                 ],
               ),
             ),
@@ -626,9 +613,6 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                     'latitude': latitude,
                     'longitude': longitude,
                     'geofenceRadius': radius,
-                    'notificationMessage': notificationMsgController.text.trim().isEmpty
-                        ? null
-                        : notificationMsgController.text.trim(),
                     'isActive': true,
                     'createdAt': FieldValue.serverTimestamp(),
                   });
@@ -1262,19 +1246,6 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                     Text('$radiusم'),
                   ],
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: notificationMsgController,
-                  decoration: InputDecoration(
-                    labelText: 'رسالة الاقتراب (اختياري)',
-                    hintText: 'مثال: مرحباً! اجمع نقاطك عند زيارتنا',
-                    prefixIcon: const Icon(LucideIcons.messageSquare),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    helperText: 'تظهر على شاشة القفل عند اقتراب العميل',
-                  ),
-                  maxLines: 2,
-                ),
               ],
             ),
           ),
@@ -1297,9 +1268,6 @@ class _LocationsScreenState extends ConsumerState<LocationsScreen> {
                       ? null
                       : phoneController.text.trim(),
                   'geofenceRadius': radius,
-                  'notificationMessage': notificationMsgController.text.trim().isEmpty
-                      ? null
-                      : notificationMsgController.text.trim(),
                 });
 
                 if (context.mounted) Navigator.pop(context);

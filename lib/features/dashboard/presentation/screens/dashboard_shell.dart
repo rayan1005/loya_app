@@ -251,6 +251,14 @@ class _DashboardShellState extends ConsumerState<DashboardShell> {
                   currentRoute: currentRoute,
                   feature: PlanFeature.automatedPush,
                 ),
+                _buildPremiumNavItem(
+                  context: context,
+                  icon: LucideIcons.mapPin,
+                  label: 'التفاعل بالموقع',
+                  route: '/location-engagement',
+                  currentRoute: currentRoute,
+                  feature: PlanFeature.locationPush,
+                ),
                 const SizedBox(height: 24),
                 if (_sidebarExpanded)
                   Padding(
@@ -460,6 +468,14 @@ class _DashboardShellState extends ConsumerState<DashboardShell> {
                     route: '/automation',
                     currentRoute: currentRoute,
                     feature: PlanFeature.automatedPush,
+                  ),
+                  _buildMobileDrawerPremiumItem(
+                    l10n: l10n,
+                    icon: LucideIcons.mapPin,
+                    label: 'التفاعل بالموقع',
+                    route: '/location-engagement',
+                    currentRoute: currentRoute,
+                    feature: PlanFeature.locationPush,
                   ),
                   const SizedBox(height: 16),
                   const Divider(),
