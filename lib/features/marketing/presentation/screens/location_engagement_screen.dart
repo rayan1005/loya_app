@@ -40,6 +40,12 @@ class _LocationEngagementScreenState
   int _locationCount = 0;
   int _totalLocationCount = 0;
 
+  // Program-location mapping
+  List<Map<String, dynamic>> _programs = [];
+  List<Map<String, dynamic>> _locations = [];
+  // programId -> list of locationIds
+  Map<String, List<String>> _programLocations = {};
+
   @override
   void initState() {
     super.initState();
@@ -68,21 +74,44 @@ class _LocationEngagementScreenState
           .doc('config')
           .get();
 
-      // Count locations with GPS coordinates
+      // Load all locations
       final locSnap = await FirebaseFirestore.instance
           .collection('locations')
           .where('businessId', isEqualTo: businessId)
           .get();
 
-      final activeDocs = locSnap.docs.where((d) {
+      final allLocations = locSnap.docs.map((d) {
         final data = d.data();
-        return (data['isActive'] ?? true) as bool;
+        return {
+          'id': d.id,
+          'name': data['name'] ?? '',
+          'address': data['address'] ?? '',
+          'latitude': data['latitude'],
+          'longitude': data['longitude'],
+          'isActive': data['isActive'] ?? true,
+        };
       }).toList();
 
-      final locationsWithGps = activeDocs.where((d) {
+      final activeDocs = allLocations.where((l) => l['isActive'] == true).toList();
+      final withGps = activeDocs.where((l) => l['latitude'] != null && l['longitude'] != null).toList();
+
+      // Load all active programs
+      final progSnap = await FirebaseFirestore.instance
+          .collection('programs')
+          .where('businessId', isEqualTo: businessId)
+          .where('isActive', isEqualTo: true)
+          .get();
+
+      final programs = progSnap.docs.map((d) {
         final data = d.data();
-        return data['latitude'] != null && data['longitude'] != null;
-      }).length;
+        return {
+          'id': d.id,
+          'name': data['name'] ?? data['programName'] ?? '',
+        };
+      }).toList();
+
+      // Load saved mapping
+      Map<String, List<String>> mapping = {};
 
       if (doc.exists) {
         final data = doc.data()!;
@@ -102,11 +131,28 @@ class _LocationEngagementScreenState
             return slot;
           }).toList();
         }
+
+        // Load program-location mapping
+        final savedMapping = data['programLocations'] as Map<String, dynamic>? ?? {};
+        for (final entry in savedMapping.entries) {
+          mapping[entry.key] = List<String>.from(entry.value ?? []);
+        }
+      }
+
+      // Default: if no mapping saved, all locations for all programs
+      if (mapping.isEmpty && programs.isNotEmpty && withGps.isNotEmpty) {
+        final allLocationIds = withGps.map((l) => l['id'] as String).toList();
+        for (final prog in programs) {
+          mapping[prog['id'] as String] = List<String>.from(allLocationIds);
+        }
       }
 
       setState(() {
         _totalLocationCount = activeDocs.length;
-        _locationCount = locationsWithGps;
+        _locationCount = withGps.length;
+        _locations = withGps;
+        _programs = programs;
+        _programLocations = mapping;
         _isLoading = false;
       });
     } catch (e) {
@@ -142,6 +188,7 @@ class _LocationEngagementScreenState
                   'message': s.message,
                 })
             .toList(),
+        'programLocations': _programLocations,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
@@ -433,7 +480,15 @@ class _LocationEngagementScreenState
               const SizedBox(height: 12),
               _buildPreview(),
             ]),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
+
+            // Program-Location mapping
+            if (_programs.length > 1 && _locations.isNotEmpty) ...[
+              _buildProgramLocationMapping(),
+              const SizedBox(height: 16),
+            ],
+
+            const SizedBox(height: 8),
 
             // Save button
             SizedBox(
@@ -467,6 +522,121 @@ class _LocationEngagementScreenState
         ],
       ),
     );
+  }
+
+  Widget _buildProgramLocationMapping() {
+    return _buildCard([
+      Row(
+        children: [
+          Icon(LucideIcons.link, size: 20, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('ربط الفروع بالبرامج',
+                    style: AppTypography.body
+                        .copyWith(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 2),
+                Text(
+                  'حدد أي فرع يتبع أي برنامج ولاء',
+                  style: AppTypography.caption
+                      .copyWith(color: AppColors.textTertiary),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16),
+      ..._programs.map((prog) {
+        final progId = prog['id'] as String;
+        final progName = prog['name'] as String;
+        final assignedIds = _programLocations[progId] ?? [];
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.divider),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(LucideIcons.creditCard,
+                      size: 18, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(progName,
+                        style: AppTypography.body
+                            .copyWith(fontWeight: FontWeight.w600)),
+                  ),
+                  Text(
+                    '${assignedIds.length}/${_locations.length}',
+                    style: AppTypography.caption
+                        .copyWith(color: AppColors.textTertiary),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              ..._locations.map((loc) {
+                final locId = loc['id'] as String;
+                final locName = loc['name'] as String;
+                final isChecked = assignedIds.contains(locId);
+
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      final list =
+                          _programLocations[progId] ?? [];
+                      if (isChecked) {
+                        list.remove(locId);
+                      } else {
+                        list.add(locId);
+                      }
+                      _programLocations[progId] = list;
+                    });
+                  },
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isChecked
+                              ? LucideIcons.checkSquare
+                              : LucideIcons.square,
+                          size: 20,
+                          color: isChecked
+                              ? AppColors.primary
+                              : AppColors.textTertiary,
+                        ),
+                        const SizedBox(width: 10),
+                        Icon(LucideIcons.mapPin,
+                            size: 16,
+                            color: AppColors.textSecondary),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(locName,
+                              style: AppTypography.body.copyWith(
+                                  color: isChecked
+                                      ? AppColors.textPrimary
+                                      : AppColors.textTertiary)),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      }),
+    ]);
   }
 
   Widget _buildTimeSlotEditor(_TimeSlot slot, int index) {
