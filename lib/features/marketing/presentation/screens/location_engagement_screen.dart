@@ -7,6 +7,7 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/data/providers/data_providers.dart';
 import '../../../../core/data/services/api_service.dart';
 import '../../../../core/widgets/upgrade_dialog.dart';
 import '../../../shared/widgets/upgrade_prompt.dart';
