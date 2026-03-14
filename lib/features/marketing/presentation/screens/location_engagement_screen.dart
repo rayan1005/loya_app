@@ -38,6 +38,7 @@ class _LocationEngagementScreenState
   ];
 
   int _locationCount = 0;
+  int _totalLocationCount = 0;
 
   @override
   void initState() {
@@ -73,10 +74,14 @@ class _LocationEngagementScreenState
           .where('businessId', isEqualTo: businessId)
           .get();
 
-      final locationsWithGps = locSnap.docs.where((doc) {
-        final data = doc.data();
-        final isActive = data['isActive'] ?? true;
-        return isActive && data['latitude'] != null && data['longitude'] != null;
+      final activeDocs = locSnap.docs.where((d) {
+        final data = d.data();
+        return (data['isActive'] ?? true) as bool;
+      }).toList();
+
+      final locationsWithGps = activeDocs.where((d) {
+        final data = d.data();
+        return data['latitude'] != null && data['longitude'] != null;
       }).length;
 
       if (doc.exists) {
@@ -100,6 +105,7 @@ class _LocationEngagementScreenState
       }
 
       setState(() {
+        _totalLocationCount = activeDocs.length;
         _locationCount = locationsWithGps;
         _isLoading = false;
       });
@@ -241,10 +247,18 @@ class _LocationEngagementScreenState
           const SizedBox(height: 24),
 
           // Location count info
-          if (_locationCount == 0) ...[
+          if (_totalLocationCount == 0) ...[
             _buildWarningBanner(
               'لا توجد فروع مضافة',
-              'أضف فروعك من الإعدادات ← الفروع مع إحداثيات GPS.',
+              'أضف فروعك من الإعدادات ← الفروع.',
+              LucideIcons.alertTriangle,
+              Colors.orange,
+            ),
+            const SizedBox(height: 16),
+          ] else if (_locationCount == 0) ...[
+            _buildWarningBanner(
+              'فروعك بدون إحداثيات GPS',
+              'عدّل فروعك من الإعدادات ← الفروع وأضف إحداثيات GPS لتفعيل الإشعارات.',
               LucideIcons.alertTriangle,
               Colors.orange,
             ),
